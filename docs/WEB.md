@@ -21,7 +21,7 @@ runs as its own unprivileged account and its listener is not exposed publicly.
 
 See `deploy/phonomenal-web.service` and `deploy/Caddy.snippet` for the actual
 service and route. Provision the builder with `scripts/setup_builder.sh` as the
-service user. Native frontend dependencies on Ubuntu are Cairo and X11; the web
+service user. The service allows writes to MFA's `Documents/MFA` working directory. Native frontend dependencies on Ubuntu are Cairo and X11; the web
 mode does not require a running desktop. FFmpeg and optional eSpeak NG should be
 on PATH. The playback side itself does not require Python; the generator and STT
 check use the local builder environment.

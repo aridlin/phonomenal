@@ -53,3 +53,14 @@ Human-labelled boundary accuracy and blind listening quality remain unmeasured.
 Small corpora can require phoneme approximations; the plan reports these and
 strict mode rejects missing coverage. Optional eSpeak NG supplies pronunciation
 for words outside the pack lexicon. See README.md for setup and limitations.
+
+
+The web deployment was also tested in Firefox: Caddy WAV download and decoding,
+pack dropdown, unprompted STT, and a 390 px viewport without horizontal overflow.
+A browser-uploaded MP3/transcript pair built into a pack with 6 words and 14
+phones through real MFA refinement; its Caddy download included the EOF manual
+and loaded successfully in the native player.
+See [the speech regression check](QUALITY_CHECK.md) for the exact STT results
+and remaining limitations. Optional pack extensions and the EOF ASCII manual
+were read by the original preview.1 Python/C++ readers; the original C++ build
+rendered identical WAV bytes before and after the extension.

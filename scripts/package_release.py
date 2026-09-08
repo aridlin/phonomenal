@@ -22,7 +22,7 @@ def package(artifacts: Path, destination: Path):
             if not name_in_repo:
                 continue
             path = Path(name_in_repo)
-            if path.parts[0] not in ('src', 'scripts', 'examples', 'docs') and name_in_repo not in ('README.md', 'LICENSE', 'pyproject.toml'):
+            if path.parts[0] not in ('src', 'scripts', 'examples', 'docs', 'deploy') and name_in_repo not in ('README.md', 'LICENSE', 'pyproject.toml'):
                 continue
             if path.suffix == '.pyc' or '__pycache__' in path.parts:
                 raise RuntimeError('Unexpected cache in tracked release input')

@@ -206,3 +206,5 @@ its configured bank directory and plays them through its existing output routing
 See [binary format](docs/vcpack_format.md), [design plan](docs/vcpack_plan.md), and
 [third-party notices](docs/THIRD_PARTY.md). MIT for project code; dependencies and
 voice recordings retain their own licenses.
+
+See [measured speech regression results](docs/QUALITY_CHECK.md) for the Heavy test sentence and remaining alignment limits.
