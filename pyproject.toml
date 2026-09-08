@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phonomenal"
 version = "0.1.0"
-description = "TF2 merc voice alignment pipeline for splice-friendly JSON exports."
+description = "Precise speech alignment, portable voice packs, and native sentence mixing."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [
-  { name = "OpenAI Codex" }
+  { name = "Aridlin" }
 ]
 dependencies = [
   "cloudscraper>=1.2.71"

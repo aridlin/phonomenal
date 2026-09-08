@@ -5,6 +5,10 @@ that recorded voice. **Python builds the pack; C++ plans and renders speech.**
 The desktop/terminal frontend uses [FT](https://github.com/aridlin/ft) with
 **Gruvbox by default**, with a builder/recorder view and a separate TTS/player view.
 
+[Download the generator and TTS/player test builds](https://github.com/aridlin/phonomenal/releases)
+for Linux and Windows, plus the Windows vctts overlay.
+See [test-build instructions](docs/TEST_BUILD.md).
+
 Default target: **TF2 mercs**, starting with **Heavy**, then **Medic**, then
 **Soldier**. The builder opens on Heavy; choose **My own voice** for the microphone
 script. Existing local speech dumps go under `source/<merc>/`.

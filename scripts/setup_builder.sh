@@ -6,7 +6,7 @@ project_dir=$(dirname "$script_dir")
 cd "$project_dir"
 command -v uv >/dev/null || { echo 'Install uv, then run this script again.' >&2; exit 1; }
 command -v ffmpeg >/dev/null || { echo 'Install ffmpeg, then run this script again.' >&2; exit 1; }
-uv venv --python 3.11 .venv-vcpack
+uv venv --allow-existing --python 3.11 .venv-vcpack
 uv pip install --python .venv-vcpack/bin/python -e '.[builder]'
 mkdir -p .tools/micromamba
 if [ ! -x .tools/micromamba/bin/micromamba ]; then

@@ -3,7 +3,7 @@ $ProjectDir = Split-Path $PSScriptRoot -Parent
 Set-Location $ProjectDir
 if (-not (Get-Command uv -ErrorAction SilentlyContinue)) { throw "Install uv first." }
 if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) { throw "Install ffmpeg first." }
-uv venv --python 3.11 .venv-vcpack
+uv venv --allow-existing --python 3.11 .venv-vcpack
 if ($LASTEXITCODE) { throw "Could not create Python environment" }
 uv pip install --python .venv-vcpack/Scripts/python.exe -e ".[builder]"
 if ($LASTEXITCODE) { throw "Could not install builder" }
