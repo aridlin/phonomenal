@@ -57,7 +57,7 @@ else()
     target_compile_options(phonomenal_splicer_frontend PRIVATE ${CAIRO_CFLAGS_OTHER} ${X11_CFLAGS_OTHER})
     target_link_libraries(phonomenal_splicer_frontend PRIVATE ${CAIRO_LIBRARIES} ${X11_LIBRARIES} dl m)
 endif()
-target_compile_definitions(phonomenal_splicer_frontend PRIVATE UNICODE _UNICODE)
+target_compile_definitions(phonomenal_splicer_frontend PRIVATE UNICODE _UNICODE NOMINMAX)
 find_package(Threads REQUIRED)
 target_link_libraries(phonomenal_splicer_frontend PRIVATE Threads::Threads)
 

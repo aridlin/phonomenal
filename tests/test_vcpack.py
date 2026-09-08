@@ -93,6 +93,11 @@ class VcpackTests(unittest.TestCase):
         raw=bytearray(original);raw[-1]^=4;self.pack.write_bytes(raw)
         self.assertNotEqual(self.native('--inspect',check=False).returncode,0)
 
+    def test_punctuation_adds_one_pause_at_word_start(self):
+        result=json.loads(self.native('--text','alpha. newword','--plan','--strict').stdout)
+        self.assertEqual(sum(x['pause_before_ms'] > 0 for x in result['units']),1)
+        self.assertEqual(result['units'][-1]['pause_before_ms'],180)
+
     def test_explicit_phone_search_uses_same_contiguous_planner(self):
         result=json.loads(self.native('--phones','AA B','--plan','--strict').stdout)
         self.assertEqual(len(result['units']),1)

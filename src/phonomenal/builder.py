@@ -116,7 +116,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
             else:
                 if asr is None:
                     from faster_whisper import WhisperModel
-                    asr = WhisperModel(model, device=device, compute_type='int8' if device=='cpu' else 'float16', download_root=str(work/'models'))
+                    asr = WhisperModel(model, device=device, compute_type='int8' if device=='cpu' else 'float16', download_root=str(project/'data/cache/asr'))
                 segments, _ = asr.transcribe(str(decoded), language='en', beam_size=5, vad_filter=True, word_timestamps=True, condition_on_previous_text=False)
                 spans = [dict(start=max(0., s.start-.12), end=min(duration, s.end+.12), text=s.text.strip(), confidence=s.avg_logprob,
                               words=[dict(word=w.word, start=w.start, end=w.end, probability=w.probability) for w in (s.words or [])]) for s in segments if s.text.strip() and s.no_speech_prob < .6]

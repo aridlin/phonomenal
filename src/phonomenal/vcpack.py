@@ -122,6 +122,9 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
         for phone in phones:
             lex += string(phone)
     report = dict(report or {})
+    if lexicon:
+        import cmudict
+        report.setdefault("licenses", {})["CMUdict"] = cmudict.license_string()
     report.update(format='vcpack-1', sample_resolution_ms=1000/rate,
                   sample_count=len(pcm)//2, audio_sha256=hashlib.sha256(pcm).hexdigest(),
                   words=sum(len(r['words']) for r in records),
