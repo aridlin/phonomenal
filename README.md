@@ -51,9 +51,18 @@ in that order. TF2 recordings are supplied locally and are not included here.
   and transcript saving, background builds, cancel/resume, playback and WAV export.
 - Native vctts integration under `vctts/`: dynamic pack discovery, cached engine,
   and chunk/approximation status.
+- Optional [independent detector analysis](docs/DETECTORS.md): Whisper and Vosk
+  words, Allosaurus phones, preserved disagreements, uncertainty, and cached results.
+- Per-phone quality, duration distributions, pitch contours/pulse marks, neighboring
+  sounds, boundary spectra, pronunciation variants, and trusted coverage metadata.
+- Manual accepted/rejected phone decisions, plus supplemental reading takes aimed
+  at the voice's scarce trusted sounds.
+- A [Vencord/Equicord channel reader](integrations/vencord/README.md) with a speaker
+  toggle, per-user voice overrides, stable default voices and local queued playback.
 - Automatic [source/render boundary diagnostics](docs/BOUNDARIES_AND_PITCH.md),
-  unprompted STT checks, optional pitch correction for both low and high voiced
-  chunks, and lazy browser updates that preserve unchanged controls and audio.
+  unprompted STT checks, gentle vowel pitch correction in both directions, optional
+  duration normalization, adaptive word pauses, and lazy browser updates that
+  preserve typed text, cursor position and unchanged audio.
 
 See the [cross-voice quality measurements](docs/QUALITY_CHECK.md), including all
 nine mercs and a single-narrator LibriVox chapter. Several prompts still fail;

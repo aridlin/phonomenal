@@ -43,3 +43,23 @@ class EvidenceTests(unittest.TestCase):
             self.assertEqual(plan(saved)['units'][0]['clip_id'],'1')
             record['phones'][0]['review']['end']-=1;file.write_text(json.dumps(record));changed=root/'changed.vcpack';save_project(project,changed)
             self.assertEqual(plan(changed)['units'][0]['clip_id'],'0')
+
+    def test_reader_reports_independent_disagreement_at_every_phone_boundary(self):
+        import json, subprocess, tempfile
+        from pathlib import Path
+        import numpy as np
+        from phonomenal.vcpack import write_pack
+        from phonomenal.evidence import trust_bytes
+        from test_vcpack import CLI
+        if not CLI.exists():self.skipTest('Build C++ reader first')
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);pack=root/'voice.vcpack';audit=root/'audit.json'
+            records=[dict(id='voice',words=[dict(label='test',start=0,end=4000)],phones=[dict(label='EH1',word=0,start=0,end=4000)])]
+            rows=[dict(phones=[dict(support=0,dispute=1,word_support=1,word_dispute=1,radius_samples=1600)])]
+            write_pack(pack,voice='test',language='en',rate=16000,pcm=np.ones(4000,dtype='<i2').tobytes(),records=records,features=False,
+                       extra_sections={'TRST':trust_bytes(records,rows)})
+            subprocess.run([str(CLI),'--bank',str(pack),'--text','test','--stdout-wav','--audit',str(audit)],capture_output=True,check=True)
+            edges=[e for e in json.loads(audit.read_text())['boundaries'] if e['kind']=='phone']
+            self.assertEqual(len(edges),2)
+            for edge in edges:
+                self.assertTrue(edge['suspicious']);self.assertEqual(edge['independent_disputes'],2);self.assertEqual(edge['source_uncertainty_samples'],1600)

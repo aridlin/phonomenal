@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def package(artifacts: Path, destination: Path):
+def package(artifacts: Path, destination: Path, include_vctts: bool = True):
     destination.mkdir(parents=True, exist_ok=True)
     tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
     results = []
@@ -54,14 +54,15 @@ def package(artifacts: Path, destination: Path):
             with tarfile.open(archive, 'w:gz') as tar:
                 tar.add(stage, arcname=stage.name)
         results.append(archive)
-    overlay = destination / 'phonomenal-vctts-windows-x86_64'
-    overlay.mkdir()
-    shutil.copy2(artifacts / 'phonomenal-Windows/vctts/build/Release/tts_overlay.exe', overlay)
-    shutil.copy2(ROOT / 'LICENSE', overlay)
-    shutil.copy2(ROOT / 'docs/THIRD_PARTY.md', overlay)
-    shutil.copytree(ROOT / 'docs/licenses', overlay / 'licenses')
-    (overlay / 'START-HERE.txt').write_text('Run tts_overlay.exe. Select the Phonomenal engine and set its package directory to your .vcpack folder. The generator/player are in the companion release download. TF2 voice assets are supplied locally.\n')
-    results.append(Path(shutil.make_archive(str(overlay), 'zip', destination, overlay.name)))
+    if include_vctts:
+        overlay = destination / 'phonomenal-vctts-windows-x86_64'
+        overlay.mkdir()
+        shutil.copy2(artifacts / 'phonomenal-Windows/vctts/build/Release/tts_overlay.exe', overlay)
+        shutil.copy2(ROOT / 'LICENSE', overlay)
+        shutil.copy2(ROOT / 'docs/THIRD_PARTY.md', overlay)
+        shutil.copytree(ROOT / 'docs/licenses', overlay / 'licenses')
+        (overlay / 'START-HERE.txt').write_text('Run tts_overlay.exe. Select the Phonomenal engine and set its package directory to your .vcpack folder. The generator/player are in the companion release download. TF2 voice assets are supplied locally.\n')
+        results.append(Path(shutil.make_archive(str(overlay), 'zip', destination, overlay.name)))
     checksum = destination / 'SHA256SUMS.txt'
     checksum.write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in results))
     print('\n'.join(str(p) for p in [*results, checksum]))
@@ -71,5 +72,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifacts', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True, help='Fresh output directory')
+    parser.add_argument('--skip-vctts', action='store_true', help='Package generator/player test builds only; do not include an overlay')
     args = parser.parse_args()
-    package(args.artifacts.resolve(), args.output.resolve())
+    package(args.artifacts.resolve(), args.output.resolve(), include_vctts=not args.skip_vctts)

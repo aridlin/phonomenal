@@ -80,3 +80,8 @@ to avoid reusing stale pulse marks. Older ACOU v1 packs remain readable.
 
 See [independent detector analysis](DETECTORS.md) for label disagreement, source
 uncertainty, manual phone review and the additional portable metadata sections.
+
+Rendered phone-boundary reports now include `source_uncertainty_samples`,
+`independent_disputes`, and `manual_review`. Disputed or widely separated detector
+estimates are flagged even when the waveform join itself is smooth. These values
+refer to source evidence; output positions still follow the actual time map.

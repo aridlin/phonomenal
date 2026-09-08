@@ -118,6 +118,18 @@ class AcousticTests(unittest.TestCase):
             hz=np.fft.rfftfreq(len(samples),1/16000)[np.abs(np.fft.rfft(samples*np.hanning(len(samples)))).argmax()]
             self.assertAlmostEqual(hz,200,delta=12)
 
+    def test_duration_never_stretches_consonants_even_if_foreign_metadata_supplies_marks(self):
+        self.audio=(np.sin(np.arange(9600)*2*np.pi*200/16000)*6000).astype('<i2')
+        self.records=[dict(id='speech',words=[dict(label='test',start=0,end=9600)],phones=[dict(label='EH1',word=0,start=0,end=9600)])]
+        self.write();ac=bytearray(sections(self.pack)[b'ACOU'][1]);offset=8+4+6+4
+        struct.pack_into('<f',ac,offset+32,3.);struct.pack_into('<ffI',ac,offset+40,250.,.35,9)
+        self.records[0]['phones'][0]['label']='M';self.write(features=False)
+        payloads=sections(self.pack);payloads[b'ACOU']=(0,bytes(ac))
+        _write_sections(self.pack,[(tag,flags,data) for tag,(flags,data) in payloads.items()])
+        baseline=self.native('--text','test','--stdout-wav').stdout
+        changed=self.native('--text','test','--normalize-duration','--stdout-wav').stdout
+        self.assertEqual(changed,baseline)
+
     def test_adaptive_gaps_only_between_mixed_words(self):
         self.audio=np.ones(4800,dtype='<i2')*1000
         self.records=[dict(id=str(i),words=[dict(label=label,start=i*1600,end=(i+1)*1600)],

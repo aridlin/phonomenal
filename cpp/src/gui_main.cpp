@@ -129,6 +129,7 @@ static void refresh_packs(App &a, const fs::path &imported = {}) {
   std::string path;
   while (history >> std::quoted(path))
     add(path_utf8(path));
+  history.close(); // Windows cannot replace a file while this reader holds it open.
   if (a.pack[0])
     add(path_utf8(a.pack));
   if (!imported.empty())
@@ -168,12 +169,15 @@ static void refresh_packs(App &a, const fs::path &imported = {}) {
   saved.close();
   if (!saved)
     throw std::runtime_error("Could not save imported pack list");
-  std::error_code ec;
 #ifdef _WIN32
-  fs::remove(a.root / "data/imported-vcpacks.txt", ec);
-#endif
+  if (!MoveFileExW((a.root / "data/imported-vcpacks.txt.tmp").c_str(),
+                   (a.root / "data/imported-vcpacks.txt").c_str(),
+                   MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+    throw std::runtime_error("Could not replace imported pack list");
+#else
   fs::rename(a.root / "data/imported-vcpacks.txt.tmp",
              a.root / "data/imported-vcpacks.txt");
+#endif
 }
 static void choose_pack(App &a, const fs::path &path) {
   if (a.busy)

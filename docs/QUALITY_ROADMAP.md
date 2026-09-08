@@ -9,10 +9,10 @@ be mistaken for validated accuracy claims.
 
 # Speech quality and metadata design
 
-Design proposal, 2026-09-08. These proposals are not all implemented. The working
-ACOU prototype already contains acoustic summaries and pitch marks; boundary
-uncertainty, pronunciation lattices, perceptual calibration, duration correction
-and the Discord plugin still require implementation and validation.
+Design proposal, 2026-09-08. The foundation listed above and the Discord plugin
+are implemented. The remaining proposals include alternative-cut search,
+pronunciation lattices and perceptual calibration. Corpus comparisons and
+human listening are still needed to establish quality improvements.
 
 ## Selection priorities
 

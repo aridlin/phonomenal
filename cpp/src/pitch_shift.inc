@@ -49,6 +49,7 @@ static bool StretchVowel(std::vector<std::int16_t> &segment, std::int64_t start,
                          const Phoneme &p, double factor, std::int64_t rate,
                          std::vector<std::pair<std::int64_t,std::int64_t>> &knots) {
   const auto &a=p.acoustic;
+  if(std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+p.normalized_label+" ")==std::string::npos) return false;
   if(a.marks.size()<5 || a.voiced<.8 || a.spread>2.5 || a.clipping>=.01) return false;
   const auto begin=p.start_sample-start, end=p.end_sample-start;
   const auto left=std::max<std::int64_t>(begin+rate*.012,a.marks[1]-start);

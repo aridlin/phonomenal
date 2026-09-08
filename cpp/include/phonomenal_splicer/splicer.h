@@ -48,6 +48,7 @@ struct BoundaryCheck {
   std::int64_t source_sample{}, output_sample{};
   double sample_jump{};
   bool suspicious = false;
+  std::uint32_t source_uncertainty_samples{}, independent_disputes{}, manual_review{};
 };
 struct PitchAdjustment {
   std::string clip_id;

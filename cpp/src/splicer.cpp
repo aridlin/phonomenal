@@ -1667,7 +1667,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     const auto &unit=*placement.unit;
     const auto record=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==unit.clip_id;});
     if (record==impl_->records.end()) throw std::runtime_error("Planned unit refers to an unknown recording");
-    auto add=[&](const std::string &kind,const std::string &label,const std::string &edge,std::int64_t sample,bool suspect) {
+    auto add=[&](const std::string &kind,const std::string &label,const std::string &edge,std::int64_t sample,bool suspect,const Phoneme *evidence=nullptr) {
       if (sample<unit.start_sample || sample>unit.end_sample) return;
       auto hi=std::upper_bound(placement.knots.begin(),placement.knots.end(),std::pair<std::int64_t,std::int64_t>{sample,std::numeric_limits<std::int64_t>::max()});
       if(hi==placement.knots.begin()) throw std::runtime_error("Missing duration map");
@@ -1677,7 +1677,11 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
       if (position<0 || static_cast<std::size_t>(position)>output.size()) throw std::runtime_error("Rendered boundary is outside the output");
       const double jump=position>0 && static_cast<std::size_t>(position)<output.size() ? std::abs(static_cast<double>(output[position])-output[position-1])/32768. : 0.;
       suspect=suspect || jump>.35;
-      checked.boundaries.push_back({kind,label,edge,unit.clip_id,sample,position,jump,suspect});
+      const auto uncertainty=evidence?evidence->boundary_radius:0;
+      const auto disputes=evidence?evidence->phone_dispute+evidence->word_dispute:0;
+      const auto reviewed=evidence?evidence->manual_review:0;
+      suspect=suspect || (reviewed!=1 && (disputes>0 || uncertainty>wave.sample_rate*.060));
+      checked.boundaries.push_back({kind,label,edge,unit.clip_id,sample,position,jump,suspect,uncertainty,disputes,reviewed});
       checked.flagged+=suspect;
     };
     add("splice",unit.target_text,"start",unit.start_sample,false);
@@ -1688,8 +1692,8 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     }
     for (const auto &phone:record->phonemes) {
       const bool suspect=impl_->phone_duration_penalty(phone)>=180.;
-      add("phone",phone.label,"start",phone.start_sample,suspect);
-      add("phone",phone.label,"end",phone.end_sample,suspect);
+      add("phone",phone.label,"start",phone.start_sample,suspect,&phone);
+      add("phone",phone.label,"end",phone.end_sample,suspect,&phone);
     }
   }
   if (audit) *audit=std::move(checked);
@@ -1713,6 +1717,7 @@ std::string BoundaryReportJson(const BoundaryReport &report) {
     const auto &b=report.boundaries[i]; if(i)out<<',';
     out << "{\"kind\":"<<quote(b.kind)<<",\"label\":"<<quote(b.label)<<",\"edge\":"<<quote(b.edge)
         <<",\"clip_id\":"<<quote(b.clip_id)<<",\"source_sample\":"<<b.source_sample<<",\"output_sample\":"<<b.output_sample
+        <<",\"source_uncertainty_samples\":"<<b.source_uncertainty_samples<<",\"independent_disputes\":"<<b.independent_disputes<<",\"manual_review\":"<<b.manual_review
         <<",\"sample_jump\":"<<b.sample_jump<<",\"suspicious\":"<<(b.suspicious?"true":"false")<<'}';
   }
   out << "],\"pitch_adjustments\":[";
