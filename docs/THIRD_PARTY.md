@@ -5,8 +5,9 @@
   `33f082f5143f7f4197209acaad40e4d0c51505a6` on 2026-09-08, at the author's request.
 - miniaudio is vendored in `cpp/vendor/miniaudio.h` and the bundled vctts tree.
   Its dual public-domain/MIT license appears in the header and
-  `vctts/extern/miniaudio/LICENSE`.
-- Dear ImGui, used by vctts, retains `vctts/extern/imgui/LICENSE.txt`.
+  `vctts/extern/miniaudio/LICENSE` (release copy: `docs/licenses/miniaudio.txt`).
+- Dear ImGui, used by vctts, retains `vctts/extern/imgui/LICENSE.txt`
+  (release copy: `docs/licenses/imgui.txt`).
 - eSpeak NG is optionally loaded at runtime for pronunciation only. It is GPLv3;
   its library/data are not bundled in this repository. See https://github.com/espeak-ng/espeak-ng .
 - CMUdict, used for English pronunciations, retains its own license in the installed

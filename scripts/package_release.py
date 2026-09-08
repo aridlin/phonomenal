@@ -59,6 +59,7 @@ def package(artifacts: Path, destination: Path):
     shutil.copy2(artifacts / 'phonomenal-Windows/vctts/build/Release/tts_overlay.exe', overlay)
     shutil.copy2(ROOT / 'LICENSE', overlay)
     shutil.copy2(ROOT / 'docs/THIRD_PARTY.md', overlay)
+    shutil.copytree(ROOT / 'docs/licenses', overlay / 'licenses')
     (overlay / 'START-HERE.txt').write_text('Run tts_overlay.exe. Select the Phonomenal engine and set its package directory to your .vcpack folder. The generator/player are in the companion release download. TF2 voice assets are supplied locally.\n')
     results.append(Path(shutil.make_archive(str(overlay), 'zip', destination, overlay.name)))
     checksum = destination / 'SHA256SUMS.txt'
