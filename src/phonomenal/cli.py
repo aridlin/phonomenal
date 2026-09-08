@@ -114,6 +114,8 @@ def _common_parser() -> argparse.ArgumentParser:
     build.add_argument("--work", type=Path)
     build.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
     build.add_argument("--force", action="store_true")
+    build.add_argument("--thorough", action="store_true", help="Run independent word and phone checks after alignment")
+    build.add_argument("--vosk-model", type=Path, default=Path(".tools/models/vosk-model-small-en-us-0.15"))
     build.add_argument("--tf2", action="store_true", help="Exclude TF2 robot-voice variants and test files")
     verify = subparsers.add_parser("verify-speech", help="Transcribe generated audio without prompt hints and report word errors.")
     verify.add_argument("audio", type=Path)
@@ -121,6 +123,21 @@ def _common_parser() -> argparse.ArgumentParser:
     verify.add_argument("--model", default="small.en")
     verify.add_argument("--json-output", type=Path)
     verify.add_argument("--require-match", action="store_true", help="Exit 2 if recognized words differ.")
+    enrich = subparsers.add_parser("enrich-pack", help="Measure phone acoustics and pitch marks without realigning or changing audio.")
+    enrich.add_argument("pack", type=Path)
+    enrich.add_argument("--output", type=Path, required=True, help="New pack filename; keeps the original.")
+    targeted = subparsers.add_parser("coverage-script", help="Suggest original reading takes for this voice's scarce trusted phones")
+    targeted.add_argument("pack",type=Path)
+    targeted.add_argument("--output",type=Path,required=True)
+    targeted.add_argument("--takes",type=int,default=16)
+    analyze = subparsers.add_parser("analyze-pack", help="Compare independent Whisper, Vosk and Allosaurus recognition; preserve source cuts.")
+    analyze.add_argument("pack", type=Path)
+    analyze.add_argument("--output", type=Path, required=True)
+    analyze.add_argument("--cache", type=Path)
+    analyze.add_argument("--vosk-model", type=Path, default=Path(".tools/models/vosk-model-small-en-us-0.15"))
+    analyze.add_argument("--whisper-model", default="small.en")
+    analyze.add_argument("--phone-model", default="eng2102")
+    analyze.add_argument("--limit", type=int, help="Analyze only this many recordings for a quick comparison")
     extend = subparsers.add_parser("extend-pack", help="Add optional binary sections and an ASCII specification without changing voice data.")
     extend.add_argument("pack", type=Path)
     extend.add_argument("--output", type=Path, help="Default: atomically update the input pack.")
@@ -181,7 +198,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "build-pack":
         from phonomenal.builder import build_pack
         build_pack(args.source, args.output, args.voice, args.language, args.whisper_model,
-                   args.mfa_command, args.acoustic_model, args.work, args.force, args.device, args.tf2)
+                   args.mfa_command, args.acoustic_model, args.work, args.force, args.device, args.tf2, args.thorough, args.vosk_model)
+        return 0
+    if args.command == "coverage-script":
+        from phonomenal.recording_script import coverage_script
+        print(json.dumps(coverage_script(args.pack,args.output,args.takes),indent=2))
+        return 0
+    if args.command == "analyze-pack":
+        from phonomenal.evidence import analyze_pack
+        print(json.dumps(analyze_pack(args.pack,args.output,args.cache,args.vosk_model,args.whisper_model,args.phone_model,args.limit),indent=2))
+        return 0
+    if args.command == "enrich-pack":
+        from phonomenal.acoustics import enrich_pack
+        print(json.dumps(enrich_pack(args.pack, args.output), indent=2))
         return 0
     if args.command == "extend-pack":
         from phonomenal.vcpack import extend_pack

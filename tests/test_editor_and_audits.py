@@ -111,7 +111,8 @@ class EditorAndAuditTests(unittest.TestCase):
 
     def test_pitch_raises_and_lowers_without_changing_duration(self):
         if not CLI.exists():self.skipTest('Native CLI unavailable')
-        for band,target in [('100:100',100),('300:300',300)]:
+        # Speech correction is deliberately capped at three semitones.
+        for band,target in [('100:100',200*2**(-.25)),('300:300',200*2**.25)]:
             report=self.root/'audit.json'
             result=subprocess.run([str(CLI),'--bank',str(self.pack),'--text','tone','--pitch-band',band,'--audit',str(report),'--stdout-wav'],capture_output=True,check=True)
             with wave.open(io.BytesIO(result.stdout),'rb') as f:

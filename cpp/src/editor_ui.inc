@@ -80,7 +80,7 @@ static void editor_ui(App &a) {
     const auto source=ft::open_file_dialog("Replacement master audio",filters,1);
     if(!source.empty()){editor_command(a,{"replace-audio","--project",utf8(a.editor_project),"--input",source});a.message("Master audio replaced in the draft. Review all affected boundaries.");}
   }
-  ft::text_wrapped("Each recording JSON contains editable word and phone arrays. Add or remove entries, update their sample intervals, and keep each phone's zero-based word index correct. Save drafts before switching sections. Replacing master.wav or adding/removing recordings is also available through the project files and CLI.");
+  ft::text_wrapped("Each recording JSON contains editable word and phone arrays. Historical detector evidence is included for review. Set a phone review state to accepted or rejected; rejected phones are excluded from playback. Keep the review label/start/end in sync after listening to an edited interval. Add or remove entries, update their sample intervals, and keep each phone's zero-based word index correct. Save drafts before switching sections. Replacing master.wav or adding/removing recordings is also available through the project files and CLI.");
   std::vector<const char *> labels;for(const auto &s:a.editor_labels)labels.push_back(s.c_str());
   ft::dropdown("Section or recording",labels.data(),static_cast<int>(labels.size()),&a.editor_selected);
   if(ft::button("Load selected section") && !a.busy) {

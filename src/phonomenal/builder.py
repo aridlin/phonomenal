@@ -61,7 +61,7 @@ def write_wave(path, pcm, rate):
         wav.writeframes(pcm)
 
 
-def build_pack(source, output, voice, language='en', model='small.en', mfa_command='mfa', acoustic_model='english_us_arpa', work=None, force=False, device='cpu', tf2=False):
+def build_pack(source, output, voice, language='en', model='small.en', mfa_command='mfa', acoustic_model='english_us_arpa', work=None, force=False, device='cpu', tf2=False, thorough=False, vosk_model=None):
     if language not in ('en', 'en-us', 'en-gb'):
         raise ValueError('This build currently supports English ARPABET packs; additional language profiles need a matched phone set and G2P.')
     source, output = Path(source).resolve(), Path(output).resolve()
@@ -240,6 +240,12 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
                   versions={p: importlib.metadata.version(p) for p in ('numpy', 'cmudict', 'faster-whisper')})
     log('Extracting boundary acoustics and writing self-contained voice pack...')
     report = write_pack(output, voice=voice, language='en-us', rate=rate, pcm=audio, records=records, report=report, lexicon=lexicon)
+    if thorough:
+        import uuid
+        from phonomenal.evidence import analyze_pack
+        analyzed = output.with_name(output.stem + '-analysis-' + uuid.uuid4().hex + '.vcpack')
+        report = analyze_pack(output, analyzed, cache=work/'detector-cache', vosk_model=vosk_model)
+        analyzed.replace(output)
     atomic_json(work/'report.json', report)
     log(f'Built {output}: {len(records)} clips, {report["words"]} words, {report["phones"]} phones')
     return report

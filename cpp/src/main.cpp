@@ -1,4 +1,5 @@
 #include "phonomenal_splicer/splicer.h"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -91,6 +92,12 @@ int main(int argc, char **argv) {
         output_path = value();
       else if (arg == "--audit")
         audit_path = value();
+      else if (arg == "--no-auto-word-gaps")
+        options.adaptive_word_gaps = false;
+      else if (arg == "--normalize-duration")
+        options.normalize_duration = true;
+      else if (arg == "--word-gap-ms")
+        options.word_gap_ms = std::clamp<std::int64_t>(std::stoll(value()),0,500);
       else if (arg == "--pitch-band") {
         auto band=value(); auto separator=band.find(':');
         if(separator==std::string::npos) throw std::runtime_error("Pitch band must be LOWER:UPPER in Hz");

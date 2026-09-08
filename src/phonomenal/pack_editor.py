@@ -62,7 +62,7 @@ def read_pack(path):
             word = r.string(); lexicon[word] = [r.string() for _ in range(r.count())]
         r.done()
     extras = {tag.decode('ascii'): base64.b64encode(data).decode('ascii') for tag, data in sections.items()
-              if tag not in {b'META', b'RECS', b'AUDI', b'LEXI', b'FEAT', b'QARE', b'SPEC'}}
+              if tag not in {b'META', b'RECS', b'AUDI', b'LEXI', b'FEAT', b'ACOU', b'TRST', b'EVID', b'PROS', b'QREV', b'QARE', b'SPEC'}}
     validate_records(records, len(sections[b'AUDI'])//2, metadata['rate'])
     return metadata, records, lexicon, extras, sections[b'AUDI'], report
 
@@ -80,8 +80,26 @@ def open_project(pack, project):
     json_write(project/'provenance.json', dict(source_sha256=hashlib.sha256(Path(pack).read_bytes()).hexdigest(), original_report=report))
     with wave.open(str(project/'master.wav'), 'wb') as out:
         out.setnchannels(1); out.setsampwidth(2); out.setframerate(metadata['rate']); out.writeframes(pcm)
+    # Historical evidence is attached to each editable recording for review;
+    # edits invalidate it when a new pack is saved.
+    raw = Path(pack).read_bytes(); evidence = {}; reviews = {}
+    for index in range(HEADER.unpack_from(raw)[2]):
+        tag, _, start, length, _, _ = DIRECTORY.unpack_from(raw, HEADER.size+index*DIRECTORY.size)
+        if tag == b'EVID':
+            value=json.loads(raw[start:start+length]);evidence={r['id']:r for r in value.get('records',[])}
+        if tag == b'QREV':
+            reader=Reader(raw[start:start+length])
+            if reader.unpack('<I')[0]==1:
+                for _ in range(reader.count()):
+                    rid=reader.string();reviews[rid]=[reader.unpack('<I')[0] for _ in range(reader.count())]
+                reader.done()
     entries = []
     for i, record in enumerate(records):
+        if record['id'] in evidence: record['historical_analysis']=evidence[record['id']]
+        states=reviews.get(record['id'],[])
+        for j,p in enumerate(record['phones']):
+            p['review']=dict(state={0:'unreviewed',1:'accepted',2:'rejected'}.get(states[j] if j<len(states) else 0,'unreviewed'),
+                label=p['label'],start=p['start'],end=p['end'])
         filename = f'record-{i:06d}.json'; json_write(project/filename, record)
         entries.append(filename+'\t'+record['id'].replace('\t',' ').replace('\n',' ')+' | '+record.get('transcript','').replace('\t',' ').replace('\n',' ')[:110])
     (project/'index.tsv').write_text('\n'.join(entries)+'\n', encoding='utf-8')
@@ -104,6 +122,10 @@ def replace_audio(project, source):
         if f.getframerate()!=metadata['rate']:raise ValueError('Replacement audio must use the same sample rate as the project')
     shutil.copyfile(project/'master.wav',project/'master.previous.wav')
     temporary=project/'master.next.wav';shutil.copyfile(source,temporary);temporary.replace(project/'master.wav')
+    for path in project.glob('record-*.json'):
+        record=json.loads(path.read_text())
+        for p in record['phones']:p.pop('review',None)
+        record.pop('historical_analysis',None);json_write(path,record)
     return dict(audio_replaced=True,warning='Check every recording interval if the audio length or content changed')
 
 
@@ -154,6 +176,17 @@ def save_project(project, output):
                   source_pack_sha256=provenance['source_sha256'],
                   boundary_audit=dict(every_boundary_checked=True, boundaries_checked=sum(a['boundaries_checked'] for a in audits),
                                       flagged_boundaries=sum(a['flagged_boundaries'] for a in audits), recordings=audits))
+    from phonomenal.vcpack import string
+    review=bytearray(struct.pack('<II',1,len(records))); counts={'accepted':0,'rejected':0}
+    for record in records:
+        review+=string(record['id'])+struct.pack('<I',len(record['phones']))
+        for p in record['phones']:
+            decision=p.get('review',{});state=decision.get('state','unreviewed') if isinstance(decision,dict) else decision
+            if state not in ('unreviewed','accepted','rejected'):raise ValueError('Phone review state must be unreviewed, accepted or rejected')
+            if isinstance(decision,dict) and any(decision.get(key)!=p[key] for key in ('label','start','end')):state='unreviewed'
+            if state in counts:counts[state]+=1
+            review+=struct.pack('<I',{'unreviewed':0,'accepted':1,'rejected':2}[state])
+    extras['QREV']=bytes(review);report['manual_phone_review']=counts
     # Retain provenance/licenses without carrying forward stale accuracy claims.
     report['licenses'] = provenance.get('original_report', {}).get('licenses', {})
     return write_pack(output, voice=metadata['voice'], language=metadata['language'], rate=rate, pcm=pcm,

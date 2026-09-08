@@ -52,7 +52,7 @@ Original v1 readers already validate and skip this unknown optional section.
 Add future binary data under a new optional four-byte tag. Preserve existing
 section schemas, reserved fields, and version 1. Unknown required sections still
 fail explicitly. Original readers allow 32 sections and 2 GiB total; the normal
-seven-section pack leaves 25 tags available. Extensions rewrite the directory
+eight-section pack leaves 24 tags available. Extensions rewrite the directory
 atomically and keep SPEC last, preserving audio and existing section payloads.
 
 ```sh
@@ -68,3 +68,11 @@ Python: `write_pack(..., extra_sections={"XTRA": payload_bytes})`, or
 Existing tags cannot be overwritten by this extension API. When adding actual
 speech, regenerate the affected v1 audio/alignment/index sections coherently;
 blindly appending bytes is invalid.
+
+## Additional acoustic data
+
+Optional `ACOU` version 1 stores nine acoustic measurements and absolute pitch
+marks per phone in RECS order. See the complete [ASCII wire specification](../src/phonomenal/vcpack_spec.txt)
+and [runtime behavior](BOUNDARIES_AND_PITCH.md). Unknown versions are skipped.
+Enrichment preserves all audio, alignment and lexicon bytes; editor saves
+regenerate measurements and marks after changes.

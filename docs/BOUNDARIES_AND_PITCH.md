@@ -28,18 +28,55 @@ bin/phonomenal_splicer_cli --bank voice.vcpack --text "Your message" \
   --output message.wav --audit boundaries.json --pitch-band 100:180
 ```
 
-Pitch correction is off by default. When enabled it estimates a voiced median
-for each selected chunk and shifts it toward the requested lower/upper band.
-Resampling followed by waveform-similarity overlap-add preserves the chunk's
-sample count. Both raising and lowering are supported, limited to one octave per
-chunk; extreme input pitches may therefore remain outside the requested band.
-Unvoiced chunks are retained. It does not preserve formants, and cannot fix a
-wrong word or missing sound. Pitch estimates can be wrong on noisy or expressive
-speech. The report records the estimated input/target pitch and applied factor.
+Pitch correction is off by default. It now prefers recordings near the requested
+band and edits only reliable vowel interiors, with a maximum shift of three
+semitones in either direction. Consonants, at least 8 ms at each vowel edge,
+phone durations and output sample counts are preserved. A band is a preference;
+large requested changes deliberately remain outside it.
 
-Output boundary coordinates after pitch shifting are nominal mappings from the
-source; waveform alignment inside WSOLA can move fine detail. Neither acoustic
-flags nor a matching STT transcript prove that each linguistic boundary is
-correct. Independent human annotations and listening remain necessary to measure
-actual boundary accuracy and naturalness. STT is enabled automatically in the
-frontend and can be disabled independently from these boundary checks.
+The former whole-chunk resampling/WSOLA implementation could move consonants and
+change vowel tone. It has been replaced by pitch-synchronous overlap-add using
+source waveform grains without resampling (see [Praat's method description](https://www.fon.hum.uva.nl/praat/manual/overlap-add.html)).
+This reduces those specific risks; listening and independent STT comparisons
+are still required. Unstable, clipped, short or unvoiced intervals are skipped.
+The audit records each adjusted vowel's source sample interval and the count of
+uncertain vowels skipped. Old packs without reliable pitch marks play normally
+and receive no waveform pitch edits.
+
+New packs contain the optional `ACOU` section: per-phone pitch and spread,
+voiced fraction, RMS, clipping, silence, edge energy, robust speaker-relative
+duration scores, and sample-accurate pitch marks. Selection uses acoustic quality,
+neighboring phone context and the requested pitch band while retaining the
+existing preference for intact long recordings. Acoustic scores do not certify
+that the labels or boundaries are correct. The manual editor regenerates them.
+
+To analyze an existing pack without rerunning STT/alignment or changing its audio,
+labels, lexicon or unknown extensions:
+
+```sh
+.venv-vcpack/bin/python scripts/builder.py enrich-pack voice.vcpack --output voice-enriched.vcpack
+```
+
+`ACOU` is optional, so old readers can open enriched packs. The complete updated
+ASCII specification remains the last payload in every newly written pack.
+Neither acoustic flags nor a matching STT transcript prove naturalness or the
+correctness of each linguistic boundary. Independent annotations and listening
+remain necessary. STT remains enabled automatically in the frontend.
+
+## Word spacing and duration
+
+Mixed words receive a 20–70 ms pause, longer after short words. A manual minimum
+can increase it. Intact source phrases keep their native spacing; phones within
+the same word receive no artificial word gap. Punctuation retains its own pause.
+Use `--no-auto-word-gaps` to disable adaptive pauses.
+
+`--normalize-duration` (also a frontend checkbox) adjusts only unusually short or
+long stable vowel interiors with at least eight same-phone duration examples.
+The interior factor is limited to 0.75–1.4; consonants and 12 ms at each vowel edge
+remain intact. Every rendered boundary is mapped through the duration changes
+before the output audit runs. This is optional: naturally expressive vowels may
+be duration outliers too. A vowel receiving a pitch change skips duration editing
+to avoid reusing stale pulse marks. Older ACOU v1 packs remain readable.
+
+See [independent detector analysis](DETECTORS.md) for label disagreement, source
+uncertainty, manual phone review and the additional portable metadata sections.

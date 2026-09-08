@@ -228,6 +228,74 @@ PackedData ReadVcpack(const std::filesystem::path &path) {
     }
     feat.end();
   }
+  if (sections.contains("ACOU")) {
+    BinaryReader ac{sections.at("ACOU")};
+    const auto version = ac.u32();
+    // Optional versions unknown to this reader are ignored after CRC checking.
+    if (version == 1 || version == 2) {
+      if (ac.u32() != result.records.size())
+        throw std::runtime_error("ACOU recording count differs from RECS");
+      for (auto &r : result.records) {
+        if (ac.string() != r.clip_id || ac.u32() != r.phonemes.size())
+          throw std::runtime_error("ACOU recording identity differs from RECS");
+        for (auto &p : r.phonemes) {
+          auto &a = p.acoustic;
+          a.available = true;
+          a.pitch=ac.f32(); a.spread=ac.f32(); a.voiced=ac.f32(); a.rms=ac.f32();
+          a.clipping=ac.f32(); a.silence=ac.f32(); a.onset=ac.f32(); a.offset=ac.f32(); a.duration_z=ac.f32();
+          for (auto value : {a.pitch,a.spread,a.voiced,a.rms,a.clipping,a.silence,a.onset,a.offset,a.duration_z})
+            if (!std::isfinite(value)) throw std::runtime_error("Nonfinite ACOU measurement");
+          if (a.pitch<0 || a.pitch>2000 || a.spread<0 || a.voiced<0 || a.voiced>1 ||
+              a.rms<0 || a.rms>1 || a.clipping<0 || a.clipping>1 || a.silence<0 || a.silence>1 ||
+              a.onset<0 || a.onset>1 || a.offset<0 || a.offset>1)
+            throw std::runtime_error("Invalid ACOU measurement");
+          const auto count=ac.u32();
+          if(version>=2) {
+            a.typical_ms=ac.f32();a.duration_scale=ac.f32();a.duration_examples=ac.u32();
+            if(!std::isfinite(a.typical_ms) || !std::isfinite(a.duration_scale) || a.typical_ms<=0 || a.duration_scale<=0)
+              throw std::runtime_error("Invalid duration statistics");
+          }
+          if (count > (ac.data.size()-ac.pos)/8 || count > static_cast<std::uint64_t>(p.end_sample-p.start_sample))
+            throw std::runtime_error("Invalid pitch mark count");
+          std::int64_t previous = p.start_sample-1;
+          for (std::uint32_t i=0;i<count;++i) {
+            const auto mark=ac.u64();
+            if (mark>=static_cast<std::uint64_t>(p.end_sample) || (previous>=0 && mark<=static_cast<std::uint64_t>(previous)) ||
+                mark<static_cast<std::uint64_t>(p.start_sample))
+              throw std::runtime_error("Invalid source pitch mark");
+            previous=static_cast<std::int64_t>(mark);a.marks.push_back(previous);
+          }
+        }
+      }
+      ac.end();
+    }
+  }
+  if (sections.contains("QREV")) {
+    BinaryReader qr{sections.at("QREV")};
+    if(qr.u32()==1) {
+      if(qr.u32()!=result.records.size()) throw std::runtime_error("QREV record count differs from RECS");
+      for(auto &r:result.records) {
+        if(qr.string()!=r.clip_id || qr.u32()!=r.phonemes.size()) throw std::runtime_error("QREV identity differs from RECS");
+        for(auto &p:r.phonemes) {p.manual_review=qr.u32();if(p.manual_review>2) throw std::runtime_error("Invalid manual review");}
+      }
+      qr.end();
+    }
+  }
+  if (sections.contains("TRST")) {
+    BinaryReader tr{sections.at("TRST")};
+    if(tr.u32()==1) {
+      if(tr.u32()!=result.records.size()) throw std::runtime_error("TRST record count differs from RECS");
+      for(auto &r:result.records) {
+        if(tr.string()!=r.clip_id || tr.u32()!=r.phonemes.size()) throw std::runtime_error("TRST identity differs from RECS");
+        for(auto &p:r.phonemes) {
+          p.phone_support=tr.u32();p.phone_dispute=tr.u32();p.word_support=tr.u32();p.word_dispute=tr.u32();p.boundary_radius=tr.u32();
+          if(p.phone_support>32 || p.phone_dispute>32 || p.word_support>32 || p.word_dispute>32 || p.boundary_radius>result.wave.samples.size())
+            throw std::runtime_error("Invalid recognition evidence");
+        }
+      }
+      tr.end();
+    }
+  }
   if (sections.contains("QARE")) {
     auto s = sections.at("QARE");
     result.report.assign(reinterpret_cast<const char *>(s.data()), s.size());

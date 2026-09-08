@@ -65,6 +65,13 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     double penalty{};
   };
   std::vector<std::vector<Edge>> edges(target.size());
+  std::vector<bool> recorded_word(tokens.size(), false);
+  auto band_cost = [&](double pitch) {
+    if (pitch<=0 || options.pitch_floor_hz<=0 || options.pitch_ceiling_hz<options.pitch_floor_hz) return 0.;
+    const double wanted=std::clamp(pitch,options.pitch_floor_hz,options.pitch_ceiling_hz);
+    // Prefer source audio close to the band before considering a small edit.
+    return std::min(60.,std::abs(12.*std::log2(wanted/pitch))*2.);
+  };
   // Match source token runs on demand: no hard four/eight-word phrase ceiling
   // and no quadratic phrase index.
   for (std::size_t w = 0; w < tokens.size(); ++w) {
@@ -97,18 +104,25 @@ PlanResult VoiceBank::PlanText(std::string_view text,
               static_cast<std::int64_t>(w),
               last.confidence};
           u.pause_before_ms = pauses[w];
+          u.end_word_group=static_cast<std::int64_t>(w+n);
           u.text = u.target_text;
           // Exact spelling does not make a bad alignment safe. Apply the same
           // acoustic-duration checks to words/phrases as to fallback phones.
           double boundary_penalty = 0.;
+          double pitch_penalty=0.;
+          std::size_t pitched_phones=0;
           bool suspect_boundary = false;
           for (const auto &phone : record.phonemes) {
             if (phone.start_sample < first.start_sample || phone.end_sample > last.end_sample) continue;
             const double penalty = impl_->phone_duration_penalty(phone);
             boundary_penalty += penalty;
+            boundary_penalty += impl_->acoustic_penalty(phone);
+            if(phone.acoustic.voiced>=.7 && phone.acoustic.pitch>0) {pitch_penalty+=band_cost(phone.acoustic.pitch);++pitched_phones;}
             suspect_boundary = suspect_boundary || penalty >= 180.;
           }
-          if (options.strict && suspect_boundary) continue;
+          if (!std::isfinite(boundary_penalty) || (options.strict && suspect_boundary)) continue;
+          if(pitched_phones) boundary_penalty+=pitch_penalty/pitched_phones;
+          if(n==0 && boundary_penalty<180.) recorded_word[w]=true;
           edges[starts[w]].push_back({ends[w + n], std::move(u), boundary_penalty});
         }
       }
@@ -143,7 +157,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
         continue;
       for (const auto &p : found->second) {
         // Strict mode also excludes obviously collapsed/stretched phone cuts.
-        if (options.strict && p.duration_penalty >= 180.)
+        if (!std::isfinite(p.acoustic_penalty) || (options.strict && p.duration_penalty >= 180.))
           continue;
         double stress_penalty = 0.;
         for (std::size_t n = 0; n < len && n < p.stressed_labels.size(); ++n) {
@@ -180,10 +194,17 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             tokens.begin() + static_cast<std::ptrdiff_t>(last_word + 1)));
         u.pause_before_ms = (i == starts[word_at[i]]) ? pauses[word_at[i]] : 0;
         u.approximated = approximated;
+        u.end_word_group=static_cast<std::int64_t>(last_word);
+        double discarded_words=0.;
+        for(std::size_t n=0;n<len;++n)
+          if(recorded_word[word_at[i+n]]) discarded_words+=35.;
         edges[i].push_back(
             {i + len, std::move(u),
              .15 * static_cast<double>(len) + p.duration_penalty +
-                 stress_penalty + timing_penalty +
+                 stress_penalty + timing_penalty + p.acoustic_penalty + band_cost(p.pitch) + discarded_words +
+                 100. * static_cast<double>(last_word-word_at[i]) +
+                 (i>0 && !p.left_context.empty() && p.left_context!=target[i-1] ? 12. : 0.) +
+                 (i+len<target.size() && !p.right_context.empty() && p.right_context!=target[i+len] ? 12. : 0.) +
                  (i + len == ends[last_word] && !p.ends_word ? 180. : 0.) +
                  (i == starts[word_at[i]] && !p.begins_word ? 50. : 0.) +
                  (p.whole_word ? 0. : 70.) + (approximated ? 1000000. : 0.)});
@@ -193,11 +214,27 @@ PlanResult VoiceBank::PlanText(std::string_view text,
   const auto &wave = impl_->ensure_master_wave();
   auto feature = [&](std::int64_t sample) {
     FeatureFrame f;
-    if (!impl_->features.empty())
-      return impl_->features[std::min<std::size_t>(
-          impl_->features.size() - 1,
-          static_cast<std::size_t>(std::max<std::int64_t>(0, sample)) /
-              impl_->feature_hop)];
+    if (!impl_->features.empty()) {
+      const auto centre=std::min<std::size_t>(impl_->features.size()-1,
+          static_cast<std::size_t>(std::max<std::int64_t>(0,sample))/impl_->feature_hop);
+      std::vector<float> pitches;
+      const auto radius=std::max<std::size_t>(1,wave.sample_rate/100/impl_->feature_hop);
+      const auto first=centre>radius?centre-radius:0,last=std::min(impl_->features.size(),centre+radius+1);
+      for(auto i=first;i<last;++i) {
+        const auto &row=impl_->features[i];
+        f.rms+=row.rms;
+        for(std::size_t j=0;j<8;++j) f.spectrum[j]+=row.spectrum[j];
+        if(row.pitch>0 && row.voicing>=.8 && row.rms>.003) pitches.push_back(row.pitch);
+      }
+      f.rms/=last-first;for(auto &v:f.spectrum) v/=last-first;
+      if(pitches.size()>=3 && pitches.size()*4>=(last-first)*3) {
+        std::sort(pitches.begin(),pitches.end());
+        if(12.*std::log2(pitches.back()/pitches.front())<=4.) {
+          f.pitch=pitches[pitches.size()/2];f.voicing=1.;
+        }
+      }
+      return f;
+    }
     auto p = impl_->profile_for_range(
         std::max<std::int64_t>(0, sample - wave.sample_rate / 50),
         std::min<std::int64_t>(static_cast<std::int64_t>(wave.samples.size()),
@@ -218,9 +255,8 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     if (left.pitch > 0 && right.pitch > 0 && left.voicing > .65 &&
         right.voicing > .65) {
       const double st = std::abs(12. * std::log2(right.pitch / left.pitch));
-      cost += st * 3.;
-      if (st > 8)
-        cost += 150.;
+      // Pitch is a tie-breaker, not a reason to discard a longer intact run.
+      cost += std::min(36.,st * 3.);
     }
     if (left.rms > .001 && right.rms > .001)
       cost += std::min<double>(
@@ -309,6 +345,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
         merged.back().end_sample == u.start_sample) {
       auto &back = merged.back();
       back.end_sample = u.end_sample;
+      back.end_word_group=u.end_word_group;
       back.phones.insert(back.phones.end(), u.phones.begin(), u.phones.end());
       back.approximated = back.approximated || u.approximated;
       if (back.target_text != u.target_text)

@@ -59,6 +59,8 @@ struct App {
   std::vector<std::string> pack_labels;
   bool recording = false, has_take = false, strict = false, auto_check = true, pitch_band = false;
   float pitch_floor = 100.f, pitch_ceiling = 180.f;
+  bool adaptive_word_gaps=true, normalize_duration=false, thorough_analysis=false;
+  float minimum_word_gap=0.f;
   std::vector<std::string> microphones{"Default microphone"};
   AudioIO audio;
   std::atomic<bool> busy{false};
@@ -223,11 +225,11 @@ static void build(App &a) {
   const auto source = std::string(a.source), output = std::string(a.output),
              voice = std::string(a.voice), python = std::string(a.python),
              mfa = std::string(a.mfa);
-  const bool tf2 = a.preset < 9;
+  const bool tf2 = a.preset < 9, thorough=a.thorough_analysis;
   const bool browser = web_mode();
   a.message(
       "Building: decode, recognize words, refine phoneme boundaries, package.");
-  a.task([&, source, output, voice, python, mfa, tf2,
+  a.task([&, source, output, voice, python, mfa, tf2, thorough,
           browser](std::stop_token stop) {
     std::vector<std::string> cmd{
         python,          utf8(a.root / "scripts/builder.py"),
@@ -237,6 +239,7 @@ static void build(App &a) {
         "--mfa-command", mfa};
     if (tf2)
       cmd.push_back("--tf2");
+    if(thorough) cmd.push_back("--thorough");
     int rc = RunChild(cmd, a.root, a.log, stop);
     if (rc != 0)
       throw std::runtime_error(
@@ -254,6 +257,27 @@ static void build(App &a) {
     a.message("Pack built and validated by the C++ reader: " + verified.merc());
   });
 }
+static void enrich(App &a) {
+  const bool thorough=a.thorough_analysis;
+  const auto source=path_utf8(a.pack);
+  const auto python=std::string(a.python);
+  const bool browser=web_mode();
+  const auto output=a.root/"data/packages"/(utf8(source.stem())+"-enriched-"+unique_web_name(".vcpack"));
+  a.message("Analyzing phone acoustics and pitch marks. The original pack is kept.");
+  a.task([&,source,output,python,browser,thorough](std::stop_token stop) {
+    const int rc=RunChild({python,utf8(a.root/"scripts/builder.py"),thorough?"analyze-pack":"enrich-pack",utf8(source),"--output",utf8(output)},a.root,a.log,stop);
+    if(rc) throw std::runtime_error(stop.stop_requested()?"Analysis cancelled.":"Analysis failed: "+read_tail(a.log));
+    auto verified=phonomenal_splicer::VoiceBank::Load(output);
+    if(browser) {
+      fs::create_directories(a.root/"data/public");
+      const auto name=unique_web_name(".vcpack");
+      fs::copy_file(output,a.root/"data/public"/name);
+      std::lock_guard guard(a.mutex);
+      a.public_pack=a.web_files_url+name;
+    }
+    a.message("Analysis complete. Select "+utf8(output.filename())+" in the voice pack list.");
+  });
+}
 static void synthesize(App &a) {
   const auto path = path_utf8(a.pack);
   const auto text = std::string(a.prompt);
@@ -261,10 +285,12 @@ static void synthesize(App &a) {
   const bool browser = web_mode();
   const bool auto_check = a.auto_check, pitch_band = a.pitch_band;
   const double pitch_floor = a.pitch_floor, pitch_ceiling = a.pitch_ceiling;
+  const bool adaptive_gaps=a.adaptive_word_gaps, normalize_duration=a.normalize_duration;
+  const auto minimum_gap=static_cast<std::int64_t>(a.minimum_word_gap);
   const std::string python = a.python;
   a.message("Selecting speech chunks...");
   a.task([&, path, text, strict, browser, auto_check, pitch_band,
-          pitch_floor, pitch_ceiling, python](std::stop_token stop) {
+          pitch_floor, pitch_ceiling, python,adaptive_gaps,minimum_gap,normalize_duration](std::stop_token stop) {
     auto stamp = fs::last_write_time(path);
     if (!a.bank || a.loaded_path != path || a.loaded_time != stamp) {
       a.bank = std::make_unique<phonomenal_splicer::VoiceBank>(
@@ -275,6 +301,7 @@ static void synthesize(App &a) {
     phonomenal_splicer::SynthesizeOptions options;
     options.strict = strict;
     options.stop_token = stop;
+    options.normalize_duration=normalize_duration;options.adaptive_word_gaps=adaptive_gaps;options.word_gap_ms=minimum_gap;
     if (pitch_band) { options.pitch_floor_hz=pitch_floor; options.pitch_ceiling_hz=pitch_ceiling; }
     auto started = std::chrono::steady_clock::now();
     auto plan = a.bank->PlanText(text, options);
@@ -317,7 +344,7 @@ static void synthesize(App &a) {
     {
     std::lock_guard guard(a.mutex);
     a.public_audit=public_audit;
-    a.audit_result="Boundary checks: " + std::to_string(audit.boundaries.size()) + " edges checked, " + std::to_string(audit.flagged) + " flagged. Pitch-adjusted chunks: " + std::to_string(audit.pitch_adjustments.size()) + ". Timing correctness still requires listening/review.";
+    a.audit_result="Boundary checks: " + std::to_string(audit.boundaries.size()) + " edges checked, " + std::to_string(audit.flagged) + " flagged. Pitch-adjusted vowels: " + std::to_string(audit.pitch_adjustments.size()) + "; skipped uncertain vowels: " + std::to_string(audit.pitch_skipped) + ". Timing correctness still requires listening/review.";
     a.public_wave = public_wave;
     a.rendered = wav;
     a.rendered_prompt = text;
@@ -571,6 +598,7 @@ int main(int argc, char **argv) {
               "refinement grid. Measured accuracy is reported separately; "
               "decimal precision alone does not prove a good cut.");
         }
+        ft::checkbox("Thorough: compare independent word and phone detectors", &a.thorough_analysis);
         ft::row(2, [&] {
           if (ft::button(a.busy ? "Build running..."
                                 : "Build / resume voice pack") &&
@@ -615,6 +643,13 @@ int main(int argc, char **argv) {
           ft::text("No voice packs yet. Browse to import one.");
         if (ft::button("Refresh pack list") && !a.busy)
           refresh_packs(a);
+        ft::checkbox("Thorough: compare independent word and phone detectors", &a.thorough_analysis);
+        if (ft::button("Analyze pack for better selection and pitch") && !a.busy)
+          enrich(a);
+        if(web_mode()) {
+          std::lock_guard guard(a.mutex);
+          if(!a.public_pack.empty()) ft::html(("<p><a download href=\""+web_escape(a.public_pack)+"\">Download analyzed voice pack</a></p>").c_str());
+        }
         web_region_end();
         if (!web_mode()) {
           ft::input("Voice pack", a.pack, sizeof(a.pack));
@@ -631,12 +666,15 @@ int main(int argc, char **argv) {
             "Strict: reject missing sounds and suspect phone durations",
             &a.strict);
         ft::checkbox("Automatically check generated words with STT", &a.auto_check);
-        ft::checkbox("Correct voiced pitch into a band (both low and high)", &a.pitch_band);
+        ft::checkbox("Give short words more breathing room", &a.adaptive_word_gaps);
+        ft::checkbox("Normalize unusually short or long stable vowels", &a.normalize_duration);
+        ft::slider_float("Minimum pause between mixed words (ms)", &a.minimum_word_gap, 0.f, 180.f);
+        ft::checkbox("Gently bring vowel pitch toward a band", &a.pitch_band);
         if(a.pitch_band) {
           ft::slider_float("Lowest pitch (Hz)", &a.pitch_floor, 50.f, 400.f);
           ft::slider_float("Highest pitch (Hz)", &a.pitch_ceiling, a.pitch_floor, 600.f);
           a.pitch_ceiling=std::max(a.pitch_ceiling,a.pitch_floor);
-          ft::text_wrapped("Adjusts each voiced chunk toward the band while preserving duration. Large shifts can change timbre.");
+          ft::text_wrapped("Prefers recordings near this band. Adjusts reliable vowel interiors by at most 3 semitones; consonants stay intact. Enrich older packs to enable adjustments.");
         }
         ft::text_wrapped(
             "Strict mode cannot repair incorrect source alignments. Rebuild "

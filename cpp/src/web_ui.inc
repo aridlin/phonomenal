@@ -190,12 +190,19 @@ static void web_recorder(App &a) {
 static const char *web_head = R"HTML(<style>
 :root{color-scheme:dark;--desk:#1d2021;--paper:#282828;--paper2:#32302f;--ink:#ebdbb2;--muted:#bdae93;--faint:#a89984;--border:#665c54;--button:#3c3836;--hover:#504945;--active:#665c54;--input:#1d2021;--accent:#d79921;--warning:#fabd2f;--success:#b8bb26}
 a{color:#83a598}a:hover{color:#8ec07c}h1{color:#fabd2f}audio{width:100%;margin:12px 0}section{max-width:100%}small{display:block;margin:6px 0;color:var(--muted)}
+main,main.ft-updating{opacity:1;transform:none;transition:none}
 @media(max-width:600px){main{margin:8px;padding:12px}h1{font-size:23px}input[type=file]{font-size:12px}}
 </style><script>
 // FT renders the widgets. Polling only patches changed result regions.
 // An unchanged revision returns an empty 204 response, not the page HTML.
 (()=>{
  let checking=false,epoch=0;
+ // FT normally submits a text field after a 220 ms typing pause and replaces
+ // the whole form. Keep edits local; the next button/control submits FormData.
+ const textField=el=>el?.matches('textarea,input:not([type]),input[type="text"],input[type="number"],input[type="search"],input[type="password"]');
+ for(const event of ['input','change'])document.addEventListener(event,ev=>{
+  if(textField(ev.target))ev.target.removeAttribute('data-ftht-auto');
+ },true);
  for(const event of ['input','change','submit','click'])document.addEventListener(event,()=>{epoch++},true);
  setInterval(async()=>{
   const marker=document.getElementById('voice-revision'),main=document.querySelector('main');
@@ -210,7 +217,10 @@ a{color:#83a598}a:hover{color:#8ec07c}h1{color:#fabd2f}audio{width:100%;margin:1
    if(!nextMarker||nextMarker.dataset.page!==page)return;
    for(const incoming of next.querySelectorAll('[data-voice-live]')){
     const current=document.querySelector('[data-voice-live="'+incoming.dataset.voiceLive+'"]');
-    if(current&&current.innerHTML!==incoming.innerHTML)current.innerHTML=incoming.innerHTML;
+    if(current&&current.innerHTML!==incoming.innerHTML){
+     const editing=Array.from(current.querySelectorAll('input,textarea')).some(el=>textField(el)&&(el===document.activeElement||el.value!==el.defaultValue));
+     if(!editing)current.innerHTML=incoming.innerHTML;
+    }
    }
    marker.dataset.revision=nextMarker.dataset.revision;
   }catch(_){}finally{checking=false}

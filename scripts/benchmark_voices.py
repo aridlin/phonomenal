@@ -2,6 +2,8 @@
 """Render identical prompts for multiple packs and independently transcribe WAVs."""
 import argparse
 import json
+import hashlib
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -18,8 +20,13 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--model', default='small.en')
     parser.add_argument('--strict', action='store_true')
+    parser.add_argument('--pitch-band', help='Optional LOWER:UPPER in Hz, applied identically to every case')
     args=parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
+    # A rebuild during a long benchmark must not silently mix engine versions.
+    cli=args.output/('engine.exe' if args.cli.suffix.lower()=='.exe' else 'engine')
+    shutil.copy2(args.cli.resolve(),cli)
+    cli_sha256=hashlib.sha256(cli.read_bytes()).hexdigest()
     from faster_whisper import WhisperModel
     root=Path(__file__).resolve().parents[1]
     recognizer=WhisperModel(args.model,device='cpu',compute_type='int8',cpu_threads=2,
@@ -36,11 +43,12 @@ def main():
         for prompt in prompts:
             case=args.output/(label+'-'+prompt['id']);case.mkdir(parents=True,exist_ok=True)
             wav=case/'render.wav'; started=time.monotonic()
-            command=[str(args.cli.resolve()),'--bank',str(Path(path).resolve()),'--text',prompt['text'],'--plan','--output',str(wav),'--audit',str(case/'boundaries.json')]
+            command=[str(cli.resolve()),'--bank',str(Path(path).resolve()),'--text',prompt['text'],'--plan','--output',str(wav),'--audit',str(case/'boundaries.json')]
             if args.strict:command.append('--strict')
+            if args.pitch_band:command.extend(['--pitch-band',args.pitch_band])
             process=subprocess.run(command,capture_output=True,text=True,timeout=180)
-            result=dict(voice=label,pack=str(Path(path).resolve()),prompt=prompt,strict=args.strict,
-                        synthesis_seconds=time.monotonic()-started,status='failed')
+            result=dict(voice=label,pack=str(Path(path).resolve()),prompt=prompt,strict=args.strict,cli_sha256=cli_sha256,
+                        pitch_band=args.pitch_band,synthesis_seconds=time.monotonic()-started,status='failed')
             if process.returncode:
                 result['error']=process.stderr.strip()
             else:

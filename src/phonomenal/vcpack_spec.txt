@@ -85,6 +85,80 @@ bands from 60 Hz to Nyquist, log(max(1e-12, band energy)) minus row mean.
 Features guide joins and pitch similarity; they do not establish word timing.
 Without FEAT, core recordings remain usable with reduced acoustic scoring.
 
+ACOU (optional; introduced after the original v1 reader)
+u32 analysis version = 1 or 2; u32 recording count (same order/count as RECS).
+For each recording:
+  string recording ID (must equal RECS); u32 phone count (must equal RECS).
+  For each phone in RECS order, nine consecutive f32 measurements:
+    median F0 Hz (0 unavailable), F0 90th-minus-10th percentile semitone span,
+    reliable voiced frame fraction [0,1], RMS [0,1], clipped sample fraction
+    [0,1], silent frame fraction [0,1], first 8 ms RMS [0,1], last 8 ms RMS
+    [0,1], signed robust log-duration z score (0 if fewer than 8 examples).
+  Immediately following each phone's nine f32 values:
+    u32 pitch mark count;
+    Version 2 adds: f32 median phone duration ms; f32 robust log-duration
+    scale (>0); u32 examples in this exact stressed-phone distribution.
+    Then pitch mark count u64 absolute AUDI sample positions.
+    Marks are strictly increasing and inside this phone's [start,end).
+All measurements must be finite. F0 and span are nonnegative. Pitch marks
+can be empty; this means no trusted pitch edit is available, not silence.
+Duration statistics group exact stressed phone labels within this pack;
+scale = max(0.35, 1.4826 * median absolute log-duration deviation).
+Frame summaries use FEAT centres within the phone with up to a 10 ms inset.
+Reliable frames require voicing >=0.80, F0>0 and RMS>0.003. Silence uses
+RMS<0.003. Clipping uses absolute PCM amplitude >=0.985 of full scale.
+Only stable vowels of at least 50 ms receive pitch marks: >=80% reliable
+frames, F0 span <=2.5 semitones, clipping<1%, period variation<=10%.
+These are acoustic observations, NOT verified linguistic boundaries or
+alignment probabilities. Never move RECS timestamps to fit these scores.
+Unknown ACOU analysis versions are skipped; a malformed known version fails.
+Older v1 readers ignore the entire optional section. Editors must regenerate
+ACOU after audio, labels or intervals change rather than preserve stale marks.
+
+QREV (optional; manual phone review)
+u32 version=1; u32 recording count; per recording string ID, u32 phone
+count, then one u32 per phone: 0=unreviewed, 1=accepted, 2=rejected.
+IDs/order/counts match RECS. Unknown versions are ignored; invalid known
+values fail validation. Rejected phones are excluded from source selection;
+accepted phones override detector-disagreement penalties, not acoustic faults.
+Editors invalidate a review if its label or sample interval changes, or if
+master audio is replaced. Review acceptance is a human decision, not a model
+accuracy score.
+
+TRST (optional; reader summary of independent recognition evidence)
+u32 version=1; u32 recording count. Per recording: string ID; u32 phone
+count. IDs/order/counts must match RECS. Per phone: five u32 values:
+phone support count, phone dispute count, word support count, word dispute
+count, boundary disagreement radius in source samples. Counts <=32.
+Radius <= AUDI sample count. Zero counts mean unmeasured, never perfect.
+Radius combines maximum matched word-edge discrepancy and detector frame
+resolution; it is an uncertainty heuristic, not a calibrated interval.
+Unknown versions are skipped; malformed known versions fail validation.
+
+EVID (optional; UTF-8 JSON, version=1)
+source_sha256 hashes AUDI bytes followed by RECS bytes. records have id,
+words, phones and observations. Every observation preserves detector/model,
+package_version, kind, resolution_ms, boundary_semantics, reference_prompt_used
+and items (label/start/end seconds; optional raw_confidence/arpabet).
+Word/phone rows preserve support/dispute counts, radius_samples and all
+matched alternatives. Phone rows also retain word_support/word_dispute.
+Allosaurus timings are approximate CTC emissions, not linguistic boundaries.
+calibrated=false explicitly forbids treating agreement as ground truth.
+
+PROS (optional; UTF-8 JSON, version=1)
+source_sha256 hashes AUDI; frame_hop_samples describes the FEAT clock.
+records retain phonetic neighbors, lexical stress, word association,
+protected_edge_samples, frame F0/voicing/RMS contours, and 8-band spectra
+and RMS around source edges. pronunciation_variants lists observed phone
+sequences and counts per normalized word. durations holds per-phone count,
+p10/median/p90 milliseconds. coverage counts phones; trusted_coverage requires
+independent phone agreement plus both word recognizers and no disputes.
+speaker contains median RMS and voiced F0; these are observations, not a
+speaker-identity classifier. Missing metadata remains unknown.
+Editors invalidate TRST/EVID/PROS after changing labels, cuts or audio.
+Keep original packs to preserve historical evidence. Future fields and
+sections may be added; old readers ignore optional sections.
+
 QARE (optional)
 UTF-8 JSON object, no binary length prefix beyond directory length. Diagnostic
 and provenance data, including alignment method, quality warnings, sample
@@ -120,8 +194,8 @@ alignment payloads need not be decoded, re-encoded, or regenerated. To add more
 speech, regenerate/extend AUDI, RECS and dependent sections coherently while
 keeping their v1 schemas. Readers build runtime indexes from RECS on load.
 Future data is supported, not unlimited preallocated space: original readers
-accept 3..32 sections and at most 2 GiB total. The normal writer uses 7 sections
-including SPEC, leaving 25 optional tags. Respect these limits for old readers;
+accept 3..32 sections and at most 2 GiB total. The normal writer uses 8 sections
+including SPEC, leaving 24 optional tags. Respect these limits for old readers;
 a future single optional section may contain its own extensible directory.
 
 VALIDATION AND ORIGINAL READER RESOURCE LIMITS

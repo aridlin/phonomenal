@@ -161,3 +161,31 @@ def export_script(directory):
     (directory/'script.txt').write_text('\n\n'.join(f'{i:03d}. {line}' for i,line in enumerate(lines,1))+'\n', encoding='utf-8')
     (directory/'coverage.json').write_text(json.dumps(coverage,indent=2)+'\n')
     return coverage
+
+
+def coverage_script(pack, directory, takes=16):
+    """Suggest original takes aimed at scarce trusted phones in this voice."""
+    import cmudict
+    from phonomenal.vcpack import HEADER, DIRECTORY
+    from phonomenal.pack_editor import read_pack
+    metadata, records, _, _, _, _ = read_pack(pack)
+    raw=Path(pack).read_bytes(); counts=collections.Counter(); basis='recorded labels (not independently verified)'
+    for record in records:
+        counts.update(p['label'].rstrip('012') for p in record['phones'])
+    for i in range(HEADER.unpack_from(raw)[2]):
+        tag, _, start, length, _, _ = DIRECTORY.unpack_from(raw,HEADER.size+i*DIRECTORY.size)
+        if tag==b'PROS':
+            analysis=json.loads(raw[start:start+length])
+            if 'trusted_coverage' in analysis:
+                counts=collections.Counter(analysis['trusted_coverage']);basis='independent phone and two-word-detector agreement (uncalibrated)'
+    dictionary=cmudict.dict();remaining=TEXT.splitlines();ordered=[];observed=dict(counts)
+    for _ in range(max(1,min(takes,len(remaining)))):
+        def phones(line):return [p.rstrip('012') for w in re.findall(r"[a-z]+(?:'[a-z]+)*",line.lower()) for p in dictionary.get(w,[[]])[0]]
+        def score(line):return sum(1/(1+counts[p]) for p in set(phones(line)))/len(line.split())**.35
+        line=max(remaining,key=score);ordered.append(line);remaining.remove(line);counts.update(phones(line))
+    directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
+    for i,line in enumerate(ordered,1):(directory/f'take_{i:03d}.txt').write_text(line+'\n')
+    (directory/'script.txt').write_text('\n\n'.join(f'{i:03d}. {line}' for i,line in enumerate(ordered,1))+'\n')
+    report=dict(voice=metadata['voice'],basis=basis,observed_phone_counts=observed,takes=len(ordered),
+        limitation='Suggested recordings increase coverage; labels and boundaries still need verification.')
+    (directory/'coverage.json').write_text(json.dumps(report,indent=2)+'\n');return report

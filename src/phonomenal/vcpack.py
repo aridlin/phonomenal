@@ -85,7 +85,12 @@ def extract_features(pcm, rate):
         lags = np.arange(lo, hi)
         denom = np.sqrt(np.maximum(1e-15, power[:, window - lags - 1] * (power[:, -1, None] - power[:, lags - 1])))
         corr = ac[:, lo:hi] / denom
-        best = corr.argmax(axis=1)
+        # Equal-height autocorrelation peaks include multiples of the period.
+        # Choose the earliest credible local peak, not an arbitrary subharmonic.
+        peaks = np.zeros_like(corr, dtype=bool)
+        peaks[:, 1:-1] = (corr[:, 1:-1] >= corr[:, :-2]) & (corr[:, 1:-1] > corr[:, 2:])
+        credible = peaks & (corr >= np.maximum(.65, corr.max(axis=1, keepdims=True) - .025))
+        best = np.where(credible.any(axis=1), credible.argmax(axis=1), corr.argmax(axis=1))
         voicing = np.clip(corr[np.arange(len(frames)), best], 0, 1)
         pitch = rate / (best + lo).astype(float)
         pitch[(voicing < .65) | (rms < .003)] = 0
@@ -110,12 +115,18 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
         aligned += struct.pack('<I', len(record['phones']))
         for phone in record['phones']:
             aligned += string(phone['label']) + struct.pack('<iQQf', phone['word'], phone['start'], phone['end'], confidence(phone.get('confidence')))
+    from collections import Counter, defaultdict
     pronunciations = dict(lexicon or {})
+    observed = defaultdict(Counter)
     for r in records:
         for wi, w in enumerate(r['words']):
             phones = [p['label'] for p in r['phones'] if p['word'] == wi]
             if phones:
-                pronunciations[w['label'].lower()] = phones
+                observed[w['label'].lower()][tuple(phones)] += 1
+    # Canonical/explicit pronunciations must not be overwritten by the last
+    # recording's reduced vowel or alignment error. Vote for unknown words.
+    for word, variants in observed.items():
+        pronunciations.setdefault(word, list(variants.most_common(1)[0][0]))
     if lexicon_overrides:
         pronunciations.update(lexicon or {})
     lex = bytearray(struct.pack('<I', len(pronunciations)))
@@ -134,7 +145,14 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
                   phone_inventory=sorted({p['label'].rstrip('012') for r in records for p in r['phones']}))
     sections = [(b'META', metadata), (b'RECS', aligned), (b'AUDI', pcm), (b'LEXI', lex), (b'QARE', json.dumps(report, ensure_ascii=False).encode())]
     if features:
-        sections.append((b'FEAT', extract_features(pcm, rate)))
+        from phonomenal.acoustics import extract_acoustics
+        acoustic_frames = extract_features(pcm, rate)
+        sections.append((b'FEAT', acoustic_frames))
+        sections.append((b'ACOU', extract_acoustics(pcm, rate, records, acoustic_frames)))
+        report['acoustic_analysis'] = dict(version=2, phones=report['phones'],
+                                          pitch_marks=True, linguistic_accuracy_verified=False)
+        sections = [(tag, json.dumps(report, ensure_ascii=False).encode() if tag == b'QARE' else payload)
+                    for tag, payload in sections]
     sections = [(tag, 1 if tag in (b'META', b'RECS', b'AUDI') else 0, data) for tag, data in sections]
     sections.extend(_optional_sections(extra_sections or {}))
     _write_sections(path, sections)
@@ -142,7 +160,7 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
 
 
 def _optional_sections(extra_sections):
-    reserved = {b'META', b'RECS', b'AUDI', b'LEXI', b'FEAT', b'QARE', b'SPEC'}
+    reserved = {b'META', b'RECS', b'AUDI', b'LEXI', b'FEAT', b'ACOU', b'QARE', b'SPEC'}
     result = []
     for tag, payload in extra_sections.items():
         tag = tag.encode('ascii') if isinstance(tag, str) else tag

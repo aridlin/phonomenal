@@ -29,6 +29,7 @@ struct PlannedUnit {
   std::optional<double> confidence;
   int pause_before_ms = 0;
   bool approximated = false;
+  std::int64_t end_word_group{-1};
 };
 
 struct PlanResult {
@@ -51,11 +52,16 @@ struct BoundaryCheck {
 struct PitchAdjustment {
   std::string clip_id;
   double source_hz{}, target_hz{}, factor{1};
+  std::int64_t start_sample{}, end_sample{};
 };
 struct BoundaryReport {
   std::vector<BoundaryCheck> boundaries;
   std::vector<PitchAdjustment> pitch_adjustments;
   std::size_t flagged{};
+  std::size_t pitch_skipped{};
+  std::size_t word_pauses{};
+  std::size_t duration_adjustments{};
+  std::int64_t word_pause_samples{};
 };
 std::string BoundaryReportJson(const BoundaryReport &report);
 
@@ -68,6 +74,8 @@ struct SynthesizeOptions {
   double pitch_floor_hz = 0., pitch_ceiling_hz = 0.;
   std::size_t beam_width = 32;
   std::stop_token stop_token;
+  bool adaptive_word_gaps = true;
+  bool normalize_duration = false;
 };
 
 class VoiceBank {
