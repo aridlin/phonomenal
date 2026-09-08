@@ -98,7 +98,18 @@ PlanResult VoiceBank::PlanText(std::string_view text,
               last.confidence};
           u.pause_before_ms = pauses[w];
           u.text = u.target_text;
-          edges[starts[w]].push_back({ends[w + n], std::move(u), 0.});
+          // Exact spelling does not make a bad alignment safe. Apply the same
+          // acoustic-duration checks to words/phrases as to fallback phones.
+          double boundary_penalty = 0.;
+          bool suspect_boundary = false;
+          for (const auto &phone : record.phonemes) {
+            if (phone.start_sample < first.start_sample || phone.end_sample > last.end_sample) continue;
+            const double penalty = impl_->phone_duration_penalty(phone);
+            boundary_penalty += penalty;
+            suspect_boundary = suspect_boundary || penalty >= 180.;
+          }
+          if (options.strict && suspect_boundary) continue;
+          edges[starts[w]].push_back({ends[w + n], std::move(u), boundary_penalty});
         }
       }
     }

@@ -6,6 +6,8 @@ Turn speech recordings into a portable voice pack, then mix new sentences from
 that recorded voice. **Python builds the pack; C++ plans and renders speech.**
 The desktop, terminal and web frontend uses [FT](https://github.com/aridlin/ft) with
 **Gruvbox by default**, with a builder/recorder view and a separate TTS/player view.
+The third tab is a [manual voice-pack editor](docs/EDITOR.md) with sample-level
+JSON editing, waveform previews, audio replacement, and validated saves to a new pack.
 
 [Download the generator and TTS/player test builds](https://github.com/aridlin/phonomenal/releases)
 for Linux and Windows, plus the Windows vctts overlay.
@@ -16,6 +18,8 @@ See [test-build instructions](docs/TEST_BUILD.md).
 ![FT web TTS player in Gruvbox](docs/images/web-player.png)
 
 ![FT web voice pack generator](docs/images/web-builder.png)
+
+![FT manual voice-pack editor in Gruvbox](docs/images/web-editor.png)
 
 Default target: **TF2 mercs**, starting with **Heavy**, then **Medic**, then
 **Soldier**. The builder opens on Heavy; choose **My own voice** for the microphone
@@ -47,6 +51,14 @@ in that order. TF2 recordings are supplied locally and are not included here.
   and transcript saving, background builds, cancel/resume, playback and WAV export.
 - Native vctts integration under `vctts/`: dynamic pack discovery, cached engine,
   and chunk/approximation status.
+- Automatic [source/render boundary diagnostics](docs/BOUNDARIES_AND_PITCH.md),
+  unprompted STT checks, optional pitch correction for both low and high voiced
+  chunks, and lazy browser updates that preserve unchanged controls and audio.
+
+See the [cross-voice quality measurements](docs/QUALITY_CHECK.md), including all
+nine mercs and a single-narrator LibriVox chapter. Several prompts still fail;
+these checks make the remaining limitations visible rather than certifying
+natural or consistently intelligible arbitrary speech.
 
 The builder can be implemented in any language; Python is the current choice.
 The current **spoken-language profile is English/ARPABET**. A finite recording

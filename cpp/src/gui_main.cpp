@@ -57,7 +57,8 @@ struct App {
   int page = 0, take = 0, microphone = 0, preset = 0, selected_pack = 0;
   std::vector<fs::path> pack_paths;
   std::vector<std::string> pack_labels;
-  bool recording = false, has_take = false, strict = false;
+  bool recording = false, has_take = false, strict = false, auto_check = true, pitch_band = false;
+  float pitch_floor = 100.f, pitch_ceiling = 180.f;
   std::vector<std::string> microphones{"Default microphone"};
   AudioIO audio;
   std::atomic<bool> busy{false};
@@ -67,8 +68,15 @@ struct App {
               summary;
   std::vector<std::string> plan;
   std::vector<std::uint8_t> rendered;
-  std::string rendered_prompt, stt_result, public_wave, public_pack;
+  std::string rendered_prompt, stt_result, public_wave, public_pack, audit_result, public_audit;
   std::string web_files_url = "/phonomenal/files/";
+  fs::path editor_project;
+  std::vector<std::string> editor_files, editor_labels;
+  std::vector<char> editor_text = std::vector<char>(16 * 1024 * 1024, 0);
+  int editor_selected = 0, editor_loaded = 0;
+  bool editor_dirty = false;
+  char editor_start[32]{}, editor_end[32]{};
+  std::string editor_wave, editor_svg, editor_download;
   std::unique_ptr<phonomenal_splicer::VoiceBank> bank;
   fs::path loaded_path;
   fs::file_time_type loaded_time{};
@@ -174,12 +182,43 @@ static void choose_pack(App &a, const fs::path &path) {
   a.plan.clear();
   a.summary.clear();
   a.stt_result.clear();
+  a.audit_result.clear();
+  a.public_audit.clear();
   a.public_wave.clear();
   a.public_pack.clear();
   a.message("Voice selected. Generate a message to listen.");
   refresh_packs(a, path);
 }
 #include "web_ui.inc"
+#include "editor_ui.inc"
+static void check_audio(App &a, const std::vector<std::uint8_t> &wav, const std::string &expected, const std::string &python, std::stop_token stop) {
+    auto folder = a.root / "data/speech-check";
+    fs::create_directories(folder);
+    auto audio = folder / "generated.wav", log = folder / "stt.log";
+    std::ofstream file(audio, std::ios::binary);
+    file.write(reinterpret_cast<const char *>(wav.data()),
+               static_cast<std::streamsize>(wav.size()));
+    file.close();
+    if (!file)
+      throw std::runtime_error("Could not save speech-check audio");
+    int rc = RunChild({python, utf8(a.root / "scripts/builder.py"),
+                       "verify-speech", utf8(audio), "--text", expected,
+                       "--json-output", utf8(folder / "report.json")},
+                      a.root, log, stop);
+    if (stop.stop_requested()) {
+      a.message("Speech check cancelled.");
+      return;
+    }
+    if (rc)
+      throw std::runtime_error(
+          "Speech check failed. Run the builder setup first. " +
+          read_tail(log));
+    {
+      std::lock_guard guard(a.mutex);
+      a.stt_result = read_tail(log);
+    }
+    a.message("Speech check complete. Results appear below the STT button.");
+}
 static void build(App &a) {
   const auto source = std::string(a.source), output = std::string(a.output),
              voice = std::string(a.voice), python = std::string(a.python),
@@ -220,8 +259,12 @@ static void synthesize(App &a) {
   const auto text = std::string(a.prompt);
   const bool strict = a.strict;
   const bool browser = web_mode();
+  const bool auto_check = a.auto_check, pitch_band = a.pitch_band;
+  const double pitch_floor = a.pitch_floor, pitch_ceiling = a.pitch_ceiling;
+  const std::string python = a.python;
   a.message("Selecting speech chunks...");
-  a.task([&, path, text, strict, browser](std::stop_token stop) {
+  a.task([&, path, text, strict, browser, auto_check, pitch_band,
+          pitch_floor, pitch_ceiling, python](std::stop_token stop) {
     auto stamp = fs::last_write_time(path);
     if (!a.bank || a.loaded_path != path || a.loaded_time != stamp) {
       a.bank = std::make_unique<phonomenal_splicer::VoiceBank>(
@@ -232,9 +275,12 @@ static void synthesize(App &a) {
     phonomenal_splicer::SynthesizeOptions options;
     options.strict = strict;
     options.stop_token = stop;
+    if (pitch_band) { options.pitch_floor_hz=pitch_floor; options.pitch_ceiling_hz=pitch_ceiling; }
     auto started = std::chrono::steady_clock::now();
     auto plan = a.bank->PlanText(text, options);
-    auto wav = a.bank->SynthesizeWav(plan, options);
+    phonomenal_splicer::BoundaryReport audit;
+    auto wav = a.bank->SynthesizeWav(plan, options, &audit);
+    const auto audit_json=phonomenal_splicer::BoundaryReportJson(audit);
     std::vector<std::string> lines;
     for (const auto &u : plan.units) {
       std::ostringstream line;
@@ -260,16 +306,33 @@ static void synthesize(App &a) {
         throw std::runtime_error("Could not publish generated audio");
       public_wave = a.web_files_url + name;
     }
+    auto audit_file=a.root/"data/spliced/boundaries.json";
+    fs::create_directories(audit_file.parent_path());
+    { std::ofstream file(audit_file); file << audit_json; if(!file)throw std::runtime_error("Could not write boundary report"); }
+    std::string public_audit;
+    if(browser) {
+      auto name=unique_web_name(".json");fs::copy_file(audit_file,a.root/"data/public"/name);
+      public_audit=a.web_files_url+name;
+    }
+    {
     std::lock_guard guard(a.mutex);
+    a.public_audit=public_audit;
+    a.audit_result="Boundary checks: " + std::to_string(audit.boundaries.size()) + " edges checked, " + std::to_string(audit.flagged) + " flagged. Pitch-adjusted chunks: " + std::to_string(audit.pitch_adjustments.size()) + ". Timing correctness still requires listening/review.";
     a.public_wave = public_wave;
-    a.rendered = std::move(wav);
+    a.rendered = wav;
     a.rendered_prompt = text;
     a.stt_result.clear();
     a.plan = std::move(lines);
     a.summary = a.bank->merc() + " | " + std::to_string(plan.sample_rate) +
                 " Hz | " + std::to_string(plan.units.size()) +
                 " recorded chunks | " + std::to_string(elapsed) + " ms";
-    a.status = "Ready. Play to listen, or export the WAV.";
+    a.status = "Audio ready. Every selected boundary has been checked.";
+    }
+    if(auto_check) {
+      a.message("Audio ready. Automatically checking the rendered words...");
+      try { check_audio(a,wav,text,python,stop); }
+      catch(const std::exception &e) { a.message(std::string("Audio ready; automatic STT check failed: ")+e.what()); }
+    }
   });
 }
 static void verify_rendered(App &a) {
@@ -281,32 +344,7 @@ static void verify_rendered(App &a) {
   a.message(
       "Checking the generated audio with unprompted speech recognition...");
   a.task([&, wav, expected, python](std::stop_token stop) {
-    auto folder = a.root / "data/speech-check";
-    fs::create_directories(folder);
-    auto audio = folder / "generated.wav", log = folder / "stt.log";
-    std::ofstream file(audio, std::ios::binary);
-    file.write(reinterpret_cast<const char *>(wav.data()),
-               static_cast<std::streamsize>(wav.size()));
-    file.close();
-    if (!file)
-      throw std::runtime_error("Could not save speech-check audio");
-    int rc = RunChild({python, utf8(a.root / "scripts/builder.py"),
-                       "verify-speech", utf8(audio), "--text", expected,
-                       "--json-output", utf8(folder / "report.json")},
-                      a.root, log, stop);
-    if (stop.stop_requested()) {
-      a.message("Speech check cancelled.");
-      return;
-    }
-    if (rc)
-      throw std::runtime_error(
-          "Speech check failed. Run the builder setup first. " +
-          read_tail(log));
-    {
-      std::lock_guard guard(a.mutex);
-      a.stt_result = read_tail(log);
-    }
-    a.message("Speech check complete. Results appear below the STT button.");
+    check_audio(a, wav, expected, python, stop);
   });
 }
 int main(int argc, char **argv) {
@@ -368,10 +406,21 @@ int main(int argc, char **argv) {
   ft::set_style(ft::gruvbox_dark_style());
   while (ft::pump()) {
     ft::begin();
+    std::string render_revision;
+    if (web_mode()) {
+      if (!a.busy) refresh_packs(a);
+      render_revision = web_revision(a);
+      const char *known = ft::param("voice_revision");
+      if (known && render_revision == known) {
+        ft::set_status(204, "No Content");
+        ft::end();
+        continue;
+      }
+    }
     ft::text("PHONOMENAL");
     ft::text("Your recordings. Your words. Precise speech mixing.");
-    const char *tabs[] = {"Voice pack builder", "C++ TTS / player"};
-    ft::tabs(tabs, 2, &a.page);
+    const char *tabs[] = {"Voice pack builder", "C++ TTS / player", "Voice pack editor"};
+    ft::tabs(tabs, 3, &a.page);
     ft::separator();
     try {
       if (web_mode()) {
@@ -532,6 +581,7 @@ int main(int argc, char **argv) {
             a.page = 1;
           }
         });
+        web_region_begin("builder-results");
         if (web_mode()) {
           std::lock_guard guard(a.mutex);
           if (!a.public_pack.empty())
@@ -543,11 +593,15 @@ int main(int argc, char **argv) {
           ft::separator();
           ft::text("Builder log");
           auto log = read_tail(a.log);
-          ft::text_wrapped(log.c_str());
+          ft::log_view("Alignment progress", log.c_str(), 8);
         }
+        web_region_end();
+      } else if (a.page == 2) {
+        editor_ui(a);
       } else {
         ft::text("Load a .vcpack and type any message. The native engine "
                  "reuses the longest suitable recordings.");
+        web_region_begin("pack-list");
         if (!a.pack_labels.empty()) {
           std::vector<const char *> labels;
           for (const auto &label : a.pack_labels)
@@ -561,6 +615,7 @@ int main(int argc, char **argv) {
           ft::text("No voice packs yet. Browse to import one.");
         if (ft::button("Refresh pack list") && !a.busy)
           refresh_packs(a);
+        web_region_end();
         if (!web_mode()) {
           ft::input("Voice pack", a.pack, sizeof(a.pack));
           if (ft::button("Browse voice pack") && !a.busy) {
@@ -575,14 +630,23 @@ int main(int argc, char **argv) {
         ft::checkbox(
             "Strict: reject missing sounds and suspect phone durations",
             &a.strict);
+        ft::checkbox("Automatically check generated words with STT", &a.auto_check);
+        ft::checkbox("Correct voiced pitch into a band (both low and high)", &a.pitch_band);
+        if(a.pitch_band) {
+          ft::slider_float("Lowest pitch (Hz)", &a.pitch_floor, 50.f, 400.f);
+          ft::slider_float("Highest pitch (Hz)", &a.pitch_ceiling, a.pitch_floor, 600.f);
+          a.pitch_ceiling=std::max(a.pitch_ceiling,a.pitch_floor);
+          ft::text_wrapped("Adjusts each voiced chunk toward the band while preserving duration. Large shifts can change timbre.");
+        }
         ft::text_wrapped(
             "Strict mode cannot repair incorrect source alignments. Rebuild "
             "old packs if words sound cut off.");
+        web_region_begin("player-actions");
         ft::row(3, [&] {
-          if (ft::button(a.busy ? "Synthesizing..." : "Generate speech") &&
+          if (ft::button(a.busy ? "Working..." : "Generate speech") &&
               !a.busy)
             synthesize(a);
-          if (!web_mode() && ft::button("Play") && !a.busy) {
+          if (!web_mode() && ft::button("Play")) {
             std::lock_guard guard(a.mutex);
             if (a.rendered.empty())
               throw std::runtime_error("Generate speech first");
@@ -595,11 +659,17 @@ int main(int argc, char **argv) {
           verify_rendered(a);
         ft::text_wrapped("Requires builder setup. Matching words do not "
                          "guarantee natural sound.");
+        web_region_end();
+        web_region_begin("speech-check");
         {
           std::lock_guard guard(a.mutex);
+          if (!a.audit_result.empty()) ft::text_wrapped(a.audit_result.c_str());
+          if (web_mode() && !a.public_audit.empty()) ft::html(("<p><a download href=\""+web_escape(a.public_audit)+"\">Download every-boundary report</a></p>").c_str());
           if (!a.stt_result.empty())
             ft::text_wrapped(a.stt_result.c_str());
         }
+        web_region_end();
+        web_region_begin("player-audio");
         if (web_mode()) {
           std::lock_guard guard(a.mutex);
           if (!a.public_wave.empty())
@@ -626,27 +696,33 @@ int main(int argc, char **argv) {
             a.status = "WAV exported.";
           }
         }
+        web_region_end();
+        web_region_begin("player-plan");
         std::lock_guard guard(a.mutex);
         ft::separator();
         ft::text_wrapped(a.summary.c_str());
         ft::text("Selected chunks (millisecond positions in pack audio)");
         for (const auto &line : a.plan)
           ft::text_wrapped(line.c_str());
+        web_region_end();
       }
-      if (web_mode() && a.busy) {
-        ft::text("Job is running. Refresh to see progress.");
-        ft::button("Refresh progress");
-      }
+      web_region_begin("job-actions");
+      if (web_mode() && a.busy)
+        ft::text("Working. Progress and results update automatically when they change.");
       if (a.busy && ft::button("Cancel current job"))
         a.worker.request_stop();
+      web_region_end();
     } catch (const std::exception &e) {
       a.message(e.what());
     }
+    web_region_begin("status");
     {
       std::lock_guard guard(a.mutex);
       ft::separator();
       ft::text_wrapped(a.status.c_str());
     }
+    web_region_end();
+    if (web_mode()) ft::html(("<span hidden id=\"voice-revision\" data-revision=\"" + render_revision + "\" data-page=\"" + std::to_string(a.page) + "\"></span>").c_str());
     if (a.busy || a.recording)
       ft::request_redraw();
     ft::end();

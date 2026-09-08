@@ -1,0 +1,1482 @@
+[
+  {
+    "voice": "heavy",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 106,
+    "kinds": {
+      "phoneme": 91,
+      "exact_word": 15
+    },
+    "stt": {
+      "recognized": "Take me just for big bidders to rot as reading and come. Every hen should go climbing for free. Rot to sing or come. Every hen should break on his leash. Will often prove your vocabulary is the understanding of memory in words or the rest below. I hope you get up while I'm killing you. Stand the variation of your right eye.",
+      "word_errors": 47,
+      "reference_words": 49,
+      "word_error_rate": 0.9591836734693877,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 21,
+    "kinds": {
+      "phoneme": 14,
+      "exact_chunk": 2,
+      "exact_word": 5
+    },
+    "stt": {
+      "recognized": "I think he's done making some money I can cream! That's me! For you guys to give teach!",
+      "word_errors": 11,
+      "reference_words": 17,
+      "word_error_rate": 0.6470588235294118,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 7,
+    "kinds": {
+      "phoneme": 6,
+      "exact_chunk": 1
+    },
+    "stt": {
+      "recognized": "I hate taking on words!",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 103,
+    "kinds": {
+      "phoneme": 85,
+      "exact_chunk": 1,
+      "exact_word": 17
+    },
+    "stt": {
+      "recognized": "The English text for the English to practice eating home comprehension or crying. It's for free. Practicing your comprehension and everything in English will both improve your vocabulary. It's understanding of crime. It's what taught us. The text below is trying to help the day up by having to an instant evaluation of your practice.",
+      "word_errors": 28,
+      "reference_words": 49,
+      "word_error_rate": 0.5714285714285714,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 25,
+    "kinds": {
+      "phoneme": 18,
+      "exact_word": 7
+    },
+    "stt": {
+      "recognized": "I think I'm done making more no-no-man show. Don't keep mad before you think it's too speed.",
+      "word_errors": 15,
+      "reference_words": 17,
+      "word_error_rate": 0.8823529411764706,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 5,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "I HATE GETTING COVID!",
+      "word_errors": 1,
+      "reference_words": 4,
+      "word_error_rate": 0.25,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "soldier",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 85,
+    "kinds": {
+      "phoneme": 68,
+      "exact_word": 17
+    },
+    "stt": {
+      "recognized": "English text for beginners to practice eating on Cam pre-engine on-line meant for you. Practicing your Cam pre-engine Brit on English will not improve on your vocabulary and understanding of grammar and word order. The text below are designed to help you develop well given an instant evaluation of your progress.",
+      "word_errors": 21,
+      "reference_words": 49,
+      "word_error_rate": 0.42857142857142855,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "soldier",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 23,
+    "kinds": {
+      "phoneme": 16,
+      "exact_word": 7
+    },
+    "stt": {
+      "recognized": "Think you don't make things for them and also you won't scream It's easy for you to speak",
+      "word_errors": 15,
+      "reference_words": 17,
+      "word_error_rate": 0.8823529411764706,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "soldier",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 5,
+    "kinds": {
+      "phoneme": 3,
+      "exact_chunk": 1,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "I HATE GETTING HOMEWORK!",
+      "word_errors": 0,
+      "reference_words": 4,
+      "word_error_rate": 0.0,
+      "words_match": true,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "scout",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 97,
+    "kinds": {
+      "phoneme": 82,
+      "exact_word": 15
+    },
+    "stt": {
+      "recognized": "English texts for the beginners to crack up straight in your comprehension or let them for free, practice your comprehension on a random vegetable boat, and prove your folk as a laryon understand and cram around words or the text bill or this kind of help you develop giving you an instrument of valuation to progress",
+      "word_errors": 37,
+      "reference_words": 49,
+      "word_error_rate": 0.7551020408163265,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "scout",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 22,
+    "kinds": {
+      "phoneme": 15,
+      "exact_chunk": 2,
+      "exact_word": 5
+    },
+    "stt": {
+      "recognized": "I think I'm done makin' fun, dominoes, heart artery, scream me, look at me, for your next speech.",
+      "word_errors": 11,
+      "reference_words": 17,
+      "word_error_rate": 0.6470588235294118,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "scout",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 5,
+    "kinds": {
+      "phoneme": 4,
+      "exact_chunk": 1
+    },
+    "stt": {
+      "recognized": "I hate getting on the work.",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "demoman",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 106,
+    "kinds": {
+      "phoneme": 89,
+      "exact_chunk": 2,
+      "exact_word": 15
+    },
+    "stt": {
+      "recognized": "English Textives for Beginner Practice Freedom is a prevention alignment for free Practicing your comprehension abriden English Well, both improve your vocabulary and understanding of a gradual and worldly textives will all be trying to help you develop a gear and you're an instant evaluation of your progress",
+      "word_errors": 24,
+      "reference_words": 49,
+      "word_error_rate": 0.4897959183673469,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "demoman",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 24,
+    "kinds": {
+      "phoneme": 18,
+      "exact_chunk": 1,
+      "exact_word": 5
+    },
+    "stt": {
+      "recognized": "Come, don't make me nominal, or don't scream at me years in text of the beach!",
+      "word_errors": 14,
+      "reference_words": 17,
+      "word_error_rate": 0.8235294117647058,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "demoman",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 5,
+      "exact_chunk": 1
+    },
+    "stt": {
+      "recognized": "I hate taking home work.",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "engineer",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 95,
+    "kinds": {
+      "phoneme": 82,
+      "exact_word": 13
+    },
+    "stt": {
+      "recognized": "English texts for big members to practice reading. Come, defense, go, gliding for free. This is your come, defense, go, write on English. I will go, thank you, to vocabulary and understanding. Remember, work hard. The text is built hard to search to help you develop. Now, giving you an instant to help you do your progress.",
+      "word_errors": 33,
+      "reference_words": 49,
+      "word_error_rate": 0.673469387755102,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "engineer",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 23,
+    "kinds": {
+      "phoneme": 19,
+      "exact_chunk": 1,
+      "exact_word": 3
+    },
+    "stt": {
+      "recognized": "I think you've done a phenomenal job. Now you don't scream at me for using text to speech.",
+      "word_errors": 5,
+      "reference_words": 17,
+      "word_error_rate": 0.29411764705882354,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "engineer",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 4,
+      "exact_word": 2
+    },
+    "stt": {
+      "recognized": "Hey, I'm getting home work!",
+      "word_errors": 4,
+      "reference_words": 4,
+      "word_error_rate": 1.0,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "sniper",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 98,
+    "kinds": {
+      "phoneme": 83,
+      "exact_chunk": 1,
+      "exact_word": 14
+    },
+    "stt": {
+      "recognized": "English text for Big Ben's practice, read it on pre-hashing on a library. Practice it on pre-hashing on a bit in the English, we don't think we'll evoke a delivery. We'll understand it and grab a URL of the text bill, but all I need to help you to help have a giving an instant of having a bit of a problem.",
+      "word_errors": 52,
+      "reference_words": 49,
+      "word_error_rate": 1.0612244897959184,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "sniper",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 23,
+    "kinds": {
+      "phoneme": 19,
+      "exact_chunk": 1,
+      "exact_word": 3
+    },
+    "stt": {
+      "recognized": "I think them down again phenomenal So you don't scream at me You're just a s**t",
+      "word_errors": 9,
+      "reference_words": 17,
+      "word_error_rate": 0.5294117647058824,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "sniper",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 4,
+      "exact_word": 2
+    },
+    "stt": {
+      "recognized": "I'd get bone work.",
+      "word_errors": 4,
+      "reference_words": 4,
+      "word_error_rate": 1.0,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "spy",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 97,
+    "kinds": {
+      "phoneme": 80,
+      "exact_chunk": 1,
+      "exact_word": 16
+    },
+    "stt": {
+      "recognized": "English texts for beginners to practice reading and comprehension online burn for free. Track testing your comprehension of written English will often move your vocabulary and understand the grammar and word of the texts below are designed to help you develop while giving you an instant evaluation of your progress.",
+      "word_errors": 8,
+      "reference_words": 49,
+      "word_error_rate": 0.16326530612244897,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "spy",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 24,
+    "kinds": {
+      "phoneme": 19,
+      "exact_chunk": 2,
+      "exact_word": 3
+    },
+    "stt": {
+      "recognized": "I think you don't make a normal mess, so you don't scream at me for using text to speech.",
+      "word_errors": 7,
+      "reference_words": 17,
+      "word_error_rate": 0.4117647058823529,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "spy",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "previous",
+    "chunks": 5,
+    "kinds": {
+      "phoneme": 4,
+      "exact_chunk": 1
+    },
+    "stt": {
+      "recognized": "I HATE GETTING HOME WORK!",
+      "word_errors": 2,
+      "reference_words": 4,
+      "word_error_rate": 0.5,
+      "words_match": false,
+      "spacing_only_difference": true
+    }
+  },
+  {
+    "voice": "pyro",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "failed",
+    "strict": false,
+    "engine": "previous",
+    "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  },
+  {
+    "voice": "pyro",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "failed",
+    "strict": false,
+    "engine": "previous",
+    "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  },
+  {
+    "voice": "pyro",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "failed",
+    "strict": false,
+    "engine": "previous",
+    "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  },
+  {
+    "voice": "medic",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 104,
+    "kinds": {
+      "phoneme": 89,
+      "exact_word": 15
+    },
+    "stt": {
+      "recognized": "We create sex for we must do practice eating gum crumb prevention or crying gum for free. Practicing your crumb prevention and avoiding the English word boost improves your vocabulary and understanding of crumb and gum, but don't test the text. The below are designed to help heal you today by having an instant evaluation of your practice.",
+      "word_errors": 34,
+      "reference_words": 49,
+      "word_error_rate": 0.6938775510204082,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 25,
+    "kinds": {
+      "phoneme": 16,
+      "exact_word": 9
+    },
+    "stt": {
+      "recognized": "I think I'm done making more no-no-man show you your skin, not me fucking eggs to spit!",
+      "word_errors": 13,
+      "reference_words": 17,
+      "word_error_rate": 0.7647058823529411,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 5,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "I HATE GETTING COVID!",
+      "word_errors": 1,
+      "reference_words": 4,
+      "word_error_rate": 0.25,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 6,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 5
+    },
+    "stt": {
+      "recognized": "You are straighten, Aghus!",
+      "word_errors": 4,
+      "reference_words": 6,
+      "word_error_rate": 0.6666666666666666,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "soldier",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 87,
+    "kinds": {
+      "phoneme": 71,
+      "exact_word": 16
+    },
+    "stt": {
+      "recognized": "English text for beginners to practice dating on comprehension on alignment for you. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The text you are designed to help you develop while giving you an instant evaluation of your progress.",
+      "word_errors": 8,
+      "reference_words": 49,
+      "word_error_rate": 0.16326530612244897,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "soldier",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 23,
+    "kinds": {
+      "phoneme": 14,
+      "exact_word": 9
+    },
+    "stt": {
+      "recognized": "I think I'm done making fun of them and also you won't scream at me for using extra speech",
+      "word_errors": 9,
+      "reference_words": 17,
+      "word_error_rate": 0.5294117647058824,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "soldier",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 5,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 3,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "I HATE GETTING HOMEWORK!",
+      "word_errors": 0,
+      "reference_words": 4,
+      "word_error_rate": 0.0,
+      "words_match": true,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "soldier",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 5,
+    "kinds": {
+      "exact_chunk": 2,
+      "phoneme": 2,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "You are straight and I approve!",
+      "word_errors": 0,
+      "reference_words": 6,
+      "word_error_rate": 0.0,
+      "words_match": true,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "librivox-phil",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 101,
+    "kinds": {
+      "phoneme": 92,
+      "exact_chunk": 1,
+      "exact_word": 8
+    },
+    "stt": {
+      "recognized": "English text for offenders to practice reading and comprehension online on for free. Practicing your comprehension of reading English will become think of your vocabulary and understanding of grammar and word order. The text is below or designed to help you develop while giving you an instant evaluation of your progress.",
+      "word_errors": 10,
+      "reference_words": 49,
+      "word_error_rate": 0.20408163265306123,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "librivox-phil",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 24,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 15,
+      "exact_word": 8
+    },
+    "stt": {
+      "recognized": "I think I'm done making a funeral, so you don't scream at me for using text to date.",
+      "word_errors": 5,
+      "reference_words": 17,
+      "word_error_rate": 0.29411764705882354,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "librivox-phil",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "phoneme": 6,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "And I hate getting no more.",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "librivox-phil",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "phoneme": 5,
+      "exact_chunk": 1,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "You are straight and high, Oof!",
+      "word_errors": 2,
+      "reference_words": 6,
+      "word_error_rate": 0.3333333333333333,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 107,
+    "kinds": {
+      "phoneme": 93,
+      "exact_word": 14
+    },
+    "stt": {
+      "recognized": "The English text for big bidders to rot as reading and come. Every hen should go climbing for free rot to sing their come. Every hen should go break on his leash. Every little thing will rule your fucking delirious understanding of the membrane. By the word, the X below or nine, I hope you get up. I will give you an instant where you am of your right eye.",
+      "word_errors": 52,
+      "reference_words": 49,
+      "word_error_rate": 1.0612244897959184,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 21,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 11,
+      "exact_word": 9
+    },
+    "stt": {
+      "recognized": "I think he done making son on also you can him at me for you guys to give teach",
+      "word_errors": 10,
+      "reference_words": 17,
+      "word_error_rate": 0.5882352941176471,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 6
+    },
+    "stt": {
+      "recognized": "I hate taking on words!",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "phoneme": 7
+    },
+    "stt": {
+      "recognized": "YOU ARE SCARITON TEGA PROOF!",
+      "word_errors": 4,
+      "reference_words": 6,
+      "word_error_rate": 0.6666666666666666,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "scout",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 102,
+    "kinds": {
+      "phoneme": 89,
+      "exact_word": 13
+    },
+    "stt": {
+      "recognized": "English text for beginners to crack up freedom and comprehension online for free. Practice your comprehension on online English with voting through your vocabulary and understand the grammar of words or the text bill online for help you develop, giving you an instant evaluation of progress.",
+      "word_errors": 23,
+      "reference_words": 49,
+      "word_error_rate": 0.46938775510204084,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "scout",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 21,
+    "kinds": {
+      "phoneme": 14,
+      "exact_word": 7
+    },
+    "stt": {
+      "recognized": "I think I'm done making fun dominoes so you don't scream at me for your next two speech.",
+      "word_errors": 7,
+      "reference_words": 17,
+      "word_error_rate": 0.4117647058823529,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "scout",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 5,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 4
+    },
+    "stt": {
+      "recognized": "I hate getting on the work!",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "scout",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "phoneme": 4,
+      "exact_chunk": 1,
+      "exact_word": 2
+    },
+    "stt": {
+      "recognized": "You are gay, and I approve!",
+      "word_errors": 1,
+      "reference_words": 6,
+      "word_error_rate": 0.16666666666666666,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "demoman",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 108,
+    "kinds": {
+      "phoneme": 91,
+      "exact_chunk": 1,
+      "exact_word": 16
+    },
+    "stt": {
+      "recognized": "English Textives for Begin Multipractors Freedom is a prevention and that is for free Practicing your comprehension of reading English Well, both improve your vocabulary and understanding of your own work order Textives will all be trying to help you develop a year of your own instant evaluation of your progress",
+      "word_errors": 25,
+      "reference_words": 49,
+      "word_error_rate": 0.5102040816326531,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "demoman",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 24,
+    "kinds": {
+      "phoneme": 16,
+      "exact_chunk": 1,
+      "exact_word": 7
+    },
+    "stt": {
+      "recognized": "I think I'm done makin' a nominal audience scream at me for years in text of the beach.",
+      "word_errors": 11,
+      "reference_words": 17,
+      "word_error_rate": 0.6470588235294118,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "demoman",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 6,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 5
+    },
+    "stt": {
+      "recognized": "I hate taking home work.",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "demoman",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 6
+    },
+    "stt": {
+      "recognized": "You are straightened, I approve!",
+      "word_errors": 2,
+      "reference_words": 6,
+      "word_error_rate": 0.3333333333333333,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "engineer",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 97,
+    "kinds": {
+      "phoneme": 84,
+      "exact_word": 13
+    },
+    "stt": {
+      "recognized": "English texts for big winners to brand this written and comme-defensured dog-linin' for free. It is in your comme-defensured to write an English syllable thing through your vocabulary and understanding the grammar and work. The art of text is built hard to search to help you develop while giving you an instant to help you build your progress.",
+      "word_errors": 35,
+      "reference_words": 49,
+      "word_error_rate": 0.7142857142857143,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "engineer",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 25,
+    "kinds": {
+      "phoneme": 19,
+      "exact_chunk": 1,
+      "exact_word": 5
+    },
+    "stt": {
+      "recognized": "I think I'm done a phenomenon for you don't scream at me for is in text to speech",
+      "word_errors": 7,
+      "reference_words": 17,
+      "word_error_rate": 0.4117647058823529,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "engineer",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 5,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "Hey, I'm getting home work!",
+      "word_errors": 4,
+      "reference_words": 4,
+      "word_error_rate": 1.0,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "engineer",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 3,
+      "exact_word": 3
+    },
+    "stt": {
+      "recognized": "You are straighten by a poo!",
+      "word_errors": 4,
+      "reference_words": 6,
+      "word_error_rate": 0.6666666666666666,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "sniper",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 99,
+    "kinds": {
+      "phoneme": 84,
+      "exact_word": 15
+    },
+    "stt": {
+      "recognized": "English text for Big Ben to practice reading on pre-hatching on a foolery. Practice your own pre-hatch on a video English with a Buddha thing, prove your vocabulary when understanding a grammar word. The textbook Buddha is designed to help you develop a giving you an instant value of your brain.",
+      "word_errors": 31,
+      "reference_words": 49,
+      "word_error_rate": 0.6326530612244898,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "sniper",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 25,
+    "kinds": {
+      "phoneme": 20,
+      "exact_chunk": 1,
+      "exact_word": 4
+    },
+    "stt": {
+      "recognized": "I think I'm dynamic and phenomenal, so you don't scream at me for just a speech.",
+      "word_errors": 7,
+      "reference_words": 17,
+      "word_error_rate": 0.4117647058823529,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "sniper",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "phoneme": 6,
+      "exact_word": 1
+    },
+    "stt": {
+      "recognized": "Why did it don't work?",
+      "word_errors": 5,
+      "reference_words": 4,
+      "word_error_rate": 1.25,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "sniper",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 7,
+    "kinds": {
+      "exact_chunk": 2,
+      "phoneme": 5
+    },
+    "stt": {
+      "recognized": "You are straight and I approve!",
+      "word_errors": 0,
+      "reference_words": 6,
+      "word_error_rate": 0.0,
+      "words_match": true,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "spy",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 99,
+    "kinds": {
+      "phoneme": 81,
+      "exact_word": 18
+    },
+    "stt": {
+      "recognized": "English texts for beginners to practice reading and comprehension online burn for free. Track testing your comprehension of written English will often remove your vocabulary and understand the grammar and word of the texts below are designed to help you develop while giving you an instant evaluation of your progress.",
+      "word_errors": 8,
+      "reference_words": 49,
+      "word_error_rate": 0.16326530612244897,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "spy",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 24,
+    "kinds": {
+      "phoneme": 17,
+      "exact_chunk": 2,
+      "exact_word": 5
+    },
+    "stt": {
+      "recognized": "I think I'm done making a normal mess so you don't scream at me for using X to speech.",
+      "word_errors": 6,
+      "reference_words": 17,
+      "word_error_rate": 0.35294117647058826,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "spy",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 5,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 4
+    },
+    "stt": {
+      "recognized": "I HATE GETTING HOME WORK!",
+      "word_errors": 2,
+      "reference_words": 4,
+      "word_error_rate": 0.5,
+      "words_match": false,
+      "spacing_only_difference": true
+    }
+  },
+  {
+    "voice": "spy",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "engine": "generic",
+    "chunks": 5,
+    "kinds": {
+      "exact_chunk": 1,
+      "phoneme": 2,
+      "exact_word": 2
+    },
+    "stt": {
+      "recognized": "You are straight and I approve!",
+      "word_errors": 0,
+      "reference_words": 6,
+      "word_error_rate": 0.0,
+      "words_match": true,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "pyro",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "failed",
+    "strict": false,
+    "engine": "generic",
+    "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  },
+  {
+    "voice": "pyro",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "failed",
+    "strict": false,
+    "engine": "generic",
+    "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  },
+  {
+    "voice": "pyro",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "failed",
+    "strict": false,
+    "engine": "generic",
+    "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  },
+  {
+    "voice": "pyro",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "failed",
+    "strict": false,
+    "engine": "generic",
+    "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  }
+]

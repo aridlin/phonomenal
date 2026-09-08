@@ -26,3 +26,5 @@ logs/
 *.ilk
 *.log
 imgui.ini
+/medic.vcpack
+/reddit-post.md

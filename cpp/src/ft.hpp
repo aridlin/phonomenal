@@ -11592,7 +11592,7 @@ static void send_raw_response(const char* content_type, const std::string& body)
 }
 
 static void send_response(const std::string& body) {
-    send_raw_response("text/html; charset=utf-8", body);
+    send_raw_response("text/html; charset=utf-8", ctx().status_code == 204 ? std::string{} : body);
 }
 #else
 static void close_socket(Socket& s) {
@@ -11711,7 +11711,7 @@ static void send_raw_response(const char* content_type, const std::string& body)
 }
 
 static void send_response(const std::string& body) {
-    send_raw_response("text/html; charset=utf-8", body);
+    send_raw_response("text/html; charset=utf-8", ctx().status_code == 204 ? std::string{} : body);
 }
 #endif
 

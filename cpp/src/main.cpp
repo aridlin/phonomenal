@@ -69,7 +69,7 @@ static void print_plan(const phonomenal_splicer::PlanResult &p,
 }
 int main(int argc, char **argv) {
   try {
-    std::filesystem::path bank_path, output_path;
+    std::filesystem::path bank_path, output_path, audit_path;
     std::string text, phones;
     bool stdout_wav = false, plan_only = false, inspect = false,
          stdin_text = false;
@@ -89,6 +89,14 @@ int main(int argc, char **argv) {
         phones = value();
       else if (arg == "--output")
         output_path = value();
+      else if (arg == "--audit")
+        audit_path = value();
+      else if (arg == "--pitch-band") {
+        auto band=value(); auto separator=band.find(':');
+        if(separator==std::string::npos) throw std::runtime_error("Pitch band must be LOWER:UPPER in Hz");
+        options.pitch_floor_hz=std::stod(band.substr(0,separator));
+        options.pitch_ceiling_hz=std::stod(band.substr(separator+1));
+      }
       else if (arg == "--stdout-wav")
         stdout_wav = true;
       else if (arg == "--plan")
@@ -105,7 +113,7 @@ int main(int argc, char **argv) {
         std::cout
             << "phonomenal_splicer_cli --bank voice.vcpack (--text TEXT | "
                "--stdin | --phones PHONES) [--output speech.wav] "
-               "[--stdout-wav] [--plan] [--strict]\nphonomenal_splicer_cli "
+               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--pitch-band 100:180]\nphonomenal_splicer_cli "
                "--bank voice.vcpack --inspect\n";
         return 0;
       } else
@@ -142,7 +150,14 @@ int main(int argc, char **argv) {
       for (const auto &warning : plan.warnings)
         std::cerr << warning << '\n';
     if (stdout_wav || !output_path.empty()) {
-      auto wav = bank.SynthesizeWav(plan, options);
+      phonomenal_splicer::BoundaryReport audit;
+      auto wav = bank.SynthesizeWav(plan, options, &audit);
+      if (!audit_path.empty()) {
+        if(!audit_path.parent_path().empty()) std::filesystem::create_directories(audit_path.parent_path());
+        std::ofstream report(audit_path);
+        report << phonomenal_splicer::BoundaryReportJson(audit);
+        if(!report) throw std::runtime_error("Could not write boundary audit");
+      }
       if (stdout_wav) {
 #ifdef _WIN32
         _setmode(_fileno(stdout), _O_BINARY);

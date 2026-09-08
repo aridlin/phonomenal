@@ -42,12 +42,30 @@ struct PlanResult {
   double score = 0;
 };
 
+struct BoundaryCheck {
+  std::string kind, label, edge, clip_id;
+  std::int64_t source_sample{}, output_sample{};
+  double sample_jump{};
+  bool suspicious = false;
+};
+struct PitchAdjustment {
+  std::string clip_id;
+  double source_hz{}, target_hz{}, factor{1};
+};
+struct BoundaryReport {
+  std::vector<BoundaryCheck> boundaries;
+  std::vector<PitchAdjustment> pitch_adjustments;
+  std::size_t flagged{};
+};
+std::string BoundaryReportJson(const BoundaryReport &report);
+
 struct SynthesizeOptions {
   std::int64_t max_chunk_words = 256;
   std::int64_t max_phone_ngram = 12;
   std::int64_t crossfade_ms = 4;
   std::int64_t word_gap_ms = 0;
   bool strict = false;
+  double pitch_floor_hz = 0., pitch_ceiling_hz = 0.;
   std::size_t beam_width = 32;
   std::stop_token stop_token;
 };
@@ -70,7 +88,7 @@ public:
 
   [[nodiscard]] std::vector<std::uint8_t>
   SynthesizeWav(const PlanResult &plan,
-                const SynthesizeOptions &options = {}) const;
+                const SynthesizeOptions &options = {}, BoundaryReport *audit = nullptr) const;
 
 private:
   VoiceBank() = default;

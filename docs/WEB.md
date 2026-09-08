@@ -26,6 +26,21 @@ mode does not require a running desktop. FFmpeg and optional eSpeak NG should be
 on PATH. The playback side itself does not require Python; the generator and STT
 check use the local builder environment.
 
-After a background job starts, use **Refresh progress** to retrieve its result.
+Background results refresh lazily: a visible browser checks a revision once per
+second, receives an empty HTTP 204 when nothing changed, and updates only changed
+result regions. It preserves unsent text, the cursor, and an unchanged audio
+element. There is no timed page reload. Uploads also update through a response
+patch instead of browser navigation. Hidden tabs pause polling.
 Generated WAV and built-pack links download through Caddy. Desktop/TUI modes keep
 using local microphone/audio devices; the web mode uses the browser instead.
+
+The player checks all selected word, phoneme and splice boundaries on every
+render. It reports suspect durations/waveform jumps and automatically runs an
+unprompted STT check by default. The audio becomes available before STT completes.
+Neither check certifies intelligibility. Optional pitch-band correction raises
+low voiced chunks and lowers high ones, retaining the original sample count;
+large shifts can sound artificial. Original pitch is the default.
+
+The third tab is the [manual pack editor](EDITOR.md). It works on a separate
+editable copy, previews exact sample selections, and validates a new pack before
+making it available in the player dropdown and as a download.

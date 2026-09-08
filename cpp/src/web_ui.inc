@@ -18,6 +18,20 @@ static std::string web_escape(std::string_view text) {
   }
   return out;
 }
+static void web_region_begin(const char *id) {
+  if (web_mode()) ft::html((std::string("<div data-voice-live=\"") + id + "\">").c_str());
+}
+static void web_region_end() { if (web_mode()) ft::html("</div>"); }
+static std::string web_revision(App &a) {
+  std::lock_guard guard(a.mutex);
+  std::string state = std::to_string(a.page) + "|" + std::to_string(a.busy.load()) + "|" + a.status + "|" + a.summary + "|" + a.stt_result + "|" + a.public_wave + "|" + a.public_pack + "|" + a.audit_result + "|" + a.public_audit + "|" + a.pack;
+  for (const auto &label : a.pack_labels) state += "|" + label;
+  state += "|" + a.editor_download;
+  std::error_code ec;
+  auto stamp = fs::last_write_time(a.log, ec);
+  if (!ec) state += "|" + std::to_string(stamp.time_since_epoch().count());
+  return std::to_string(std::hash<std::string>{}(state));
+}
 static std::string unique_web_name(const std::string &suffix) {
   return std::to_string(
              std::chrono::system_clock::now().time_since_epoch().count()) +
@@ -94,6 +108,17 @@ static void web_upload(App &a) {
        take.size() > 3 || std::stoul(take) >= kReadingScript.size()))
     throw std::runtime_error("Invalid recording take");
   auto bytes = decode_upload(encoded);
+  if (ft::param("voice_kind") && std::string(ft::param("voice_kind"))=="editor-audio") {
+    if (a.editor_project.empty() || extension!=".wav") throw std::runtime_error("Open an editor project and choose a mono PCM16 WAV.");
+    const auto pending=a.editor_project/"incoming.wav";
+    {std::ofstream file(pending,std::ios::binary);file.write(reinterpret_cast<const char *>(bytes.data()),bytes.size());if(!file)throw std::runtime_error("Could not save replacement audio");}
+    const std::vector<std::string> command{a.python,utf8(a.root/"scripts/pack_editor.py"),"replace-audio","--project",utf8(a.editor_project),"--input",utf8(pending)};
+    const int rc=RunChild(command,a.root,a.log,{});fs::remove(pending);
+    if(rc!=0)throw std::runtime_error("Replacement audio rejected: "+read_tail(a.log));
+    a.editor_wave.clear();a.editor_svg.clear();
+    a.message("Master audio replaced in the draft. Review boundaries before saving a new pack.");
+    return;
+  }
   if (extension == ".txt" && bytes.size() > 128 * 1024)
     throw std::runtime_error("Transcript is too long");
   if (!pack && a.preset != 9) {
@@ -167,19 +192,56 @@ static const char *web_head = R"HTML(<style>
 a{color:#83a598}a:hover{color:#8ec07c}h1{color:#fabd2f}audio{width:100%;margin:12px 0}section{max-width:100%}small{display:block;margin:6px 0;color:var(--muted)}
 @media(max-width:600px){main{margin:8px;padding:12px}h1{font-size:23px}input[type=file]{font-size:12px}}
 </style><script>
-window.phonomenalSend = async function(file,take) {
+// FT renders the widgets. Polling only patches changed result regions.
+// An unchanged revision returns an empty 204 response, not the page HTML.
+(()=>{
+ let checking=false,epoch=0;
+ for(const event of ['input','change','submit','click'])document.addEventListener(event,()=>{epoch++},true);
+ setInterval(async()=>{
+  const marker=document.getElementById('voice-revision'),main=document.querySelector('main');
+  if(checking||document.hidden||!marker||main?.classList.contains('ft-updating')||window.phonomenalUploading)return;
+  checking=true;const startedEpoch=epoch,revision=marker.dataset.revision,page=marker.dataset.page;
+  try{
+   const response=await fetch(location.pathname,{method:'POST',headers:{'X-FTHT-Client':'fetch'},body:new URLSearchParams({voice_revision:revision})});
+   if(response.status===204||!response.ok)return;
+   const html=await response.text();
+   if(epoch!==startedEpoch||document.querySelector('main')?.classList.contains('ft-updating'))return;
+   const next=new DOMParser().parseFromString(html,'text/html'),nextMarker=next.getElementById('voice-revision');
+   if(!nextMarker||nextMarker.dataset.page!==page)return;
+   for(const incoming of next.querySelectorAll('[data-voice-live]')){
+    const current=document.querySelector('[data-voice-live="'+incoming.dataset.voiceLive+'"]');
+    if(current&&current.innerHTML!==incoming.innerHTML)current.innerHTML=incoming.innerHTML;
+   }
+   marker.dataset.revision=nextMarker.dataset.revision;
+  }catch(_){}finally{checking=false}
+ },1000);
+})();
+window.phonomenalApplyResponse = function(html) {
+ const next=new DOMParser().parseFromString(html,'text/html').querySelector('main');
+ if(next)document.querySelector('main').innerHTML=next.innerHTML;
+};
+window.phonomenalSend = async function(file,take,kind) {
  if(file.size>64*1024*1024) throw new Error('File exceeds 64 MiB');
  const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)});
  const name=file.name.replace(/[^a-zA-Z0-9._-]/g,'_').replace(/^\./,'_');
  const body=new URLSearchParams({voice_upload:data,voice_filename:name});
  if(take!==undefined)body.set('voice_take',String(take));
+ if(kind)body.set('voice_kind',kind);
  const response=await fetch(location.pathname,{method:'POST',body});
  if(!response.ok) throw new Error('Upload rejected ('+response.status+'). Check filename, size, or active job.');
+ return await response.text();
 };
 window.phonomenalUploadFiles=async function(files){
  const status=document.getElementById('voice-upload-status');
- try {for(const f of files){status.textContent='Uploading '+f.name;await phonomenalSend(f);}location.reload();}
- catch(e){status.textContent=e.message;}
+ window.phonomenalUploading=true;
+ try {let html;for(const f of files){status.textContent='Uploading '+f.name;html=await phonomenalSend(f);}if(html)phonomenalApplyResponse(html);}
+ catch(e){status.textContent=e.message;}finally{window.phonomenalUploading=false}
+};
+window.phonomenalReplaceMaster=async function(file){
+ if(!file)return;window.phonomenalUploading=true;
+ try{phonomenalApplyResponse(await phonomenalSend(file,undefined,'editor-audio'));}
+ catch(e){document.getElementById('voice-upload-status').textContent=e.message;}
+ finally{window.phonomenalUploading=false;}
 };
 window.phonomenalRecord=async function(button){
  const status=document.getElementById('voice-recorder-status');
@@ -192,7 +254,7 @@ window.phonomenalRecord=async function(button){
   recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
   const timer=setTimeout(()=>{if(recorder.state==='recording')recorder.stop()},180000);
   recorder.onstop=async()=>{clearTimeout(timer);stream.getTracks().forEach(t=>t.stop());button.textContent='Uploading take...';
-   try{const ext=recorder.mimeType.includes('ogg')?'ogg':recorder.mimeType.includes('mp4')?'m4a':'webm';const file=new File(chunks,'take_'+String(take+1).padStart(3,'0')+'_'+Date.now()+'.'+ext,{type:recorder.mimeType});await phonomenalSend(file,take);location.reload()}
+   try{const ext=recorder.mimeType.includes('ogg')?'ogg':recorder.mimeType.includes('mp4')?'m4a':'webm';const file=new File(chunks,'take_'+String(take+1).padStart(3,'0')+'_'+Date.now()+'.'+ext,{type:recorder.mimeType});phonomenalApplyResponse(await phonomenalSend(file,take))}
    catch(e){status.textContent=e.message;button.textContent='Record this take in browser'}
   };
   recorder.start();button.textContent='Stop and save this take';status.textContent='Recording your browser microphone (maximum 180 seconds).';

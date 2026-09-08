@@ -96,7 +96,7 @@ def extract_features(pcm, rate):
     return struct.pack('<IIQ', hop, 11, len(values)) + values.tobytes()
 
 
-def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexicon=None, features=True, extra_sections=None):
+def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexicon=None, features=True, extra_sections=None, lexicon_overrides=False):
     if not 8000 <= rate <= 192000 or len(pcm) % 2 or not pcm:
         raise ValueError('Expected nonempty mono PCM16 and valid sample rate')
     validate_records(records, len(pcm) // 2, rate)
@@ -116,6 +116,8 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
             phones = [p['label'] for p in r['phones'] if p['word'] == wi]
             if phones:
                 pronunciations[w['label'].lower()] = phones
+    if lexicon_overrides:
+        pronunciations.update(lexicon or {})
     lex = bytearray(struct.pack('<I', len(pronunciations)))
     for word, phones in sorted(pronunciations.items()):
         lex += string(word) + struct.pack('<I', len(phones))

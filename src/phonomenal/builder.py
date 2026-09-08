@@ -78,7 +78,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     if not source_files:
         raise ValueError('No audio files found')
     version = run(mfa + ['version']).strip()
-    settings = dict(builder=1, language=language, model=model, acoustic_model=acoustic_model, rate=rate, mfa=version, fine_tune=True)
+    settings = dict(builder=2, language=language, model=model, acoustic_model=acoustic_model, rate=rate, mfa=version, fine_tune=True)
     config_hash = hashlib.sha256(json.dumps(settings, sort_keys=True).encode()).hexdigest()[:16]
     job = work/config_hash
     job.mkdir(exist_ok=True)
@@ -89,6 +89,23 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     playback.mkdir(exist_ok=True)
     clips, rejected, seen = [], [], set()
     asr = None
+    def get_recognizer():
+        nonlocal asr
+        if asr is None:
+            from faster_whisper import WhisperModel
+            asr = WhisperModel(model, device=device, compute_type='int8' if device=='cpu' else 'float16', cpu_threads=2, download_root=str(project/'data/cache/asr'))
+        return asr
+    from phonomenal.transcription import batch_short_recordings
+    pending=[]
+    for path in source_files:
+        if path.with_suffix('.txt').exists(): continue
+        digest=hashlib.sha256(path.read_bytes()).hexdigest()
+        key=hashlib.sha256(digest.encode()).hexdigest()[:24]
+        if not force and (job/(key+'.json')).exists(): continue
+        if force:
+            (job/(key+'.asr.json')).unlink(missing_ok=True)
+        pending.append(dict(path=path,key=key))
+    batched=batch_short_recordings(pending,job,rate,get_recognizer,decode,log)
     for number, path in enumerate(source_files, 1):
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         if digest in seen:
@@ -113,11 +130,10 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
             duration = len(pcm)/2/rate
             if supplied:
                 spans = [dict(start=0., end=duration, text=supplied, confidence=None)]
+            elif key in batched:
+                spans = batched[key]
             else:
-                if asr is None:
-                    from faster_whisper import WhisperModel
-                    asr = WhisperModel(model, device=device, compute_type='int8' if device=='cpu' else 'float16', download_root=str(project/'data/cache/asr'))
-                segments, _ = asr.transcribe(str(decoded), language='en', beam_size=5, vad_filter=True, word_timestamps=True, condition_on_previous_text=False)
+                segments, _ = get_recognizer().transcribe(str(decoded), language='en', beam_size=5, vad_filter=True, word_timestamps=True, condition_on_previous_text=False)
                 spans = [dict(start=max(0., s.start-.12), end=min(duration, s.end+.12), text=s.text.strip(), confidence=s.avg_logprob,
                               words=[dict(word=w.word, start=w.start, end=w.end, probability=w.probability) for w in (s.words or [])]) for s in segments if s.text.strip() and s.no_speech_prob < .6]
             saved = []
@@ -134,7 +150,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
                 decode(wav, corpus/(cid+'.wav'), 16000)
                 (corpus/(cid+'.lab')).write_text(text, encoding='utf-8')
                 saved.append(dict(id=cid, transcript=text, raw_transcript=span['text'], source_sha256=digest, source_file=path.name,
-                                  source_start_sample=start, source_end_sample=end, asr_logprob=span['confidence'], supplied_transcript=bool(supplied), asr_words=span.get('words', [])))
+                                  source_start_sample=start, source_end_sample=end, asr_logprob=span['confidence'], supplied_transcript=bool(supplied), recognition_method=span.get('recognition_method', 'supplied' if supplied else 'segment-asr'), asr_words=span.get('words', [])))
             atomic_json(manifest, saved)
             clips.extend(saved)
         except Exception as exc:
@@ -163,7 +179,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     else:
         log('Using cached fine-tuned alignment')
     from phonomenal.align import parse_mfa_alignment
-    records, audio, issues = [], bytearray(), []
+    records, audio, issues, audits = [], bytearray(), [], []
     for clip in clips:
         alignment_paths = list(aligned.rglob(clip['id']+'.json'))
         if not alignment_paths:
@@ -174,11 +190,14 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
             _, pcm = read_wave(playback/(clip['id']+'.wav'))
             ws = [dict(label=w.text.lower(), start=w.start_sample, end=w.end_sample, confidence=None) for w in words]
             ps = [dict(label=p.label, word=p.word_index, start=p.start_sample, end=p.end_sample, confidence=None) for p in phones]
+            from phonomenal.boundary_audit import audit_boundaries
+            audit = audit_boundaries(ws, ps, pcm, rate, clip.get('asr_words', []))
             flags = validate_alignment(ws, ps, len(pcm)//2, rate)
             if flags:
                 issues.append(dict(id=clip['id'], flags=flags))
             if ' '.join(w['label'] for w in ws) != clip['transcript']:
                 raise ValueError('Aligned words disagree with transcript; inspect raw alignment')
+            audits.append(dict(id=clip['id'], source_offset_sample=len(audio)//2, **audit))
             base = len(audio)//2
             for u in ws+ps:
                 u['start'] += base
@@ -193,6 +212,9 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     report = dict(settings=settings, alignment_method='MFA fine_tune', alignment_grid_ms=1,
                   boundary_accuracy='unmeasured: use compare-alignments with independent references',
                   accepted_clips=len(records), rejected=rejected, boundary_warnings=issues, sources=clips,
+                  boundary_audit=dict(version=1, every_boundary_checked=True, linguistic_accuracy_verified=False,
+                    boundaries_checked=sum(a['boundaries_checked'] for a in audits),
+                    flagged_boundaries=sum(a['flagged_boundaries'] for a in audits),recordings=audits),
                   versions={p: importlib.metadata.version(p) for p in ('numpy', 'cmudict', 'faster-whisper')})
     log('Extracting boundary acoustics and writing self-contained voice pack...')
     report = write_pack(output, voice=voice, language='en-us', rate=rate, pcm=audio, records=records, report=report, lexicon=lexicon)

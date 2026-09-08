@@ -190,7 +190,16 @@ std::vector<std::string> NormalizeTokens(std::string_view text) {
       current.pop_back();
     }
     if (!current.empty()) {
-      tokens.push_back(current);
+      // Common unambiguous chat spellings. Do not reinterpret real words such
+      // as ill/well/were/hell as contractions.
+      static const std::unordered_map<std::string, std::string> contractions = {
+          {"im", "i'm"}, {"dont", "don't"}, {"doesnt", "doesn't"},
+          {"didnt", "didn't"}, {"isnt", "isn't"}, {"arent", "aren't"},
+          {"wasnt", "wasn't"}, {"werent", "weren't"}, {"havent", "haven't"},
+          {"hasnt", "hasn't"}, {"hadnt", "hadn't"}, {"couldnt", "couldn't"},
+          {"wouldnt", "wouldn't"}, {"shouldnt", "shouldn't"}};
+      auto fixed = contractions.find(current);
+      tokens.push_back(fixed == contractions.end() ? current : fixed->second);
     }
     current.clear();
   };
@@ -921,6 +930,7 @@ WaveBytesFromSamples(const std::vector<std::int16_t> &samples,
   return output;
 }
 
+#include "pitch_shift.inc"
 #include "pronunciation.inc"
 #include "vcpack_reader.inc"
 
@@ -1450,7 +1460,7 @@ PlanResult VoiceBank::PlanPhonemes(const std::vector<std::string> &phones,
 
 std::vector<std::uint8_t>
 VoiceBank::SynthesizeWav(const PlanResult &plan,
-                         const SynthesizeOptions &options) const {
+                         const SynthesizeOptions &options, BoundaryReport *audit) const {
   std::lock_guard guard(impl_->mutex);
   assert(impl_ != nullptr);
   const auto &wave = impl_->ensure_master_wave();
@@ -1468,20 +1478,47 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
              std::llround(static_cast<double>(wave.sample_rate) *
                           static_cast<double>(options.word_gap_ms) / 1000.0)));
 
+  if ((options.pitch_floor_hz || options.pitch_ceiling_hz) &&
+      (!std::isfinite(options.pitch_floor_hz) || !std::isfinite(options.pitch_ceiling_hz) ||
+       options.pitch_floor_hz < 50 || options.pitch_ceiling_hz > 600 || options.pitch_floor_hz > options.pitch_ceiling_hz))
+    throw std::runtime_error("Pitch band must satisfy 50 <= lower <= upper <= 600 Hz");
+  BoundaryReport checked;
+  struct Placement { const PlannedUnit *unit; std::int64_t offset; };
+  std::vector<Placement> placements;
   std::vector<std::int16_t> output;
   const PlannedUnit *previous = nullptr;
   for (const auto &unit : plan.units) {
     if (options.stop_token.stop_requested())
       throw std::runtime_error("Synthesis cancelled");
-    const auto start = std::max<std::int64_t>(0, unit.start_sample);
-    const auto end = std::max<std::int64_t>(start, unit.end_sample);
+    const auto start = unit.start_sample;
+    const auto end = unit.end_sample;
+    if (start < 0 || end <= start) throw std::runtime_error("Invalid planned boundary: empty or negative interval");
     if (static_cast<std::size_t>(end) > wave.samples.size()) {
       throw std::runtime_error("Planned unit exceeds master WAV sample bounds");
     }
     std::vector<std::int16_t> segment(wave.samples.begin() + start,
                                       wave.samples.begin() + end);
-    if (segment.empty()) {
-      continue;
+    if (options.pitch_floor_hz > 0) {
+      std::vector<double> pitches;
+      if (impl_->feature_hop && !impl_->features.empty()) {
+        for (auto frame=static_cast<std::size_t>(start/impl_->feature_hop); frame<impl_->features.size() && frame*impl_->feature_hop<static_cast<std::size_t>(end); ++frame) {
+          const auto &f=impl_->features[frame];
+          if (f.pitch>0 && f.voicing>.65 && f.rms>.003) pitches.push_back(f.pitch);
+        }
+      } else {
+        auto profile=impl_->profile_for_range(start,end);
+        if (profile.pitch_hz) pitches.push_back(*profile.pitch_hz);
+      }
+      if (!pitches.empty()) {
+        std::sort(pitches.begin(),pitches.end());
+        const double pitch=pitches[pitches.size()/2];
+        const double target=std::clamp(pitch,options.pitch_floor_hz,options.pitch_ceiling_hz);
+        const double factor=std::clamp(target/pitch,.5,2.);
+        if (std::abs(factor-1.)>=.005) {
+          segment=ShiftPitchPreserveDuration(segment,factor,wave.sample_rate);
+          checked.pitch_adjustments.push_back({unit.clip_id,pitch,pitch*factor,factor});
+        }
+      }
     }
     if (previous != nullptr && word_gap > 0 && previous->word_group >= 0 &&
         unit.word_group >= 0 && previous->word_group != unit.word_group) {
@@ -1492,6 +1529,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
                     static_cast<std::size_t>(wave.sample_rate *
                                              unit.pause_before_ms / 1000),
                     0);
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size())});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1499,6 +1537,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     if (output.empty() || overlap <= 0 ||
         (previous && previous->clip_id == unit.clip_id &&
          previous->end_sample == unit.start_sample)) {
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size())});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1509,6 +1548,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         std::min<std::int64_t>(static_cast<std::int64_t>(output.size()),
                                static_cast<std::int64_t>(segment.size() / 4)));
     if (actual_overlap <= 0) {
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size())});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1516,6 +1556,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
 
     const auto prefix_size =
         output.size() - static_cast<std::size_t>(actual_overlap);
+    placements.push_back({&unit, static_cast<std::int64_t>(prefix_size)});
     std::vector<std::int16_t> merged;
     merged.reserve(prefix_size + static_cast<std::size_t>(actual_overlap) +
                    segment.size());
@@ -1546,7 +1587,63 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     previous = &unit;
   }
 
+  // Audit every selected source word/phone edge and every splice edge on the
+  // final (optionally pitch-corrected) samples. Invalid geometry is fatal.
+  for (const auto &placement : placements) {
+    const auto &unit=*placement.unit;
+    const auto record=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==unit.clip_id;});
+    if (record==impl_->records.end()) throw std::runtime_error("Planned unit refers to an unknown recording");
+    auto add=[&](const std::string &kind,const std::string &label,const std::string &edge,std::int64_t sample,bool suspect) {
+      if (sample<unit.start_sample || sample>unit.end_sample) return;
+      const auto position=placement.offset+sample-unit.start_sample;
+      if (position<0 || static_cast<std::size_t>(position)>output.size()) throw std::runtime_error("Rendered boundary is outside the output");
+      const double jump=position>0 && static_cast<std::size_t>(position)<output.size() ? std::abs(static_cast<double>(output[position])-output[position-1])/32768. : 0.;
+      suspect=suspect || jump>.35;
+      checked.boundaries.push_back({kind,label,edge,unit.clip_id,sample,position,jump,suspect});
+      checked.flagged+=suspect;
+    };
+    add("splice",unit.target_text,"start",unit.start_sample,false);
+    add("splice",unit.target_text,"end",unit.end_sample,false);
+    for (const auto &word:record->words) {
+      add("word",word.text,"start",word.start_sample,false);
+      add("word",word.text,"end",word.end_sample,false);
+    }
+    for (const auto &phone:record->phonemes) {
+      const bool suspect=impl_->phone_duration_penalty(phone)>=180.;
+      add("phone",phone.label,"start",phone.start_sample,suspect);
+      add("phone",phone.label,"end",phone.end_sample,suspect);
+    }
+  }
+  if (audit) *audit=std::move(checked);
   return WaveBytesFromSamples(output, wave.sample_rate);
+}
+
+std::string BoundaryReportJson(const BoundaryReport &report) {
+  auto quote=[](const std::string &s) {
+    std::ostringstream out; out << '"';
+    for (unsigned char c:s) {
+      if (c=='"' || c=='\\') out << '\\' << c;
+      else if (c<32) out << "\\u00" << "0123456789abcdef"[c>>4] << "0123456789abcdef"[c&15];
+      else out << c;
+    }
+    out << '"'; return out.str();
+  };
+  std::ostringstream out;
+  out << "{\"version\":1,\"boundaries_checked\":" << report.boundaries.size()
+      << ",\"flagged_boundaries\":" << report.flagged << ",\"linguistic_accuracy_verified\":false,\"boundaries\":[";
+  for (std::size_t i=0;i<report.boundaries.size();++i) {
+    const auto &b=report.boundaries[i]; if(i)out<<',';
+    out << "{\"kind\":"<<quote(b.kind)<<",\"label\":"<<quote(b.label)<<",\"edge\":"<<quote(b.edge)
+        <<",\"clip_id\":"<<quote(b.clip_id)<<",\"source_sample\":"<<b.source_sample<<",\"output_sample\":"<<b.output_sample
+        <<",\"sample_jump\":"<<b.sample_jump<<",\"suspicious\":"<<(b.suspicious?"true":"false")<<'}';
+  }
+  out << "],\"pitch_adjustments\":[";
+  for(std::size_t i=0;i<report.pitch_adjustments.size();++i) {
+    const auto &p=report.pitch_adjustments[i];if(i)out<<',';
+    out << "{\"clip_id\":"<<quote(p.clip_id)<<",\"source_hz\":"<<p.source_hz<<",\"target_hz\":"<<p.target_hz<<",\"factor\":"<<p.factor<<'}';
+  }
+  out << "],\"limitation\":\"Waveform and duration checks flag suspicious cuts; they do not certify linguistic boundaries.\"}\n";
+  return out.str();
 }
 
 std::string UnitKindToString(UnitKind kind) {
