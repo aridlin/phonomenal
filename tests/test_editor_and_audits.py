@@ -11,7 +11,7 @@ import wave
 import numpy as np
 from phonomenal.boundary_audit import audit_boundaries
 from phonomenal.pack_editor import open_project, save_project, read_pack, preview, replace_audio, change_record
-from phonomenal.transcription import split_batch_words, batch_short_recordings
+from phonomenal.transcription import split_batch_words, batch_short_recordings, transcript_issue
 from phonomenal.vcpack import write_pack
 from test_vcpack import CLI
 
@@ -101,6 +101,13 @@ class EditorAndAuditTests(unittest.TestCase):
         self.assertEqual(len(calls),2);self.assertEqual(set(results),{'a','b','c'})
         self.assertTrue(all(seconds<=2.4 for seconds,_ in calls))
         self.assertTrue(all('initial_prompt' not in kwargs and kwargs['word_timestamps'] for _,kwargs in calls))
+
+    def test_runaway_asr_tokens_rejected_before_g2p(self):
+        self.assertIsNotNone(transcript_issue('ho'*250,2))
+        self.assertIsNotNone(transcript_issue('raaaaaarrrrrrrrrrrrrrrrrr',2))
+        self.assertIsNotNone(transcript_issue('hello '*80,1))
+        self.assertIsNone(transcript_issue('pneumonoultramicroscopicsilicovolcanoconiosis',4))
+        self.assertIsNone(transcript_issue('You are straight and I approve',2))
 
     def test_pitch_raises_and_lowers_without_changing_duration(self):
         if not CLI.exists():self.skipTest('Native CLI unavailable')

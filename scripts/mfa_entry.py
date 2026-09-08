@@ -5,7 +5,12 @@ Do not change the system package: repair that exact constructor in this process.
 """
 import functools
 import inspect
+import os
 import sys
+# Limit this dedicated aligner process, without changing system-wide settings.
+# MFA jobs and BLAS workers otherwise multiply on shared, small-memory hosts.
+for variable in ('OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS'):
+    os.environ[variable] = '2'
 from montreal_forced_aligner.alignment.pretrained import PretrainedAligner
 
 original = PretrainedAligner.__init__

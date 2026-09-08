@@ -2,8 +2,21 @@
 from __future__ import annotations
 import hashlib
 import json
+import re
 import wave
 from pathlib import Path
+
+
+def transcript_issue(text, duration):
+    """Reject runaway recognizer tokens before G2P; never invent replacement words."""
+    words=text.lower().split()
+    if any(len(word)>64 for word in words):
+        return 'Transcript contains a token longer than 64 characters'
+    if any(re.search(r'([a-z]{1,4})\1{5,}',word) for word in words):
+        return 'Transcript contains a repeated non-word token (likely laughter, scream or ASR loop)'
+    if len(words)>max(20,duration*18):
+        return 'Transcript has implausibly many words for the source duration'
+    return None
 
 
 def split_batch_words(segments, clips, rate):

@@ -28,9 +28,17 @@ def log(message):
 
 
 def run(command, log_path=None):
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if log_path:
-        log_path.write_text(result.stdout, encoding='utf-8')
+        # Keep progress visible during long alignment jobs, not only on exit.
+        with log_path.open('w', encoding='utf-8') as output:
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
+                for line in process.stdout:
+                    output.write(line); output.flush()
+                    print(line, end='', flush=True)
+                code=process.wait()
+        result=subprocess.CompletedProcess(command,code,log_path.read_text(encoding='utf-8'))
+    else:
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if result.returncode:
         raise RuntimeError(f'{command[0]} exited {result.returncode}: {result.stdout[-3000:]}')
     return result.stdout
@@ -95,7 +103,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
             from faster_whisper import WhisperModel
             asr = WhisperModel(model, device=device, compute_type='int8' if device=='cpu' else 'float16', cpu_threads=2, download_root=str(project/'data/cache/asr'))
         return asr
-    from phonomenal.transcription import batch_short_recordings
+    from phonomenal.transcription import batch_short_recordings, transcript_issue
     pending=[]
     for path in source_files:
         if path.with_suffix('.txt').exists(): continue
@@ -119,7 +127,10 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
         if manifest.exists() and not force:
             saved = json.loads(manifest.read_text())
             if all((playback/(c['id']+'.wav')).exists() and (corpus/(c['id']+'.wav')).exists() for c in saved):
-                clips.extend(saved)
+                for clip in saved:
+                    issue=transcript_issue(clip['transcript'],(clip['source_end_sample']-clip['source_start_sample'])/rate)
+                    if issue:rejected.append(dict(source=path.name,id=clip['id'],reason=issue))
+                    else:clips.append(clip)
                 log(f'[{number}/{len(source_files)}] cached: {path.name}')
                 continue
         log(f'[{number}/{len(source_files)}] decoding/transcribing: {path.name}')
@@ -139,6 +150,10 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
             saved = []
             for i, span in enumerate(spans):
                 text = ' '.join(re.findall(r"[a-z]+(?:'[a-z]+)*", span['text'].lower()))
+                issue=transcript_issue(text,span['end']-span['start'])
+                if issue:
+                    rejected.append(dict(source=path.name,reason=issue))
+                    continue
                 if not text:
                     continue
                 cid = f'{key}_{i:04d}'
@@ -159,6 +174,10 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     if not clips:
         atomic_json(work/'report.json', dict(rejected=rejected))
         raise ValueError('No usable transcripts; see build report')
+    # ASR and alignment models need not occupy RAM at the same time.
+    asr = None
+    import gc
+    gc.collect()
     # Make corpus membership exact so removed or edited files cannot leak into a resumed job.
     current_ids = {c['id'] for c in clips}
     for p in corpus.iterdir():
@@ -172,7 +191,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     marker = job/'alignment.complete.json'
     if force or not marker.exists() or json.loads(marker.read_text()).get('signature') != signature or not json.loads(marker.read_text()).get('refinement_verified'):
         log('Aligning words and phonemes, then refining boundaries on the 1 ms grid...')
-        run(mfa + ['align', str(corpus.parent), 'english_us_arpa', acoustic_model, str(aligned), '--fine_tune', '--clean', '--overwrite', '--output_format', 'json', '--g2p_model_path', 'english_us_arpa', '--temporary_directory', str(job/'mfa-temp')], job/'mfa.log')
+        run(mfa + ['align', str(corpus.parent), 'english_us_arpa', acoustic_model, str(aligned), '--fine_tune', '--clean', '--overwrite', '--num_jobs', '2', '--output_format', 'json', '--g2p_model_path', 'english_us_arpa', '--temporary_directory', str(job/'mfa-temp')], job/'mfa.log')
         if 'fine tuning alignments' not in (job/'mfa.log').read_text().lower():
             raise RuntimeError('MFA did not run boundary refinement. Use scripts/mfa-local; this detects and repairs the known MFA 3.3.9 flag bug.')
         atomic_json(marker, dict(signature=signature, refinement_verified=True))
@@ -191,7 +210,10 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
             ws = [dict(label=w.text.lower(), start=w.start_sample, end=w.end_sample, confidence=None) for w in words]
             ps = [dict(label=p.label, word=p.word_index, start=p.start_sample, end=p.end_sample, confidence=None) for p in phones]
             from phonomenal.boundary_audit import audit_boundaries
-            audit = audit_boundaries(ws, ps, pcm, rate, clip.get('asr_words', []))
+            source_offset = clip.get('source_start_sample', 0) / rate
+            asr_words = [dict(w, start=w['start']-source_offset, end=w['end']-source_offset)
+                         for w in clip.get('asr_words', [])]
+            audit = audit_boundaries(ws, ps, pcm, rate, asr_words)
             flags = validate_alignment(ws, ps, len(pcm)//2, rate)
             if flags:
                 issues.append(dict(id=clip['id'], flags=flags))

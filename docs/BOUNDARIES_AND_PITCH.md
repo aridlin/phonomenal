@@ -8,6 +8,14 @@ recording's source offset. The ASR pass uses bounded windows for short files,
 retains each file's own sample clock, and flags words crossing recording edges.
 Recognition never receives the expected test message as a hint.
 
+Before pronunciation generation, fresh and cached transcripts are screened for
+runaway tokens (over 64 characters, repeated non-word syllables, or an implausible
+word count for the audio duration). Rejected clips remain listed in the report;
+the generator does not invent a replacement transcript. This prevents ASR-rendered
+laughter from creating enormous pronunciation lattices. The ASR model is released
+before MFA starts, MFA uses two jobs, and the isolated aligner limits BLAS threads.
+Alignment progress is streamed into the builder log while it runs.
+
 The C++ player separately audits every selected source word/phone endpoint and
 every output splice on every render. Out-of-range intervals fail generation.
 Suspicious waveform jumps and phone durations are reported for review. Exact
