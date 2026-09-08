@@ -3,8 +3,10 @@
 Both the **Generator** and **TTS Player** are included. They open separate views
 of the same native FT app, using Gruvbox. Extract the whole archive first.
 
-- **Linux x86-64:** run `./generator.sh` or `./tts-player.sh`. Built on Ubuntu
-  24.04; requires glibc 2.39 or newer, libstdc++, Cairo and X11/XWayland.
+- **Linux x86-64:** run `./generator.sh` or `./tts-player.sh`. CI release builds
+  use Ubuntu 24.04 and require glibc 2.39 or newer, libstdc++, Cairo and
+  X11/XWayland. Local test archives use the build host's libraries; check their
+  `BUILD-INFO.json` before assuming the same distribution compatibility.
 - **Windows x86-64:** double-click `Generator.cmd` or `TTS Player.cmd`.
   The C++ runtime is linked statically. Windows 10/11 is the intended target.
 - The CLI is in `bin/`. The Windows vctts overlay is a separate release asset.
@@ -41,11 +43,14 @@ English. One speaker per source folder.
 
 ## What has been verified
 
-Linux and Windows CI build the engine and both FT views, and run 51 Python/native
-tests. Windows CI also builds and tests vctts. A local automatic Heavy test built
+Linux and Windows CI build the engine and both FT views and run the Python/native
+suite. Windows CI also builds and tests vctts. A local automatic Heavy test built
 6 MP3 clips into a pack containing 39 words and 121 phonemes, with refinement
 actually executed. Linux GUI generation and export are exercised separately.
-The Windows GUI and physical microphone capture have not been manually tested.
+The Windows FT web interface has been tested under Wine for startup and WAV
+generation. Native Windows desktop interaction and physical microphone capture
+remain unverified. The September metadata changes have 75 passing local Linux
+tests; publishing them and obtaining a fresh Windows CI overlay build are pending.
 
 The aligner evaluates a **1 ms refinement grid** and stores integer sample
 boundaries. This is timing resolution, not a measured 1 ms accuracy guarantee.
