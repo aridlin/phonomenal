@@ -5,14 +5,38 @@ import definePlugin, { IconComponent, OptionType, PluginNative } from "@utils/ty
 import type { Message } from "@vencord/discord-types";
 import { React, SelectedChannelStore, Toasts, UserStore } from "@webpack/common";
 
-const Native = VencordNative.pluginHelpers.PhonomenalReader as PluginNative<typeof import("./native")>;
 const settings = definePluginSettings({
     root: { type: OptionType.STRING, description: "Phonomenal project/release directory. Blank uses PHONOMENAL_HOME or ~/dev/codexp/phonomenal.", default: "" },
+    bridgeToken: { type: OptionType.STRING, description: "Firefox pairing key for the local Phonomenal bridge. The local installer fills this in; desktop does not use it.", default: "" },
     userVoices: { type: OptionType.STRING, description: "One USER_ID=voice.vcpack per line. Other users get a stable voice derived from their ID.", multiline: true, default: "",
         isValid: (value: string) => value.split("\n").every(line => !line.trim() || /^\d{17,20}=[^/\\=]+\.vcpack$/.test(line.trim())) || "Use USER_ID=voice.vcpack, one per line." },
     voicePool: { type: OptionType.STRING, description: "Optional comma-separated pack filenames for automatic voices. Blank uses every available pack.", default: "" },
     volume: { type: OptionType.SLIDER, description: "Local speech volume", markers: [0, 25, 50, 75, 100], default: 75, stickToMarkers: false }
 });
+const browserClient = crypto.randomUUID().replaceAll("-", "");
+let browserCancel: Promise<unknown> = Promise.resolve();
+async function bridgeRequest(path: string, body?: object) {
+    if (!settings.store.bridgeToken) throw new Error("Install the paired local Phonomenal userscript first.");
+    const response = await fetch("http://127.0.0.1:18774" + path, {
+        method: body ? "POST" : "GET", timeout: 65000,
+        headers: { Authorization: "Bearer " + settings.store.bridgeToken, "Content-Type": "application/json", "X-Phonomenal-Client": browserClient },
+        ...(body ? { body: JSON.stringify(body) } : {})
+    } as RequestInit & { timeout: number });
+    const value = await response.json();
+    if (!response.ok) throw new Error(value.error || "The local Phonomenal bridge could not complete the request.");
+    return value;
+}
+const Native = IS_WEB ? {
+    voices: async (_root: string): Promise<string[]> => bridgeRequest("/voices"),
+    synthesize: async (_root: string, voice: string, text: string): Promise<string> => {
+        await browserCancel;
+        return (await bridgeRequest("/synthesize", { voice, text })).wav;
+    },
+    cancel: () => {
+        browserCancel = settings.store.bridgeToken ? bridgeRequest("/cancel", {}).catch(() => {}) : Promise.resolve();
+        return browserCancel;
+    }
+} : VencordNative.pluginHelpers.PhonomenalReader as PluginNative<typeof import("./native")>;
 let channelId: string | undefined;
 let epoch = 0; let armedAt = 0; let running = false;
 let audio: HTMLAudioElement | undefined; let finishAudio: (() => void) | undefined;
@@ -87,6 +111,7 @@ const Button: ChatBarButtonFactory = ({ channel, isMainChat }) => {
 };
 export default definePlugin({
     name: "PhonomenalReader", description: "Read new channel messages locally with per-user Phonomenal voices. Toggle with the speaker button.",
+    enabledByDefault: IS_WEB,
     authors: [{ name: "Aridlin", id: 0n }], settings,
     chatBarButton: { render: Button, icon: Speaker },
     start() { reset(); }, stop() { reset(); },
