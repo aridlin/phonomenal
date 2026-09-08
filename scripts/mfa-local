@@ -1,0 +1,4 @@
+#!/bin/sh
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+project_dir=$(dirname "$script_dir")
+exec "$project_dir/.tools/micromamba/bin/micromamba" run -p "$project_dir/.tools/aligner" python "$project_dir/scripts/mfa_entry.py" "$@"

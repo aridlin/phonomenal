@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phonomenal"
+version = "0.1.0"
+description = "TF2 merc voice alignment pipeline for splice-friendly JSON exports."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "OpenAI Codex" }
+]
+dependencies = [
+  "cloudscraper>=1.2.71"
+]
+
+[project.optional-dependencies]
+builder = ["numpy>=1.26", "cmudict>=1.1", "faster-whisper>=1.2,<2"]
+splice = [
+  "cmudict>=1.0.18",
+  "g2p_en>=2.1.0"
+]
+align = [
+  "cmudict>=1.0.18",
+  "g2p_en>=2.1.0",
+  "whisperx>=3.8.5"
+]
+
+[project.scripts]
+phonomenal = "phonomenal.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

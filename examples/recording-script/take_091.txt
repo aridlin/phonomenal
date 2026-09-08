@@ -1,0 +1,1 @@
+The package contains a collection of words, sounds, and useful short phrases.

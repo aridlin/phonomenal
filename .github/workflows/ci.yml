@@ -1,0 +1,47 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Linux frontend dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libcairo2-dev libx11-dev pkg-config
+      - run: python -m pip install . numpy cmudict
+      - run: cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build cpp/build --config Release --parallel 4
+      - name: Linux tests
+        if: runner.os == 'Linux'
+        env:
+          PHONOMENAL_TEST_CLI: ${{ github.workspace }}/cpp/build/phonomenal_splicer_cli
+        run: python -m unittest discover -s tests -v
+      - name: Windows tests
+        if: runner.os == 'Windows'
+        env:
+          PHONOMENAL_TEST_CLI: ${{ github.workspace }}/cpp/build/Release/phonomenal_splicer_cli.exe
+        run: python -m unittest discover -s tests -v
+      - name: Windows vctts integration
+        if: runner.os == 'Windows'
+        run: |
+          cmake -S vctts -B vctts/build -DBUILD_TESTS=ON
+          cmake --build vctts/build --config Release --parallel 4
+          ctest --test-dir vctts/build -C Release --output-on-failure
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phonomenal-${{ runner.os }}
+          path: |
+            cpp/build/phonomenal_splicer_cli
+            cpp/build/phonomenal_splicer_frontend
+            cpp/build/Release/*.exe
+            vctts/build/Release/tts_overlay.exe

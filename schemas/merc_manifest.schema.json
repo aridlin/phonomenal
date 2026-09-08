@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/phonomenal/merc_manifest.schema.json",
+  "title": "Phonomenal TF2 Merc Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "mercs"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "masters": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/masterRecord"
+      }
+    },
+    "mercs": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/clipRecord"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "intervalBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_s", "end_s", "start_sample", "end_sample", "confidence"],
+      "properties": {
+        "start_s": { "type": "number" },
+        "end_s": { "type": "number" },
+        "start_sample": { "type": "integer" },
+        "end_sample": { "type": "integer" },
+        "master_start_s": { "type": ["number", "null"] },
+        "master_end_s": { "type": ["number", "null"] },
+        "master_start_sample": { "type": ["integer", "null"] },
+        "master_end_sample": { "type": ["integer", "null"] },
+        "confidence": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "wordAlignment": {
+      "allOf": [
+        { "$ref": "#/$defs/intervalBase" },
+        {
+          "type": "object",
+          "required": ["text"],
+          "properties": {
+            "text": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "phonemeAlignment": {
+      "allOf": [
+        { "$ref": "#/$defs/intervalBase" },
+        {
+          "type": "object",
+          "required": ["label", "word_index"],
+          "properties": {
+            "label": { "type": "string" },
+            "word_index": { "type": "integer" }
+          }
+        }
+      ]
+    },
+    "clipRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clip_id",
+        "merc",
+        "audio_path",
+        "source_url",
+        "duration_s",
+        "sample_rate",
+        "transcript_raw",
+        "transcript_norm",
+        "asr_confidence",
+        "alignment_status",
+        "reject_reasons",
+        "words",
+        "phonemes"
+      ],
+      "properties": {
+        "clip_id": { "type": "string" },
+        "merc": { "type": "string" },
+        "source_path": { "type": "string" },
+        "source_category": { "type": "string" },
+        "audio_path": { "type": "string" },
+        "master_audio_path": { "type": "string" },
+        "master_start_s": { "type": "number" },
+        "master_end_s": { "type": "number" },
+        "master_start_sample": { "type": "integer" },
+        "master_end_sample": { "type": "integer" },
+        "source_url": { "type": "string" },
+        "duration_s": { "type": "number" },
+        "sample_rate": { "type": "integer" },
+        "transcript_raw": { "type": "string" },
+        "transcript_norm": { "type": "string" },
+        "asr_confidence": { "type": ["number", "null"] },
+        "alignment_status": { "type": "string" },
+        "reject_reasons": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "words": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/wordAlignment" }
+        },
+        "phonemes": {
+          "type": "array",
+        "items": { "$ref": "#/$defs/phonemeAlignment" }
+        }
+      }
+    },
+    "masterRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["audio_path", "gap_ms", "sample_rate"],
+      "properties": {
+        "audio_path": { "type": "string" },
+        "gap_ms": { "type": "integer" },
+        "sample_rate": { "type": "integer" }
+      }
+    }
+  }
+}
