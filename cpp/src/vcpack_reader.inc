@@ -198,7 +198,7 @@ PackedData ReadVcpack(const std::filesystem::path &path) {
       auto nphones = lex.count(256);
       std::vector<std::string> phones;
       for (std::uint32_t j = 0; j < nphones; ++j)
-        phones.push_back(NormalizePhoneLabel(lex.string()));
+        phones.push_back(lex.string());
       result.lexicon.emplace(std::move(word), std::move(phones));
     }
     lex.end();

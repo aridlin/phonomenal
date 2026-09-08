@@ -41,3 +41,30 @@ Indexes are currently built in C++ from RECS on load. No external WAV or origina
 recording is needed. The current reader collapses stress for phone lookup while
 retaining stress in RECS; context-dependent pronunciation selection is still a
 quality improvement area. `.phbank` remains supported for migration.
+
+## Embedded ASCII manual and additive extensions
+
+The complete, canonical wire description is [vcpack_spec.txt](../src/phonomenal/vcpack_spec.txt).
+Every newly generated pack stores its literal ASCII bytes in the final optional
+`SPEC` section, ending at EOF. Open a pack in a hex editor and scroll to the end.
+Original v1 readers already validate and skip this unknown optional section.
+
+Add future binary data under a new optional four-byte tag. Preserve existing
+section schemas, reserved fields, and version 1. Unknown required sections still
+fail explicitly. Original readers allow 32 sections and 2 GiB total; the normal
+seven-section pack leaves 25 tags available. Extensions rewrite the directory
+atomically and keep SPEC last, preserving audio and existing section payloads.
+
+```sh
+# Attach the manual to an existing pack without realigning it:
+.venv-vcpack/bin/python scripts/builder.py extend-pack voice.vcpack
+# Add an opaque future optional payload while retaining the original file:
+.venv-vcpack/bin/python scripts/builder.py extend-pack voice.vcpack \
+  --section XTRA=annotations.bin --output extended.vcpack
+```
+
+Python: `write_pack(..., extra_sections={"XTRA": payload_bytes})`, or
+`extend_pack(path, {"XTRA": payload_bytes}, output=destination)`.
+Existing tags cannot be overwritten by this extension API. When adding actual
+speech, regenerate the affected v1 audio/alignment/index sections coherently;
+blindly appending bytes is invalid.

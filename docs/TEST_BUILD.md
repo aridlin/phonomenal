@@ -41,7 +41,7 @@ English. One speaker per source folder.
 
 ## What has been verified
 
-Linux and Windows CI build the engine and both FT views, and run 35 Python/native
+Linux and Windows CI build the engine and both FT views, and run 51 Python/native
 tests. Windows CI also builds and tests vctts. A local automatic Heavy test built
 6 MP3 clips into a pack containing 39 words and 121 phonemes, with refinement
 actually executed. Linux GUI generation and export are exercised separately.

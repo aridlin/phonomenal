@@ -22,8 +22,8 @@ def fixture(path):
     for i, word in enumerate(tokens):
         start=37+i*4800
         words.append(dict(label=word,start=start,end=start+3601))
-        phones.append(dict(label='AA1',word=i,start=start,end=start+1333))
-        phones.append(dict(label='B',word=i,start=start+1333,end=start+3601))
+        phones.append(dict(label='AA1',word=i,start=start,end=start+3200))
+        phones.append(dict(label='B',word=i,start=start+3200,end=start+3601))
     pcm=struct.pack('<'+'h'*60000,*[int(5000*((i%61)/30-1)) for i in range(60000)])
     records=[dict(id='continuous-recording',words=words,phones=phones)]
     return write_pack(path,voice='fixture "voice"',language='en-us',rate=rate,pcm=pcm,records=records,lexicon={'newword':['AA','B']},features=True)
@@ -71,6 +71,47 @@ class VcpackTests(unittest.TestCase):
         self.assertEqual(len(result['units']),1)
         self.assertEqual(result['units'][0]['kind'],'phoneme')
         self.assertFalse(result['warnings'])
+
+    def write_phone_choices(self, choices, lexicon):
+        rate=48000; records=[]; cursor=0
+        for name, labels, durations in choices:
+            phones=[]; start=cursor
+            for label, duration in zip(labels, durations):
+                end=cursor+round(duration*rate)
+                phones.append(dict(label=label,word=0,start=cursor,end=end))
+                cursor=end
+            records.append(dict(id=name,words=[dict(label=name,start=start,end=cursor)],phones=phones))
+            cursor+=2400
+        pcm=struct.pack('<'+'h'*cursor,*[int(3000*((i%61)/30-1)) for i in range(cursor)])
+        write_pack(self.pack,voice='choices',language='en-us',rate=rate,pcm=pcm,records=records,lexicon=lexicon,features=False)
+
+    def test_strict_avoids_collapsed_vowel_even_with_matching_phones(self):
+        self.write_phone_choices([
+            ('collapsed',['HH','OW1','M'],[.03,.03,.03]),
+            ('home',['HH','OW1','M'],[.06,.22,.09]),
+        ], {'homophone':['HH','OW1','M']})
+        result=json.loads(self.native('--text','homophone','--strict','--plan').stdout)
+        self.assertEqual([u['clip_id'] for u in result['units']],['home'])
+
+    def test_strict_rejects_only_suspect_phone_coverage(self):
+        self.write_phone_choices([('collapsed',['OW1'],[.03])], {'newword':['OW1']})
+        result=self.native('--text','newword','--strict','--plan',check=False)
+        self.assertNotEqual(result.returncode,0)
+
+    def test_lexicon_stress_survives_native_reader(self):
+        self.write_phone_choices([
+            ('reduced',['ER0'],[.12]), ('stressed',['ER1'],[.12]),
+        ], {'newword':['ER1']})
+        result=json.loads(self.native('--text','newword','--strict','--plan').stdout)
+        self.assertEqual(result['units'][0]['clip_id'],'stressed')
+
+    def test_word_final_stop_prefers_source_word_ending(self):
+        self.write_phone_choices([
+            ('doctor',['AA1','K','T','ER0'],[.12,.07,.05,.12]),
+            ('back',['B','AE1','K'],[.07,.14,.07]),
+        ], {'closure':['K']})
+        result=json.loads(self.native('--text','closure','--strict','--plan').stdout)
+        self.assertEqual(result['units'][0]['clip_id'],'back')
 
     def test_stdout_wav_is_clean_when_plan_requested(self):
         result=self.native('--text','alpha beta','--plan','--stdout-wav')

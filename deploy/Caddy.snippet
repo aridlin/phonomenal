@@ -1,0 +1,18 @@
+# Insert inside the existing https://prol.aridlin.pl site block.
+# Reuse the server's existing media_auth login for this shared FT workspace.
+redir /phonomenal /phonomenal/ 308
+handle /phonomenal/* {
+    import media_auth
+    @foreign_origin {
+        header Origin *
+        not header Origin https://prol.aridlin.pl
+    }
+    respond @foreign_origin "Origin not allowed" 403
+    handle_path /phonomenal/files/* {
+        root * /opt/phonomenal/data/public
+        file_server
+    }
+    handle {
+        reverse_proxy 127.0.0.1:8766
+    }
+}

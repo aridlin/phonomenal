@@ -96,7 +96,7 @@ def extract_features(pcm, rate):
     return struct.pack('<IIQ', hop, 11, len(values)) + values.tobytes()
 
 
-def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexicon=None, features=True):
+def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexicon=None, features=True, extra_sections=None):
     if not 8000 <= rate <= 192000 or len(pcm) % 2 or not pcm:
         raise ValueError('Expected nonempty mono PCM16 and valid sample rate')
     validate_records(records, len(pcm) // 2, rate)
@@ -133,10 +133,40 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
     sections = [(b'META', metadata), (b'RECS', aligned), (b'AUDI', pcm), (b'LEXI', lex), (b'QARE', json.dumps(report, ensure_ascii=False).encode())]
     if features:
         sections.append((b'FEAT', extract_features(pcm, rate)))
+    sections = [(tag, 1 if tag in (b'META', b'RECS', b'AUDI') else 0, data) for tag, data in sections]
+    sections.extend(_optional_sections(extra_sections or {}))
+    _write_sections(path, sections)
+    return report
+
+
+def _optional_sections(extra_sections):
+    reserved = {b'META', b'RECS', b'AUDI', b'LEXI', b'FEAT', b'QARE', b'SPEC'}
+    result = []
+    for tag, payload in extra_sections.items():
+        tag = tag.encode('ascii') if isinstance(tag, str) else tag
+        if not isinstance(tag, bytes) or len(tag) != 4 or not all(33 <= c <= 126 for c in tag):
+            raise ValueError('Extension tag must be four printable ASCII bytes')
+        if tag in reserved:
+            raise ValueError('Cannot replace a core or reserved section with extension data')
+        if not isinstance(payload, bytes):
+            raise ValueError('Extension payload must be bytes')
+        result.append((tag, 0, payload))
+    return result
+
+
+def _write_sections(path, sections):
+    # SPEC is a normal optional section, last in both directory and physical file.
+    # Older v1 readers already skip unknown optional sections after checking CRC.
+    specification = Path(__file__).with_name('vcpack_spec.txt').read_bytes()
+    specification.decode('ascii')
+    sections = [(tag, flags, data) for tag, flags, data in sections if tag != b'SPEC']
+    sections.append((b'SPEC', 0, specification))
+    if not 3 <= len(sections) <= 32 or len({tag for tag, _, _ in sections}) != len(sections):
+        raise ValueError('v1 requires unique section tags and at most 32 sections')
     offset = HEADER.size + DIRECTORY.size * len(sections)
     directory = bytearray()
-    for kind, data in sections:
-        directory += DIRECTORY.pack(kind, 1 if kind in (b'META', b'RECS', b'AUDI') else 0, offset, len(data), zlib.crc32(data), 0)
+    for kind, flags, data in sections:
+        directory += DIRECTORY.pack(kind, flags, offset, len(data), zlib.crc32(data), 0)
         offset += len(data)
     if offset > MAX_BYTES:
         raise ValueError('v1 implementation limits packs to 2 GiB')
@@ -147,7 +177,7 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
         with os.fdopen(fd, 'wb') as out:
             out.write(HEADER.pack(MAGIC, 1, len(sections), offset))
             out.write(directory)
-            for _, data in sections:
+            for _, _, data in sections:
                 out.write(data)
             out.flush()
             os.fsync(out.fileno())
@@ -156,6 +186,26 @@ def write_pack(path, *, voice, language, rate, pcm, records, report=None, lexico
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
+
+
+def extend_pack(path, extra_sections=None, *, output=None):
+    """Preserve existing section bytes, add optional data and refresh the EOF spec.
+
+    Atomic replacement; no audio decoding or alignment. Existing extension tags
+    cannot be overwritten. Omit extras to attach SPEC to a legacy v1 pack.
+    """
+    path = Path(path)
+    report = inspect_pack(path)
+    raw = path.read_bytes()
+    _, _, count, _ = HEADER.unpack_from(raw)
+    sections = []
+    for i in range(count):
+        tag, flags, start, length, _, _ = DIRECTORY.unpack_from(raw, HEADER.size + i * DIRECTORY.size)
+        sections.append((tag, flags, raw[start:start+length]))
+    extras = _optional_sections(extra_sections or {})
+    if {tag for tag, _, _ in extras} & {tag for tag, _, _ in sections}:
+        raise ValueError('Extension tag already exists; existing data is preserved')
+    _write_sections(output or path, sections + extras)
     return report
 
 

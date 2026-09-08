@@ -1,13 +1,21 @@
 # Phonomenal
 
+![Phonomenal — Record. Align. Speak.](docs/images/banner.svg)
+
 Turn speech recordings into a portable voice pack, then mix new sentences from
 that recorded voice. **Python builds the pack; C++ plans and renders speech.**
-The desktop/terminal frontend uses [FT](https://github.com/aridlin/ft) with
+The desktop, terminal and web frontend uses [FT](https://github.com/aridlin/ft) with
 **Gruvbox by default**, with a builder/recorder view and a separate TTS/player view.
 
 [Download the generator and TTS/player test builds](https://github.com/aridlin/phonomenal/releases)
 for Linux and Windows, plus the Windows vctts overlay.
 See [test-build instructions](docs/TEST_BUILD.md).
+
+[Open the FT web app](https://prol.aridlin.pl/phonomenal/) (existing ProLiant login).
+
+![FT web TTS player in Gruvbox](docs/images/web-player.png)
+
+![FT web voice pack generator](docs/images/web-builder.png)
 
 Default target: **TF2 mercs**, starting with **Heavy**, then **Medic**, then
 **Soldier**. The builder opens on Heavy; choose **My own voice** for the microphone
@@ -29,6 +37,8 @@ in that order. TF2 recordings are supplied locally and are not included here.
   analysis audio, resume checkpoints, and inspectable alignment/build reports.
 - One binary `.vcpack` containing audio, words, phonemes, pronunciations, acoustic
   features and provenance, with section checksums and strict native validation.
+  Optional sections reserve room for future data; every new pack ends with its
+  complete [plain ASCII specification](src/phonomenal/vcpack_spec.txt), readable in a hex editor.
 - C++ phrase/word/phone planning that prefers long continuous recordings and
   compares candidate joins using boundary pitch, energy and spectral features.
 - New words assembled from recorded phone sequences. A bundled pack lexicon and
@@ -64,7 +74,8 @@ Pass `-DPHONOMENAL_BUILD_FRONTEND=OFF` for just the native library and CLI.
 
 Both views are tabs in the same FT application. FT also accepts `--ft-gui`,
 `--ft-tui`, and `--ft-web`. Web mode binds to localhost. The recorder captures
-**the host computer's microphone**, including when its controls are viewed in a browser.
+**the host computer's microphone** in desktop/TUI mode. The deployed web mode
+uses browser capture and playback; see [FT web deployment](docs/WEB.md).
 The TTS/player view requires no Python installation.
 
 ## Set up automatic pack generation
@@ -131,6 +142,32 @@ has a reliable pronunciation. Digits are currently spoken individually.
 The included [synthetic fixture example](examples/README.md) runs without downloading
 speech models. It demonstrates container validation and chunk planning; it is not
 an example of natural human voice quality.
+
+## Check generated words with STT
+
+The player includes **Imported voice packs**, a persistent dropdown populated from
+`data/packages`, `packs`, and files selected with Browse. Heavy, Medic and Soldier
+appear first. Refresh discovers packs built or copied while the app is open.
+
+After generating speech, click **Check words with STT**. It uses the optional
+builder environment and shows the recognized sentence, word error rate, and
+missing/substituted/extra words. This check transcribes the actual generated WAV;
+it never supplies the requested text as a Whisper prompt or hotword.
+
+```sh
+.venv-vcpack/bin/python scripts/builder.py verify-speech message.wav \
+  --text "I hate getting homework" --json-output speech-check.json
+```
+
+Use `--require-match` in automation for a nonzero exit on word disagreement.
+Recognition agreement is a diagnostic, not a guarantee of human intelligibility
+or naturalness. The transcript is always shown, including failures.
+
+The planner preserves lexical stress, favors intact source words inside compounds,
+and penalizes collapsed vowels and suspiciously stretched phone intervals. Strict
+mode additionally excludes highly suspicious durations; it cannot fix wrong
+transcripts or alignment boundaries in an old pack. Rebuild legacy packs from the
+source recordings when these defects occur.
 
 ## Boundary accuracy
 

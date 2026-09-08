@@ -114,7 +114,17 @@ def _common_parser() -> argparse.ArgumentParser:
     build.add_argument("--work", type=Path)
     build.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
     build.add_argument("--force", action="store_true")
-    build.add_argument("--tf2", action="store_true", help="Exclude TF2 robot/MvM variants and test files")
+    build.add_argument("--tf2", action="store_true", help="Exclude TF2 robot-voice variants and test files")
+    verify = subparsers.add_parser("verify-speech", help="Transcribe generated audio without prompt hints and report word errors.")
+    verify.add_argument("audio", type=Path)
+    verify.add_argument("--text", required=True)
+    verify.add_argument("--model", default="small.en")
+    verify.add_argument("--json-output", type=Path)
+    verify.add_argument("--require-match", action="store_true", help="Exit 2 if recognized words differ.")
+    extend = subparsers.add_parser("extend-pack", help="Add optional binary sections and an ASCII specification without changing voice data.")
+    extend.add_argument("pack", type=Path)
+    extend.add_argument("--output", type=Path, help="Default: atomically update the input pack.")
+    extend.add_argument("--section", action="append", default=[], metavar="TAG=FILE", help="Four ASCII bytes, equals sign, binary payload file; repeatable.")
     inspect = subparsers.add_parser("inspect-pack", help="Validate checksums and show pack quality report.")
     inspect.add_argument("pack", type=Path)
     convert = subparsers.add_parser("convert-pack", help="Embed existing aligned state and master in .vcpack.")
@@ -143,6 +153,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     layout = default_layout(args.root)
     mercs = resolve_mercs(args.merc) if hasattr(args, "merc") else []
 
+    if args.command == "verify-speech":
+        from phonomenal.speech_check import verify_speech
+        result = verify_speech(args.audio, args.text, args.model)
+        if args.json_output:
+            args.json_output.parent.mkdir(parents=True, exist_ok=True)
+            args.json_output.write_text(json.dumps(result, indent=2)+"\n", encoding="utf-8")
+        print("STT heard: " + (result['recognized'] or '(nothing)'))
+        print("Expected: " + result['expected'])
+        print(f"Word error rate: {result['word_error_rate']:.1%} ({result['word_errors']} errors / {result['reference_words']} words)")
+        if result['spacing_only_difference']:
+            print("The recognized letters match; only word spacing differs. Raw word error rate is retained above.")
+        for edit in result['differences']:
+            print(f"  {edit['operation']}: {edit['expected']!r} -> {edit['heard']!r}")
+        print(result['limitation'])
+        return 2 if args.require_match and not result['words_match'] else 0
     if args.command == "build-mercs":
         from phonomenal.mercs import build_mercs
         build_mercs(layout.root, args.merc, mfa_command=args.mfa_command, model=args.whisper_model, force=args.force)
@@ -157,6 +182,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         from phonomenal.builder import build_pack
         build_pack(args.source, args.output, args.voice, args.language, args.whisper_model,
                    args.mfa_command, args.acoustic_model, args.work, args.force, args.device, args.tf2)
+        return 0
+    if args.command == "extend-pack":
+        from phonomenal.vcpack import extend_pack
+        sections = {}
+        for item in args.section:
+            tag, separator, filename = item.partition("=")
+            if not separator or tag in sections:
+                parser.error("Each --section must be a unique TAG=FILE")
+            sections[tag] = Path(filename).read_bytes()
+        extend_pack(args.pack, sections, output=args.output)
+        print(f"Updated {args.output or args.pack}: optional data preserved, ASCII specification at EOF")
         return 0
     if args.command == "inspect-pack":
         from phonomenal.vcpack import inspect_pack

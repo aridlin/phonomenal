@@ -77,6 +77,9 @@ struct PhoneOccurrence {
   std::int64_t end_sample{};
   std::optional<double> confidence;
   std::string source_word;
+  bool whole_word = false, begins_word = false, ends_word = false;
+  double duration_penalty = 0;
+  std::vector<std::string> stressed_labels;
 };
 
 struct PronunciationStats {
@@ -967,7 +970,7 @@ struct VoiceBank::Impl {
         labels.reserve(phones.size());
         for (const auto &phoneme : phones) {
           if (!phoneme.normalized_label.empty()) {
-            labels.push_back(phoneme.normalized_label);
+            labels.push_back(phoneme.label);
           }
         }
         if (labels.empty()) {
@@ -1011,6 +1014,25 @@ struct VoiceBank::Impl {
         pronunciation_index[word] = best->second.labels;
       }
     }
+  }
+
+  // Duration is an alignment sanity signal, not a claim of measured accuracy.
+  // Collapsed vowels and phones stretched over silence should not beat intact
+  // words.
+  double phone_duration_penalty(const Phoneme &phone) const {
+    const double ms =
+        1000. * (phone.end_sample - phone.start_sample) / sample_rate;
+    const std::string vowels = " AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ";
+    const bool vowel =
+        vowels.find(" " + phone.normalized_label + " ") != std::string::npos;
+    const bool stressed = !phone.label.empty() && (phone.label.back() == '1' ||
+                                                   phone.label.back() == '2');
+    const double minimum = vowel ? (stressed ? 65. : 45.) : 12.;
+    double penalty = ms < minimum ? 12. * (minimum - ms) : 0.;
+    const double maximum = vowel ? 650. : 300.;
+    if (ms > maximum)
+      penalty += (ms - maximum) * 2.;
+    return penalty;
   }
 
   void build_indexes() {
@@ -1069,6 +1091,13 @@ struct VoiceBank::Impl {
                 MeanConfidence(confidences),
                 record.words[static_cast<std::size_t>(word_index_value)].text,
             };
+            occurrence.whole_word = start == 0 && length == phones.size();
+            occurrence.begins_word = start == 0;
+            occurrence.ends_word = start + length == phones.size();
+            for (std::size_t n = start; n < start + length; ++n) {
+              occurrence.duration_penalty += phone_duration_penalty(phones[n]);
+              occurrence.stressed_labels.push_back(phones[n].label);
+            }
             phone_index[MakeKey(labels)].push_back(occurrence);
           }
         }
@@ -1088,9 +1117,20 @@ struct VoiceBank::Impl {
           labels.push_back(p.normalized_label);
           if (p.word_index == r.phonemes[i].word_index)
             continue;
-          phone_index[MakeKey(labels)].push_back(
-              {labels, r.clip_id, r.phonemes[i].start_sample, p.end_sample,
-               p.confidence, "cross-word sounds"});
+          PhoneOccurrence occurrence{
+              labels,       r.clip_id,    r.phonemes[i].start_sample,
+              p.end_sample, p.confidence, "cross-word sounds"};
+          occurrence.begins_word = i == 0 || r.phonemes[i - 1].word_index !=
+                                                 r.phonemes[i].word_index;
+          occurrence.ends_word =
+              i + n + 1 == r.phonemes.size() ||
+              r.phonemes[i + n + 1].word_index != p.word_index;
+          for (std::size_t j = i; j <= i + n; ++j) {
+            occurrence.duration_penalty +=
+                phone_duration_penalty(r.phonemes[j]);
+            occurrence.stressed_labels.push_back(r.phonemes[j].label);
+          }
+          phone_index[MakeKey(labels)].push_back(std::move(occurrence));
         }
       }
   }

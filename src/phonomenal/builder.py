@@ -72,9 +72,9 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     rate = 48000
     work = Path(work or output.with_suffix('.build')).resolve()
     work.mkdir(parents=True, exist_ok=True)
-    source_files = sorted(p for p in source.rglob('*') if p.suffix.lower() in ('.mp3', '.wav', '.ogg', '.flac', '.m4a') and work not in p.parents)
+    source_files = sorted(p for p in source.rglob('*') if p.suffix.lower() in ('.mp3', '.wav', '.ogg', '.flac', '.m4a', '.webm') and work not in p.parents)
     if tf2:
-        source_files = [p for p in source_files if not any(marker in str(p.relative_to(source)).lower() for marker in ('robot', 'mvm', 'giant')) and not p.name.lower().startswith('test_')]
+        source_files = [p for p in source_files if not any(marker in str(p.relative_to(source)).lower() for marker in ('vo/robot', 'robot_vo', 'robotvoice')) and not p.name.lower().startswith('test_')]
     if not source_files:
         raise ValueError('No audio files found')
     version = run(mfa + ['version']).strip()

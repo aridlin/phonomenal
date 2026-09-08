@@ -1,0 +1,26 @@
+[Unit]
+Description=Phonomenal FT web generator and speech player
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=phonomenal
+Group=phonomenal
+WorkingDirectory=/opt/phonomenal
+ExecStart=/opt/phonomenal/cpp/build/phonomenal_splicer_frontend --ft-web --web-port 8766 --player --pack /opt/phonomenal/data/packages/heavy-core.vcpack --text "I hate getting homework"
+Restart=on-failure
+RestartSec=3
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/phonomenal/data /opt/phonomenal/recordings /opt/phonomenal/source /opt/phonomenal/.tools /opt/phonomenal/.venv-vcpack /opt/phonomenal/.cache /opt/phonomenal/.local
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=6G
+TasksMax=256
+UMask=0022
+
+[Install]
+WantedBy=multi-user.target

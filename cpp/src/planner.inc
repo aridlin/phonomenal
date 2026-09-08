@@ -26,7 +26,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
       }
     }
   }
-  std::vector<std::string> target;
+  std::vector<std::string> target, stressed_target;
   std::vector<std::size_t> starts, ends, word_at;
   std::vector<std::string> warnings;
   for (std::size_t w = 0; w < tokens.size(); ++w) {
@@ -52,6 +52,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
       throw std::runtime_error("Cannot pronounce '" + tokens[w] + "'");
     for (const auto &phone : pronunciation) {
       target.push_back(NormalizePhoneLabel(phone));
+      stressed_target.push_back(phone);
       word_at.push_back(w);
     }
     ends.push_back(target.size());
@@ -130,6 +131,34 @@ PlanResult VoiceBank::PlanText(std::string_view text,
       if (found == impl_->phone_index.end())
         continue;
       for (const auto &p : found->second) {
+        // Strict mode also excludes obviously collapsed/stretched phone cuts.
+        if (options.strict && p.duration_penalty >= 180.)
+          continue;
+        double stress_penalty = 0.;
+        for (std::size_t n = 0; n < len && n < p.stressed_labels.size(); ++n) {
+          const auto &wanted = stressed_target[i + n];
+          const auto &actual = p.stressed_labels[n];
+          if (!wanted.empty() && !actual.empty() &&
+              (wanted.back() == '1' || wanted.back() == '2') &&
+              actual.back() == '0')
+            stress_penalty += 90.;
+        }
+        // An emphatic, sentence-final vowel can be far too long inside a new
+        // compound. Prefer an occurrence closer to ordinary syllable timing.
+        double expected_ms = 0.;
+        for (std::size_t n = 0; n < len; ++n) {
+          const auto &phone = target[i + n];
+          const bool vowel =
+              std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ")
+                  .find(" " + phone + " ") != std::string::npos;
+          expected_ms +=
+              vowel ? (stressed_target[i + n].back() == '1' ? 180. : 140.)
+                    : (phone == "HH" ? 45. : 70.);
+        }
+        const double duration_ms =
+            1000. * (p.end_sample - p.start_sample) / impl_->sample_rate;
+        const double timing_penalty =
+            std::max(0., duration_ms - expected_ms * 1.7) * .8;
         PlannedUnit u{UnitKind::Phoneme, tokens[word_at[i]],
                       p.source_word,     p.labels,
                       p.clip_id,         p.start_sample,
@@ -142,7 +171,11 @@ PlanResult VoiceBank::PlanText(std::string_view text,
         u.approximated = approximated;
         edges[i].push_back(
             {i + len, std::move(u),
-             .15 * static_cast<double>(len) + (approximated ? 1000000. : 0.)});
+             .15 * static_cast<double>(len) + p.duration_penalty +
+                 stress_penalty + timing_penalty +
+                 (i + len == ends[last_word] && !p.ends_word ? 180. : 0.) +
+                 (i == starts[word_at[i]] && !p.begins_word ? 50. : 0.) +
+                 (p.whole_word ? 0. : 70.) + (approximated ? 1000000. : 0.)});
       }
     }
   }
@@ -236,10 +269,24 @@ PlanResult VoiceBank::PlanText(std::string_view text,
   }
   auto &completed = dp.back();
   if (completed.empty())
-    throw std::runtime_error("Missing sound coverage for prompt; inspect pack "
-                             "inventory or try --phones / best-effort mode");
+    throw std::runtime_error(
+        "No acceptable sound coverage: phonemes are missing or their durations "
+        "were rejected. Rebuild/inspect the pack or try best-effort mode");
   trim(completed);
   auto best = std::move(completed.front());
+  bool phone_splicing =
+      std::any_of(best.units.begin(), best.units.end(),
+                  [](const auto &u) { return u.kind == UnitKind::Phoneme; });
+  if (phone_splicing &&
+      impl_->report.find("legacy-import") != std::string::npos)
+    warnings.push_back(
+        "This pack uses legacy imported alignments. Rebuild it from "
+        "recordings; strict coverage cannot repair wrong timestamps.");
+  if (std::count_if(best.units.begin(), best.units.end(), [](const auto &u) {
+        return u.kind == UnitKind::Phoneme;
+      }) > 1)
+    warnings.push_back("Some words are assembled from recorded sound pieces; "
+                       "inspect and audition their cuts.");
   // Preserve original contiguous source audio as one run, including within new
   // words.
   std::vector<PlannedUnit> merged;

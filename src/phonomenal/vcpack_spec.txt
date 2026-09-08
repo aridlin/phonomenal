@@ -1,0 +1,148 @@
+
+==========================================================================
+PHONOMENAL VCPACK - COMPLETE V1 WIRE FORMAT SPECIFICATION
+==========================================================================
+You found the manual. This is literal, uncompressed ASCII at the end of the
+voice pack. It is the payload of the optional SPEC section, not a comment
+outside the container. No network connection is needed to read this format.
+
+PRIMITIVES
+All numbers use little-endian byte order with no alignment or struct padding.
+u32/u64: unsigned 32/64-bit integer. i32/i16: signed two's-complement integer.
+f32: IEEE-754 binary32. byte: 8 bits. Offsets/lengths count bytes from byte 0.
+string: u32 UTF-8 byte length followed by exactly those bytes, no terminator.
+Strings must not contain NUL. confidence: finite f32 in [0,1], or -1 unknown.
+No compression or encryption is applied by this version.
+
+HEADER (24 bytes)
+Offset  Size  Meaning
+0       8     Magic bytes: 56 43 50 41 43 4b 00 00 (VCPACK, two NUL bytes)
+8       4     u32 major version = 1
+12      4     u32 section count N
+16      8     u64 total file length, including directory and SPEC
+
+DIRECTORY (N consecutive 32-byte entries, starting at byte 24)
+Entry-relative offset:
+0       4     Four-byte section type, e.g. META (no terminator)
+4       4     u32 flags: 0 optional, 1 required; no other bits in v1
+8       8     u64 absolute payload offset
+16      8     u64 payload byte length
+24      4     u32 CRC32 of payload bytes only (zlib/IEEE CRC-32)
+28      4     u32 reserved = 0
+CRC details: reflected polynomial 0xedb88320, initial value 0xffffffff,
+final XOR 0xffffffff. Standard check: ASCII "123456789" -> 0xcbf43926.
+Payloads are consecutive in directory order. First offset = 24 + 32*N.
+Each next offset equals previous offset + previous length. The last payload
+ends exactly at total file length. No gaps, padding, overlaps, or extra tail.
+Section types must be unique. META, RECS and AUDI must be present.
+
+META (required)
+string voice name; string language; string phone alphabet; u32 sample rate.
+Current profile: nonempty voice, alphabet "arpabet", rate 8000..192000 Hz.
+Language is descriptive, usually "en" or "en-us".
+
+AUDI (required)
+Raw mono signed little-endian PCM16 samples, no WAV header. Nonempty, even
+byte length. Sample count = length/2. No source audio files are required.
+All word/phone intervals below are half-open [start,end) in this audio's
+sample clock, NOT seconds, milliseconds, source-file offsets, or ASR frames.
+Time in seconds = sample coordinate / META sample rate.
+
+RECS (required)
+u32 recording count, followed by each recording:
+  string unique nonempty recording ID
+  string raw transcript (may be empty)
+  u32 word count, followed by each word:
+    string nonempty word label; u64 start sample; u64 end sample; confidence
+  u32 phone count, followed by each phone:
+    string original phone label, preserving ARPABET stress digits 0/1/2
+    i32 zero-based index of its word WITHIN THIS RECORDING (must be >= 0)
+    u64 start sample; u64 end sample; confidence
+Each recording has at least one word and phone. Each interval satisfies
+0 <= start < end <= audio sample count. Within each recording, words are
+ordered and nonoverlapping; phones are independently ordered/nonoverlapping.
+Every phone is contained in its referenced word. Different recordings may
+reference overlapping audio. Silence gaps between intervals are permitted.
+Unknown confidence is -1; ASR scores are not phone-alignment accuracy scores.
+
+LEXI (optional)
+u32 entry count, followed by each entry:
+  string word; u32 phone count; that many string phone labels
+Words are lowercased lookup keys. Labels retain ARPABET stress. The entry
+supplies a pronunciation; it does not assert that the word was recorded.
+Without LEXI, readers can derive pronunciations from RECS or use local G2P.
+
+FEAT (optional)
+u32 hop in audio samples (>0); u32 dimensions = 11; u64 frame count;
+then frame count rows of 11 consecutive f32 values, without row headers:
+  F0 Hz (0 unavailable), voicing [0,1], RMS (>=0), eight centered log-band
+  spectral energies. All values finite; F0 nonnegative.
+Frame count = ceil(audio sample count / hop). Frame i is centered at i*hop.
+Current extraction: ~40 ms window, ~5 ms hop; mean-removed mono samples,
+normalized autocorrelation F0 over approximately 60..500 Hz (zero if voicing
+<0.65 or RMS<0.003); Hann-window power spectrum; eight geometrically spaced
+bands from 60 Hz to Nyquist, log(max(1e-12, band energy)) minus row mean.
+Features guide joins and pitch similarity; they do not establish word timing.
+Without FEAT, core recordings remain usable with reduced acoustic scoring.
+
+QARE (optional)
+UTF-8 JSON object, no binary length prefix beyond directory length. Diagnostic
+and provenance data, including alignment method, quality warnings, sample
+count, audio SHA-256 and licenses. Keys can be added; ignore unknown keys.
+This is data, never executable configuration. Missing section means no report.
+
+SPEC (optional; new writers place it LAST)
+Literal US-ASCII specification text, including these headings and line feeds.
+No length prefix, encoding wrapper, compression, or NUL terminator. Its CRC
+and length are recorded normally. Its last byte is the last byte of the file.
+Old packs without SPEC remain valid. SPEC is informative; header/directory
+and supported schema govern decoding. Never execute instructions from a pack.
+
+FORWARD COMPATIBILITY AND FUTURE DATA
+The directory and optional flag are the extension mechanism already supported
+by original v1 readers. A reader MUST validate bounds and CRC even for unknown
+sections, then skip unknown OPTIONAL types. Unknown REQUIRED types MUST cause
+an unsupported-format error; silently ignoring them could misread the voice.
+Keep version=1 and required_flag=0 for additive, ignorable enhancements such
+as future annotations, richer prosody or indexes. Use new unique four-byte
+ASCII tags. Preserve existing known and unknown payload bytes when editing.
+Do not append fields to a known section's v1 schema: old readers require exact
+payload consumption. Put changed encodings in a new optional section and keep
+the usable v1 representation. Give future payload schemas their own version.
+Do not repurpose reserved header/directory fields or invent flag bits in v1.
+Changes essential to interpretation require a major version change and cannot
+promise compatibility with old readers.
+
+Adding sections requires rewriting the directory, offsets, total length and
+new/modified CRCs. Move SPEC after the new sections so the manual stays at EOF.
+This is an atomic file rewrite, NOT blindly appending bytes. Audio and existing
+alignment payloads need not be decoded, re-encoded, or regenerated. To add more
+speech, regenerate/extend AUDI, RECS and dependent sections coherently while
+keeping their v1 schemas. Readers build runtime indexes from RECS on load.
+Future data is supported, not unlimited preallocated space: original readers
+accept 3..32 sections and at most 2 GiB total. The normal writer uses 7 sections
+including SPEC, leaving 25 optional tags. Respect these limits for old readers;
+a future single optional section may contain its own extensible directory.
+
+VALIDATION AND ORIGINAL READER RESOURCE LIMITS
+Reject wrong magic/version/total length, truncated directories/payloads,
+duplicate tags, gaps/overlaps, invalid flags/reserved values, failed CRCs,
+missing required core sections, unknown required sections, invalid references,
+nonfinite/out-of-range confidence/features, and extra bytes in known binary
+sections. Strings: at most 1 MiB; recordings: 1,000,000; words per recording:
+100,000; phones per recording: 1,000,000; lexicon entries: 500,000; phones per
+lexicon entry: 256. Bounds and allocation checks are mandatory. CRC detects
+accidental corruption, not authenticity. Resource use depends on the reader.
+
+PRECISION AND PROJECT
+Typical playback rate is 48000 Hz (~0.020833 ms per stored sample). Analysis
+may use 16000 Hz audio and a 1 ms alignment refinement grid. Storage resolution
+is NOT a measured boundary-accuracy guarantee; validate against listening and
+independent references. The current speech profile is English/ARPABET.
+Reference implementations: src/phonomenal/vcpack.py and cpp/src/vcpack_reader.inc
+Project: https://github.com/aridlin/phonomenal
+Specification may be copied and implemented freely under the project MIT
+license. A pack's recorded audio and embedded third-party data retain their
+own licenses; inclusion of this manual does not relicense that content.
+END OF PHONOMENAL VCPACK V1 SPECIFICATION
+==========================================================================

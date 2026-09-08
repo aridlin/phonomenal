@@ -3,6 +3,8 @@
 - FT is aridlin's combined frontend library: https://github.com/aridlin/ft .
   `cpp/src/ft.hpp` was copied from the local FT tree at commit
   `33f082f5143f7f4197209acaad40e4d0c51505a6` on 2026-09-08, at the author's request.
+  A fresh upstream clone later that day confirmed the same commit and an identical
+  `ft.hpp`; the existing local FT checkout and its edits were preserved.
 - miniaudio is vendored in `cpp/vendor/miniaudio.h` and the bundled vctts tree.
   Its dual public-domain/MIT license appears in the header and
   `vctts/extern/miniaudio/LICENSE` (release copy: `docs/licenses/miniaudio.txt`).
