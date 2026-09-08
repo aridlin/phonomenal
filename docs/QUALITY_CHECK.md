@@ -54,8 +54,33 @@ All four prompts are in `examples/regression-prompts.json`. The table compares t
 | spy | 16.3% → 16.3% | 41.2% → 35.3% | 50.0% → 50.0% | 0.0% |
 | pyro | coverage failure → coverage failure | coverage failure → coverage failure | coverage failure → coverage failure | coverage failure |
 
-The reported Soldier phrase transcribes exactly after rejecting a collapsed vowel inside the previous screaming “you are” phrase. Its exact match is not evidence that arbitrary Soldier text is solved. Several other voices regress on particular prompts; duration heuristics alone cannot repair incorrect source transcripts. Medic and full Heavy are being rebuilt and must be evaluated separately before promotion.
+The reported Soldier phrase transcribes exactly after rejecting a collapsed vowel inside the previous screaming “you are” phrase. Its exact match is not evidence that arbitrary Soldier text is solved. Several other voices regress on particular prompts; duration heuristics alone cannot repair incorrect source transcripts. The completed Medic and full Heavy rebuilds are evaluated separately below.
 
 The single-narrator comparison uses only the **16:47 first chapter, The Telltale Heart**, from *Six Creepy Stories* by Edgar Allan Poe, read by Phil Chenevert. [LibriVox catalog and reader credits](https://librivox.org/six-creepy-tales-by-edgar-allan-poe/). LibriVox identifies the recordings as public domain in the USA. The resulting pack contains 188 accepted clips, 2,153 words and 7,085 phones; it was built with unprompted small.en ASR and MFA fine-tuning. It was tested on the same unrelated text, with no special narrator selection rules. The complete two-hour book was not processed.
 
 Machine-readable results with recognized text are in [cross-voice-results.json](cross-voice-results.json). Audio and voice assets remain in the local/deployed workspace. No independent human-labelled phone-boundary benchmark has been performed.
+
+## Full rebuilt packs
+
+Both builds use the same rules. Medic uses medium.en source transcription and
+Heavy uses small.en, followed by MFA fine-tuning and automatic checks on every
+accepted boundary. Runaway laughter/scream tokens are rejected before G2P.
+These are full source-folder rebuilds, without selecting clips for the test text.
+
+| Rebuilt pack | Accepted clips | Words / phones | Reading WER | TTS WER | Short WER | Approve WER |
+|---|---:|---:|---:|---:|---:|---:|
+| Heavy | 522 | 2,227 / 7,291 | 71.4% | 29.4% | 0% | 33.3% |
+| Medic | 371 | 1,648 / 5,621 | 38.8% | 35.3% | 75% | 66.7% |
+
+The full Heavy pack now transcribes **I HATE GETTING HOMEWORK!** exactly and
+improves both long prompts relative to its legacy pack. Medic improves the long
+reading prompt from 69.4% to 38.8% and the TTS prompt from 76.5% to 35.3% under
+the same generic engine, but its short sentence regresses from 25% to 75%.
+The legacy Medic pack is retained as `medic-legacy.vcpack`. The rebuilt pack is
+available as `medic.vcpack`, including the requested project-root copy.
+
+The extended reading passage remains poor for Heavy, and neither rebuild makes
+arbitrary text consistently intelligible. Both successful rebuilds ran in
+separate memory-limited services after an ASR laughter token caused G2P memory
+exhaustion. Heavy finished at 2.8 GiB peak and Medic at 3 GiB peak; the corrected
+builds reused transcription caches and did not require re-recording sources.

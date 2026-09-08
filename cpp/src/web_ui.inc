@@ -37,11 +37,11 @@ static std::string unique_web_name(const std::string &suffix) {
              std::chrono::system_clock::now().time_since_epoch().count()) +
          suffix;
 }
-static std::vector<std::uint8_t> decode_upload(std::string_view encoded) {
-  if (encoded.empty() || encoded.size() > 88 * 1024 * 1024 ||
+static std::vector<std::uint8_t> decode_upload(std::string_view encoded, std::size_t maximum) {
+  if (encoded.empty() || encoded.size() > ((maximum+2)/3)*4 ||
       encoded.size() % 4)
     throw std::runtime_error(
-        "Upload must be a base64-encoded file under 64 MiB");
+        "Upload exceeds the supported encoded file size");
   constexpr std::string_view alphabet =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   std::vector<std::uint8_t> result;
@@ -69,8 +69,8 @@ static std::vector<std::uint8_t> decode_upload(std::string_view encoded) {
     if (!padding)
       result.push_back(static_cast<std::uint8_t>(value));
   }
-  if (result.size() > 64 * 1024 * 1024)
-    throw std::runtime_error("Upload exceeds 64 MiB");
+  if (result.size() > maximum)
+    throw std::runtime_error("Upload exceeds the file size limit");
   return result;
 }
 static void web_upload(App &a) {
@@ -107,7 +107,7 @@ static void web_upload(App &a) {
       (take.find_first_not_of("0123456789") != std::string::npos ||
        take.size() > 3 || std::stoul(take) >= kReadingScript.size()))
     throw std::runtime_error("Invalid recording take");
-  auto bytes = decode_upload(encoded);
+  auto bytes = decode_upload(encoded, (pack ? 192u : 64u) * 1024 * 1024);
   if (ft::param("voice_kind") && std::string(ft::param("voice_kind"))=="editor-audio") {
     if (a.editor_project.empty() || extension!=".wav") throw std::runtime_error("Open an editor project and choose a mono PCM16 WAV.");
     const auto pending=a.editor_project/"incoming.wav";
@@ -178,7 +178,7 @@ static void web_upload(App &a) {
 }
 static void web_upload_control() {
   ft::html(
-      R"HTML(<section><label>Import voice pack or speech files (up to 64 MiB each)<input type="file" multiple accept=".vcpack,.mp3,.wav,.ogg,.flac,.m4a,.webm,.txt" onchange="phonomenalUploadFiles(this.files)"></label><small id="voice-upload-status"></small></section>)HTML");
+      R"HTML(<section><label>Import voice packs (up to 192 MiB) or speech files (up to 64 MiB each)<input type="file" multiple accept=".vcpack,.mp3,.wav,.ogg,.flac,.m4a,.webm,.txt" onchange="phonomenalUploadFiles(this.files)"></label><small id="voice-upload-status"></small></section>)HTML");
 }
 static void web_recorder(App &a) {
   std::string html =
@@ -221,7 +221,8 @@ window.phonomenalApplyResponse = function(html) {
  if(next)document.querySelector('main').innerHTML=next.innerHTML;
 };
 window.phonomenalSend = async function(file,take,kind) {
- if(file.size>64*1024*1024) throw new Error('File exceeds 64 MiB');
+ const limit=/\.vcpack$/i.test(file.name)?192:64;
+ if(file.size>limit*1024*1024) throw new Error('File exceeds '+limit+' MiB');
  const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)});
  const name=file.name.replace(/[^a-zA-Z0-9._-]/g,'_').replace(/^\./,'_');
  const body=new URLSearchParams({voice_upload:data,voice_filename:name});

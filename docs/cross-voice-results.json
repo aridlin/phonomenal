@@ -1478,5 +1478,191 @@
     "strict": false,
     "engine": "generic",
     "error": "phonomenal: No acceptable sound coverage: phonemes are missing or their durations were rejected. Rebuild/inspect the pack or try best-effort mode"
+  },
+  {
+    "voice": "medic-rebuilt",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 95,
+    "kinds": {
+      "phoneme": 78,
+      "exact_chunk": 1,
+      "exact_word": 16
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "English text for beginners to practice reading, comprehension of life, for practicing your comprehension of teaching English will both improve your vocabulary when understanding of grammar would water. The text below are the time to help the developer get into an instant evaluation of your practice.",
+      "word_errors": 19,
+      "reference_words": 49,
+      "word_error_rate": 0.3877551020408163,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic-rebuilt",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 23,
+    "kinds": {
+      "phoneme": 13,
+      "exact_word": 10
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "I think you've done making fun, orbital, so you wouldn't scream at me for using eggs to spit.",
+      "word_errors": 6,
+      "reference_words": 17,
+      "word_error_rate": 0.35294117647058826,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic-rebuilt",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 5,
+    "kinds": {
+      "phoneme": 4,
+      "exact_word": 1
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "Alright, it's getting cold!",
+      "word_errors": 3,
+      "reference_words": 4,
+      "word_error_rate": 0.75,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "medic-rebuilt",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 6,
+    "kinds": {
+      "phoneme": 5,
+      "exact_chunk": 1
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "You are straighten up, hooves!",
+      "word_errors": 4,
+      "reference_words": 6,
+      "word_error_rate": 0.6666666666666666,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy-rebuilt",
+    "prompt": {
+      "id": "reading-passage",
+      "text": "English texts for beginners to practice reading and comprehension online and for free. Practicing your comprehension of written English will both improve your vocabulary and understanding of grammar and word order. The texts below are designed to help you develop while giving you an instant evaluation of your progress."
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 95,
+    "kinds": {
+      "phoneme": 79,
+      "exact_word": 16
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "Jealous expects for beginners to act as ready and comery henchin, unplained for free. Press to send your comery henchin, ever-regardingly sure beauty from your vocabulary. But understand the ever-gryom I ever murdered. The ex-behold I decide to help you, though I'll give you an instant of graduation of your progress.",
+      "word_errors": 35,
+      "reference_words": 49,
+      "word_error_rate": 0.7142857142857143,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy-rebuilt",
+    "prompt": {
+      "id": "tts-passage",
+      "text": "I think im done making phenomenal so you dont scream at me for using text to speech"
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 21,
+    "kinds": {
+      "exact_word": 7,
+      "phoneme": 12,
+      "exact_chunk": 2
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "I think I'm done making someone who'll show you don't scream at me for using text-to-speech.",
+      "word_errors": 5,
+      "reference_words": 17,
+      "word_error_rate": 0.29411764705882354,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy-rebuilt",
+    "prompt": {
+      "id": "short",
+      "text": "I hate getting homework"
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 5,
+    "kinds": {
+      "phoneme": 4,
+      "exact_chunk": 1
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "I HATE GETTING HOMEWORK!",
+      "word_errors": 0,
+      "reference_words": 4,
+      "word_error_rate": 0.0,
+      "words_match": true,
+      "spacing_only_difference": false
+    }
+  },
+  {
+    "voice": "heavy-rebuilt",
+    "prompt": {
+      "id": "soldier-approve",
+      "text": "You are straight and i approve"
+    },
+    "status": "rendered",
+    "strict": false,
+    "chunks": 5,
+    "kinds": {
+      "phoneme": 4,
+      "exact_chunk": 1
+    },
+    "engine": "generic-rebuilt-pack",
+    "stt": {
+      "recognized": "You are straight and I'll prove",
+      "word_errors": 2,
+      "reference_words": 6,
+      "word_error_rate": 0.3333333333333333,
+      "words_match": false,
+      "spacing_only_difference": false
+    }
   }
 ]

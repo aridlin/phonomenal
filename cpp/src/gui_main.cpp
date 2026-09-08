@@ -395,7 +395,7 @@ int main(int argc, char **argv) {
   cfg.height = 850;
   cfg.web_host = "127.0.0.1";
   cfg.web_port = web_port;
-  cfg.web_max_request_bytes = 96 * 1024 * 1024;
+  cfg.web_max_request_bytes = 320 * 1024 * 1024;
   cfg.web_read_timeout_ms = 30000;
   cfg.web_client_poll_ms = 0;
   cfg.web_extra_head_html = web_head;

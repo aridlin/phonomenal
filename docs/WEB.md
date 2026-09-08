@@ -8,7 +8,8 @@ and serves generated files from `data/public` under `/phonomenal/files/`.
 The web player has the same imported-pack dropdown, chunk planner and STT check.
 Audio plays in an HTML audio element on the visitor's device. Upload `.vcpack`
 files or a batch of speech recordings and optional matching `.txt` transcripts.
-Files are limited to 64 MiB each. Existing filenames are preserved, not overwritten.
+Voice packs are limited to 192 MiB; speech files to 64 MiB each. The HTTP request
+cap is 320 MiB including base64/form encoding. Existing filenames are preserved, not overwritten.
 The microphone button uses the browser's permission prompt and MediaRecorder,
 saving the selected script take and its transcript. FFmpeg decodes browser
 WebM/Opus, Ogg/Opus or M4A recordings before alignment.
