@@ -7,7 +7,6 @@ import hashlib
 import importlib.metadata
 import json
 import os
-import re
 import shlex
 import shutil
 import subprocess
@@ -15,6 +14,7 @@ import wave
 from pathlib import Path
 from phonomenal.vcpack import write_pack, validate_records
 from phonomenal.alignment_quality import validate_alignment
+from phonomenal.align import normalize_transcript
 
 
 def atomic_json(path, value):
@@ -86,7 +86,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
     if not source_files:
         raise ValueError('No audio files found')
     version = run(mfa + ['version']).strip()
-    settings = dict(builder=2, language=language, model=model, acoustic_model=acoustic_model, rate=rate, mfa=version, fine_tune=True)
+    settings = dict(builder=3, language=language, model=model, acoustic_model=acoustic_model, rate=rate, mfa=version, fine_tune=True)
     config_hash = hashlib.sha256(json.dumps(settings, sort_keys=True).encode()).hexdigest()[:16]
     job = work/config_hash
     job.mkdir(exist_ok=True)
@@ -149,7 +149,7 @@ def build_pack(source, output, voice, language='en', model='small.en', mfa_comma
                               words=[dict(word=w.word, start=w.start, end=w.end, probability=w.probability) for w in (s.words or [])]) for s in segments if s.text.strip() and s.no_speech_prob < .6]
             saved = []
             for i, span in enumerate(spans):
-                text = ' '.join(re.findall(r"[a-z]+(?:'[a-z]+)*", span['text'].lower()))
+                text = normalize_transcript(span['text'])
                 issue=transcript_issue(text,span['end']-span['start'])
                 if issue:
                     rejected.append(dict(source=path.name,reason=issue))
