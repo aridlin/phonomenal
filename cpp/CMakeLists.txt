@@ -24,6 +24,9 @@ add_executable(phonomenal_splicer_cli
     src/main.cpp
 )
 target_link_libraries(phonomenal_splicer_cli PRIVATE phonomenal_splicer)
+if(MINGW)
+    target_link_options(phonomenal_splicer_cli PRIVATE -municode)
+endif()
 
 option(PHONOMENAL_BUILD_FRONTEND "Build FT desktop/terminal frontend" ON)
 if(PHONOMENAL_BUILD_FRONTEND)

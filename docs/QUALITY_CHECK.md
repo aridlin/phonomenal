@@ -183,3 +183,10 @@ and gives blank-line paragraph breaks one 300 ms pause. Ordinary single line
 breaks remain whitespace. Tests cover the exact contraction/pause behavior and
 LF/CRLF paragraph equivalence. This fixes text/pause alignment, not source
 phoneme boundaries; duration-preserving source joins remain the next target.
+
+The Windows follow-up fixes the CLI's argument encoding as well: it now reads
+wide command-line arguments, converts speech to UTF-8, and constructs file paths
+from UTF-8 explicitly. The Windows ANSI conversion had damaged smart punctuation
+before tokenization. A regression also covers non-ASCII bank, WAV and audit paths.
+The Linux suite passes 93 tests; a MinGW Windows CLI cross-build passes. Native
+Windows runtime validation is tracked by the subsequent CI run.

@@ -7,7 +7,12 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 #ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
 #include <fcntl.h>
 #include <io.h>
 #endif
@@ -68,7 +73,12 @@ static void print_plan(const phonomenal_splicer::PlanResult &p,
   }
   o << "]}\n";
 }
-int main(int argc, char **argv) {
+static std::filesystem::path utf8_path(const std::string &value) {
+  return std::filesystem::path(std::u8string(
+      reinterpret_cast<const char8_t *>(value.data()), value.size()));
+}
+
+static int run_cli(int argc, char **argv) {
   try {
     std::filesystem::path bank_path, output_path, audit_path;
     std::string text, phones;
@@ -83,15 +93,15 @@ int main(int argc, char **argv) {
         return std::string(argv[i]);
       };
       if (arg == "--bank")
-        bank_path = value();
+        bank_path = utf8_path(value());
       else if (arg == "--text")
         text = value();
       else if (arg == "--phones")
         phones = value();
       else if (arg == "--output")
-        output_path = value();
+        output_path = utf8_path(value());
       else if (arg == "--audit")
-        audit_path = value();
+        audit_path = utf8_path(value());
       else if (arg == "--no-auto-word-gaps")
         options.adaptive_word_gaps = false;
       else if (arg == "--normalize-duration")
@@ -192,3 +202,24 @@ int main(int argc, char **argv) {
     return 1;
   }
 }
+
+#ifdef _WIN32
+int wmain(int argc, wchar_t **wide_argv) {
+  std::vector<std::string> values;
+  values.reserve(argc);
+  for(int i=0;i<argc;++i) {
+    const auto count=WideCharToMultiByte(CP_UTF8,WC_ERR_INVALID_CHARS,wide_argv[i],-1,nullptr,0,nullptr,nullptr);
+    if(!count) {std::cerr << "Invalid Unicode command-line argument\n";return 1;}
+    std::string text(static_cast<std::size_t>(count),'\0');
+    WideCharToMultiByte(CP_UTF8,WC_ERR_INVALID_CHARS,wide_argv[i],-1,text.data(),count,nullptr,nullptr);
+    text.pop_back();values.push_back(std::move(text));
+  }
+  std::vector<char *> argv;
+  argv.reserve(static_cast<std::size_t>(argc)+1);
+  for(auto &value:values) argv.push_back(value.data());
+  argv.push_back(nullptr);
+  return run_cli(argc,argv.data());
+}
+#else
+int main(int argc, char **argv) { return run_cli(argc,argv); }
+#endif

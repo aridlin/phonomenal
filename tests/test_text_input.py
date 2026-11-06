@@ -29,6 +29,17 @@ class TextInputTests(unittest.TestCase):
         self.assertEqual(unicode_plan['normalized_text'], "don't can't")
         self.assertEqual(unicode_plan['units'][1]['pause_before_ms'], 180)
 
+    def test_unicode_bank_output_and_audit_paths(self):
+        target = self.pack.with_name('głos-żąółć.vcpack')
+        self.pack.rename(target)
+        self.pack = target
+        output = self.pack.with_name('mowa-Ω.wav')
+        audit = self.pack.with_name('granice-ąć.json')
+        result = self.native('--text', 'alpha', '--output', str(output), '--audit', str(audit), '--plan')
+        self.assertEqual(json.loads(result.stdout)['normalized_text'], 'alpha')
+        self.assertTrue(output.read_bytes().startswith(b'RIFF'))
+        self.assertGreater(json.loads(audit.read_text())['boundaries_checked'], 0)
+
     def test_digit_expansion_keeps_the_following_pause_on_the_right_word(self):
         plan = self.plan('12, alpha')
         self.assertEqual(plan['normalized_text'], 'one two alpha')
