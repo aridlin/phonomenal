@@ -147,3 +147,38 @@ records `duration_preserving_joins`, `contextual_joins`, and
 preserving mode is not the default: its recognition comparisons are mixed,
 including a regression on the Heavy book passage. It is retained for controlled
 experiments on the next coarticulation-aware planner.
+
+## Experimental joins inside matching phones
+
+`--center-phone-joins` adds source transitions between the middles of matching
+phones to the planning graph. The beginning and ending of a word can still use
+whole phones, and intact recorded words/phrases remain available. This keeps a
+recorded transition such as the consonant into a vowel together, then joins to
+another recording inside that same vowel. It does not generate new speech or
+correct a wrong source label.
+
+This follows the [Festival diphone synthesis principle](https://www.cs.cmu.edu/~awb/11752/notes/festtut_7.html).
+The [FestVox diphone collection paper](https://www.cs.cmu.edu/~awb/papers/ICSLP2000_diphone/kaldiph.html)
+also explains why a simple midpoint is unsuitable for stop consonants.
+
+Cuts stay in the middle third of each phone. When reliable pitch pulses are
+available, the nearest pulse to the midpoint is used. Stops, affricates and short
+aspiration do not expose center cuts: combining arbitrary closure/release halves
+could erase or duplicate a burst. Source transitions cannot span a gap over
+20 ms, and target punctuation, stress penalties, independent detector disputes
+and manual rejections are retained. The option implies duration-preserving joins.
+Full and partial phones receive their proportional duration, stress and source
+quality costs; an unsplit stop keeps its full penalty. A pitch-band preference
+continues to participate in source selection.
+Contiguous pieces from one recording merge back into their original waveform.
+
+Plans identify partial-phone endpoints with `starts_at_phone_center` and
+`ends_at_phone_center`. Audits add `phone-center` rows carrying the source phone's
+evidence and actual output clock. Optional pitch/duration processing still edits
+only complete reliable vowels; partial vowels are skipped.
+
+This mode remains experimental and off by default. An unchanged-default check
+compared 96 plans and WAVs byte for byte. Controlled synthetic tests verify a
+shared-vowel join, intact words, stop-burst protection, recording gaps, punctuation,
+manual rejection and output timing. These checks establish mechanics; multi-voice
+recognition comparisons and actual listening are separate quality checks.

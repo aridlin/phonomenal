@@ -98,6 +98,8 @@ struct PhoneOccurrence {
   std::vector<std::string> stressed_labels;
   std::string left_context, right_context;
   double acoustic_penalty = 0., pitch = 0.;
+  std::int64_t first_center{}, last_center{};
+  std::array<double,2> center_duration{}, center_quality{};
 };
 
 struct PronunciationStats {
@@ -1012,6 +1014,7 @@ struct VoiceBank::Impl {
   std::unordered_map<std::string, std::vector<ChunkOccurrence>> chunk_index;
   std::unordered_map<std::string, std::vector<ChunkOccurrence>> word_index;
   std::unordered_map<std::string, std::vector<PhoneOccurrence>> phone_index;
+  std::unordered_map<std::string, std::vector<PhoneOccurrence>> center_index;
   std::unordered_map<std::string, std::vector<std::string>> pronunciation_index;
   mutable std::unordered_map<std::string, AcousticProfile>
       acoustic_profile_cache;
@@ -1144,6 +1147,53 @@ struct VoiceBank::Impl {
 
   void build_indexes() {
     for (const auto &record : records) {
+      auto center = [](const Phoneme &phone) {
+        const auto midpoint = phone.start_sample + (phone.end_sample-phone.start_sample)/2;
+        const auto &a = EditingAcoustics(phone);
+        auto chosen = midpoint;
+        auto distance = std::numeric_limits<std::int64_t>::max();
+        if(a.available && a.voiced>=.8 && a.spread<=2.5 && a.clipping<.01 && a.marks.size()>=5) {
+          const auto margin=(phone.end_sample-phone.start_sample)/3;
+          for(auto mark:a.marks)
+            if(mark>phone.start_sample+margin && mark<phone.end_sample-margin &&
+                std::abs(mark-midpoint)<distance) {chosen=mark;distance=std::abs(mark-midpoint);}
+        }
+        return chosen;
+      };
+      for(std::size_t i=0;i<record.phonemes.size();++i) {
+        const auto &first=record.phonemes[i];
+        if(first.end_sample-first.start_sample<2) continue;
+        for(std::size_t length=1;length<=2 && i+length<=record.phonemes.size();++length) {
+          const auto &last=record.phonemes[i+length-1];
+          if(last.end_sample-last.start_sample<2 || (length==2 &&
+              (last.start_sample<first.end_sample || last.start_sample-first.end_sample>sample_rate/50))) continue;
+          PhoneOccurrence occurrence;
+          occurrence.clip_id=record.clip_id;occurrence.start_sample=first.start_sample;occurrence.end_sample=last.end_sample;
+          occurrence.first_center=center(first);occurrence.last_center=center(last);
+          std::vector<std::optional<double>> confidences;
+          double pitch_sum=0.,pitch_weight=0.;
+          for(std::size_t n=i;n<i+length;++n) {
+            const auto &phone=record.phonemes[n];
+            occurrence.labels.push_back(phone.normalized_label);occurrence.stressed_labels.push_back(phone.label);
+            occurrence.center_duration[n-i]=phone_duration_penalty(phone);
+            occurrence.center_quality[n-i]=acoustic_penalty(phone);
+            occurrence.duration_penalty+=occurrence.center_duration[n-i];
+            occurrence.acoustic_penalty+=occurrence.center_quality[n-i];
+            if(phone.acoustic.available && phone.acoustic.pitch>0 && phone.acoustic.voiced>=.7) {
+              const double weight=phone.end_sample-phone.start_sample;
+              pitch_sum+=std::log(phone.acoustic.pitch)*weight;pitch_weight+=weight;
+            }
+            confidences.push_back(phone.confidence);
+          }
+          occurrence.confidence=MeanConfidence(confidences);
+          if(pitch_weight) occurrence.pitch=std::exp(pitch_sum/pitch_weight);
+          occurrence.begins_word=i==0 || record.phonemes[i-1].word_index!=first.word_index;
+          occurrence.ends_word=i+length==record.phonemes.size() || record.phonemes[i+length].word_index!=last.word_index;
+          occurrence.source_word=first.word_index>=0 && static_cast<std::size_t>(first.word_index)<record.words.size()
+              ? record.words[static_cast<std::size_t>(first.word_index)].text : "recorded sounds";
+          center_index[MakeKey(occurrence.labels)].push_back(std::move(occurrence));
+        }
+      }
       for (std::size_t start = 0; start < record.words.size(); ++start) {
         std::vector<std::string> tokens;
         std::vector<std::optional<double>> confidences;
@@ -1724,7 +1774,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     }
 
     const auto previous_length=placements.back().knots.back().second;
-    if(options.preserve_phone_timing) {
+    if(options.preserve_phone_timing || options.center_phone_joins) {
       const auto offset=static_cast<std::int64_t>(output.size());
       auto half=std::min({overlap/2,wave.sample_rate/500,previous_length/8,static_cast<std::int64_t>(segment.size()/8)});
       const auto left=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==previous->clip_id;});
@@ -1844,6 +1894,10 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
       const bool suspect=impl_->phone_duration_penalty(phone)>=180.;
       add("phone",phone.label,"start",phone.start_sample,suspect,&phone);
       add("phone",phone.label,"end",phone.end_sample,suspect,&phone);
+      if(unit.starts_at_phone_center && phone.start_sample<unit.start_sample && phone.end_sample>unit.start_sample)
+        add("phone-center",phone.label,"start",unit.start_sample,suspect,&phone);
+      if(unit.ends_at_phone_center && phone.start_sample<unit.end_sample && phone.end_sample>unit.end_sample)
+        add("phone-center",phone.label,"end",unit.end_sample,suspect,&phone);
     }
   }
   if (audit) *audit=std::move(checked);

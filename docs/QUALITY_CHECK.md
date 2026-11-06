@@ -217,3 +217,39 @@ proof of clearer arbitrary speech. The mixed results are why its mode remains
 experimental. Current defaults take the definite short-consonant retention fix
 while source-transcript/alignment work continues. The reading demos, plans,
 audits and unprompted recognition records remain in the task workspace.
+
+## Experimental matching-phone joins, 2026-11-07
+
+`--center-phone-joins` preserves native transitions between phones, joining
+recordings inside a matching vowel, sonorant or sustained fricative. Stops and
+affricates retain their complete closure/release sequence. Exact recorded words
+and phrases remain available, rejected phones remain excluded, and partial
+phones retain proportional source-quality, stress and duration costs. The option
+uses duration-preserving rendering; it is off by default.
+
+Eight unchanged packs were compared on 12 ordinary sentences. The same three
+Alice paragraphs were also rendered in Medic, Heavy and Soldier. The medium
+comparison used CUDA int8_float16 on both versions; the small comparison used
+CPU int8. Neither recognizer received expected text as a prompt.
+
+| Diagnostic | Bounded overlap/default | Experimental center joins |
+| --- | ---: | ---: |
+| small.en, 96 cases / 752 words | 89 errors | 89 errors |
+| medium.en, 96 cases / 752 words | 73 | 59 |
+| medium.en, three book readings / 621 words | 126 | 102 |
+
+These are development comparisons, with some per-prompt regressions. A separate
+12-sentence held-out comparison is running. The unchanged small-model aggregate
+and absence of listening feedback are reasons to retain the current default.
+The disabled-option check reproduced all 96 existing plans and WAVs byte for
+byte. Native tests also check a shared-vowel transition, reliable pulse cuts,
+intact words, stop-burst protection, recording gaps, punctuation, manual rejection,
+and the actual output clock.
+
+A separate Medic rebuild tested 520 archive recordings using unprompted
+large-v3 source transcription. Automatic filtering retained 411, and 409 passed
+structural alignment checks after MFA fine-tuning. Its small-model errors rose
+from 11 to 25 on the sentences and 61 to 81 on the book; the medium model also
+regressed (12 to 22 and 53 to 73). The new source recordings and automatic
+transcript provenance are preserved privately; the installed voice was retained.
+Neither fresh alignment nor more recordings alone established a quality gain.

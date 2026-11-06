@@ -69,7 +69,11 @@ static void print_plan(const phonomenal_splicer::PlanResult &p,
       << ",\"start_sample\":" << u.start_sample
       << ",\"end_sample\":" << u.end_sample
       << ",\"pause_before_ms\":" << u.pause_before_ms
-      << ",\"approximate\":" << (u.approximated ? "true" : "false") << "}";
+      << ",\"approximate\":" << (u.approximated ? "true" : "false");
+    if(u.starts_at_phone_center || u.ends_at_phone_center)
+      o << ",\"starts_at_phone_center\":" << (u.starts_at_phone_center?"true":"false")
+        << ",\"ends_at_phone_center\":" << (u.ends_at_phone_center?"true":"false");
+    o << "}";
   }
   o << "]}\n";
 }
@@ -108,6 +112,10 @@ static int run_cli(int argc, char **argv) {
         options.normalize_duration = true;
       else if (arg == "--match-pitch")
         options.match_pitch = true;
+      else if (arg == "--center-phone-joins") {
+        options.center_phone_joins = true;
+        options.preserve_phone_timing = true;
+      }
       else if (arg == "--preserve-phone-timing")
         options.preserve_phone_timing = true;
       else if (arg == "--legacy-overlap")
@@ -136,7 +144,7 @@ static int run_cli(int argc, char **argv) {
         std::cout
             << "phonomenal_splicer_cli --bank voice.vcpack (--text TEXT | "
                "--stdin | --phones PHONES) [--output speech.wav] "
-               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
+               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--center-phone-joins] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
                "--bank voice.vcpack --inspect\n";
         return 0;
       } else

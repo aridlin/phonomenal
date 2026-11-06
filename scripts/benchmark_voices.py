@@ -22,6 +22,7 @@ def main():
     parser.add_argument('--strict', action='store_true')
     parser.add_argument('--pitch-band', help='Optional LOWER:UPPER in Hz, applied identically to every case')
     parser.add_argument('--match-pitch', action='store_true')
+    parser.add_argument('--center-phone-joins', action='store_true')
     parser.add_argument('--join-mode', choices=['preserve', 'legacy'])
     args=parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
@@ -49,10 +50,11 @@ def main():
             if args.strict:command.append('--strict')
             if args.pitch_band:command.extend(['--pitch-band',args.pitch_band])
             if args.match_pitch:command.append('--match-pitch')
+            if args.center_phone_joins:command.append('--center-phone-joins')
             if args.join_mode:command.append('--preserve-phone-timing' if args.join_mode=='preserve' else '--legacy-overlap')
             process=subprocess.run(command,capture_output=True,text=True,timeout=180)
             result=dict(voice=label,pack=str(Path(path).resolve()),prompt=prompt,strict=args.strict,cli_sha256=cli_sha256,
-                        pitch_band=args.pitch_band,match_pitch=args.match_pitch,join_mode=args.join_mode,synthesis_seconds=time.monotonic()-started,status='failed')
+                        pitch_band=args.pitch_band,match_pitch=args.match_pitch,join_mode=args.join_mode,center_phone_joins=args.center_phone_joins,synthesis_seconds=time.monotonic()-started,status='failed')
             if process.returncode:
                 result['error']=process.stderr.strip()
             else:
