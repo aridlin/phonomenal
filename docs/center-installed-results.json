@@ -1,0 +1,53 @@
+{
+  "development": {
+    "baseline": {
+      "cases": 96,
+      "errors": 73,
+      "words": 752
+    },
+    "center-installed": {
+      "cases": 96,
+      "errors": 60,
+      "words": 752
+    }
+  },
+  "book": {
+    "baseline": {
+      "cases": 3,
+      "errors": 126,
+      "words": 621
+    },
+    "center-installed": {
+      "cases": 3,
+      "errors": 94,
+      "words": 621
+    }
+  },
+  "heldout": {
+    "baseline": {
+      "cases": 96,
+      "errors": 138,
+      "words": 872
+    },
+    "center-installed": {
+      "cases": 96,
+      "errors": 118,
+      "words": 872
+    }
+  },
+  "small_development": {
+    "baseline": {
+      "cases": 96,
+      "errors": 89,
+      "words": 752
+    },
+    "center-installed": {
+      "cases": 96,
+      "errors": 92,
+      "words": 752
+    }
+  },
+  "default": "unchanged: retain bounded overlap; matching-phone joins experimental",
+  "packs_include_pitc": true,
+  "same_baseline_plans_and_audio": 195
+}

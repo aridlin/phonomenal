@@ -238,9 +238,12 @@ CPU int8. Neither recognizer received expected text as a prompt.
 | medium.en, 96 cases / 752 words | 73 | 59 |
 | medium.en, three book readings / 621 words | 126 | 102 |
 
-These are development comparisons, with some per-prompt regressions. A separate
-12-sentence held-out comparison is running. The unchanged small-model aggregate
-and absence of listening feedback are reasons to retain the current default.
+These are development comparisons on packs without the newer optional `PITC`
+pulse analysis. Their waveform, labels, lexicon and original acoustic/evidence
+sections match the installed packs, but experimental center-cut coordinates can
+differ. A separate 12-sentence comparison on these packs reduced medium-model
+errors from 138 to 113 across 872 words. The unchanged small-model aggregate and
+absence of listening feedback were reasons to retain the current default.
 The disabled-option check reproduced all 96 existing plans and WAVs byte for
 byte. Native tests also check a shared-vowel transition, reliable pulse cuts,
 intact words, stop-burst protection, recording gaps, punctuation, manual rejection,
@@ -253,3 +256,25 @@ from 11 to 25 on the sentences and 61 to 81 on the book; the medium model also
 regressed (12 to 22 and 53 to 73). The new source recordings and automatic
 transcript provenance are preserved privately; the installed voice was retained.
 Neither fresh alignment nor more recordings alone established a quality gain.
+
+### Exact installed-pack verification
+
+The installation check detected the missing `PITC` section in the development
+pack links. The comparison was repeated on frozen, checksummed copies of all
+eight installed packs, including their newer pitch pulses. All 195 default
+plans and WAVs matched the earlier baseline byte for byte before reusing its
+recognition results. Experimental renders were recognized again without hints.
+
+| Diagnostic | Current default | Installed center-join option |
+| --- | ---: | ---: |
+| small.en, 96 development cases / 752 words | 89 errors | 92 |
+| medium.en, 96 development cases / 752 words | 73 | 60 |
+| medium.en, three book readings / 621 words | 126 | 94 |
+| medium.en, 96 held-out cases / 872 words | 138 | 118 |
+
+The installed option improves the larger-model aggregates but regresses the
+smaller-model development aggregate. It remains optional. The three updated
+book demos were checked against the actual installed-pack benchmark WAVs and
+match byte for byte. No human-listening acceptance or linguistic boundary
+accuracy is claimed. Aggregate results are in
+[center-installed-results.json](center-installed-results.json).
