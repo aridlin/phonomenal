@@ -64,6 +64,8 @@ struct BoundaryReport {
   std::size_t word_pauses{};
   std::size_t duration_adjustments{};
   std::int64_t word_pause_samples{};
+  std::size_t duration_preserving_joins{}, contextual_joins{};
+  std::int64_t overlap_samples_removed{};
 };
 std::string BoundaryReportJson(const BoundaryReport &report);
 
@@ -79,6 +81,7 @@ struct SynthesizeOptions {
   bool adaptive_word_gaps = true;
   bool normalize_duration = false;
   bool match_pitch = false;
+  bool preserve_phone_timing = false;
 };
 
 class VoiceBank {

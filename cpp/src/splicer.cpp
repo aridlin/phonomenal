@@ -1723,10 +1723,53 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
       continue;
     }
 
+    const auto previous_length=placements.back().knots.back().second;
+    if(options.preserve_phone_timing) {
+      const auto offset=static_cast<std::int64_t>(output.size());
+      auto half=std::min({overlap/2,wave.sample_rate/500,previous_length/8,static_cast<std::int64_t>(segment.size()/8)});
+      const auto left=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==previous->clip_id;});
+      const auto right=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==unit.clip_id;});
+      if(left==impl_->records.end() || right==impl_->records.end()) throw std::runtime_error("Unknown recording in join");
+      // Use at most 2 ms of real neighbouring context. Never cross a recording
+      // edge or invent a longer phone by repeating its attack/release.
+      half=std::max<std::int64_t>(0,std::min({half,left->words.back().end_sample-previous->end_sample,
+          unit.start_sample-right->words.front().start_sample}));
+      if(half>=2) {
+        const auto prefix=output.size()-static_cast<std::size_t>(half);
+        for(std::int64_t i=0;i<2*half;++i) {
+          const double t=static_cast<double>(i)/(2*half-1);
+          const double blend=t*t*(3.-2.*t);
+          const double a=i<half ? output[prefix+i] : wave.samples[previous->end_sample+i-half];
+          const double b=i<half ? wave.samples[unit.start_sample-half+i] : segment[i-half];
+          const auto sample=ClampI16(a*(1.-blend)+b*blend);
+          if(i<half) output[prefix+i]=sample;
+          else output.push_back(sample);
+        }
+        output.insert(output.end(),segment.begin()+half,segment.end());
+        ++checked.contextual_joins;
+      } else {
+        // No source context at an outer recording edge: use very short edge
+        // tapers rather than deleting samples from either planned phone.
+        const auto fade=std::min({wave.sample_rate/2000,previous_length/8,static_cast<std::int64_t>(segment.size()/8)});
+        for(std::int64_t i=0;i<fade;++i) {
+          const double gain=static_cast<double>(i)/std::max<std::int64_t>(1,fade);
+          output[output.size()-1-i]=ClampI16(output[output.size()-1-i]*gain);
+          segment[i]=ClampI16(segment[i]*gain);
+        }
+        output.insert(output.end(),segment.begin(),segment.end());
+      }
+      placements.push_back({&unit,offset,knots});
+      ++checked.duration_preserving_joins;
+      previous=&unit;
+      continue;
+    }
+
+    // Bound BOTH sides. Using the whole output length here could consume a
+    // complete short preceding consonant, including part of an earlier unit.
     const std::int64_t actual_overlap = std::min<std::int64_t>(
         overlap,
         std::min<std::int64_t>(static_cast<std::int64_t>(output.size()),
-                               static_cast<std::int64_t>(segment.size() / 4)));
+            std::min<std::int64_t>(previous_length/4,static_cast<std::int64_t>(segment.size() / 4))));
     if (actual_overlap <= 0) {
       placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots});
       output.insert(output.end(), segment.begin(), segment.end());
@@ -1736,6 +1779,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
 
     const auto prefix_size =
         output.size() - static_cast<std::size_t>(actual_overlap);
+    checked.overlap_samples_removed+=actual_overlap;
     placements.push_back({&unit, static_cast<std::int64_t>(prefix_size),knots});
     std::vector<std::int16_t> merged;
     merged.reserve(prefix_size + static_cast<std::size_t>(actual_overlap) +
@@ -1833,6 +1877,8 @@ std::string BoundaryReportJson(const BoundaryReport &report) {
   }
   out << "],\"pitch_skipped\":" << report.pitch_skipped << ",\"word_pauses\":" << report.word_pauses
       << ",\"word_pause_samples\":" << report.word_pause_samples << ",\"duration_adjustments\":" << report.duration_adjustments
+      << ",\"duration_preserving_joins\":" << report.duration_preserving_joins << ",\"contextual_joins\":" << report.contextual_joins
+      << ",\"overlap_samples_removed\":" << report.overlap_samples_removed
       << ",\"limitation\":\"Waveform and duration checks flag suspicious cuts; they do not certify linguistic boundaries.\"}\n";
   return out.str();
 }

@@ -190,3 +190,30 @@ from UTF-8 explicitly. The Windows ANSI conversion had damaged smart punctuation
 before tokenization. A regression also covers non-ASCII bank, WAV and audit paths.
 The Linux suite passes 93 tests; a MinGW Windows CLI cross-build passes. Native
 Windows runtime validation is tracked by the subsequent CI run.
+
+## Join-duration comparison, 2026-11-06
+
+A 2 ms consonant fixture reproduced complete loss under the previous renderer:
+its overlap bound used the full accumulated output, not the preceding fragment.
+The default now caps overlap at one quarter of both adjacent rendered fragments.
+Tests verify retention of the consonant's core, full sample-clock preservation
+in the experimental mode, recording-bound context, and unchanged contiguous audio.
+
+The experimental `--preserve-phone-timing` mode keeps the complete planned
+fragment durations and blends short real source contexts. It is not enabled by
+default. Eight voices were compared on 12 prompts, including six new everyday
+sentences. The same frozen packs and planner were used for all three renders;
+only join processing changed. No requested words were supplied as recognition
+prompts or hotwords.
+
+| Diagnostic | Previous overlap | Bounded overlap (default) | Preserve timing (experimental) |
+| --- | ---: | ---: | ---: |
+| small.en, 96 cases / 752 reference words | 91 errors (12.1%) | 89 (11.8%) | 92 (12.2%) |
+| medium.en, 48 new-sentence cases / 392 words | 49 (12.5%) | 49 (12.5%) | 40 (10.2%) |
+| medium.en, Heavy/Soldier book / 414 words | 65 (15.7%) | 65 (15.7%) | 71 (17.1%) |
+
+The two recognizer sizes disagree, and preserving durations is not by itself
+proof of clearer arbitrary speech. The mixed results are why its mode remains
+experimental. Current defaults take the definite short-consonant retention fix
+while source-transcript/alignment work continues. The reading demos, plans,
+audits and unprompted recognition records remain in the task workspace.

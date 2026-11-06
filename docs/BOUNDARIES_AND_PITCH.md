@@ -127,3 +127,23 @@ reuse the old pulse clock in any vowel that was actually pitch-shifted.
 This is optional signal processing, not correction of incorrect transcripts or
 phonetic alignments. Source selection and consonant preservation still matter
 more than matching F0. Listening remains necessary.
+
+## Short-fragment protection and experimental timing-preserving joins
+
+The default crossfade is now bounded by one quarter of **both** adjacent
+rendered fragments. Previously its left bound used the entire output buffer,
+which could erase a complete short preceding consonant. This is a waveform
+retention guarantee, not evidence that the source label or cut is correct.
+
+`--preserve-phone-timing` enables an experimental alternative. It retains the
+planned duration of both fragments, blends up to 2 ms of available original
+neighbouring context on each side, and never crosses the recording bounds.
+Without context it uses at most 0.5 ms of edge taper instead of removing
+samples. Intact contiguous source audio stays unchanged. The boundary report
+records `duration_preserving_joins`, `contextual_joins`, and
+`overlap_samples_removed`; mappings retain their actual output sample clock.
+
+`--legacy-overlap` selects the default, now bounded, overlap method. The
+preserving mode is not the default: its recognition comparisons are mixed,
+including a regression on the Heavy book passage. It is retained for controlled
+experiments on the next coarticulation-aware planner.
