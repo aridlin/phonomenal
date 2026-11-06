@@ -278,3 +278,40 @@ book demos were checked against the actual installed-pack benchmark WAVs and
 match byte for byte. No human-listening acceptance or linguistic boundary
 accuracy is claimed. Aggregate results are in
 [center-installed-results.json](center-installed-results.json).
+
+### Longer native transitions and additional decoders
+
+`--center-run-phones 12` retains longer naturally contiguous sound sequences,
+with center cuts only at their exposed endpoints. The two-phone mode is unchanged.
+The same frozen installed packs, 12 development sentences, 12 held-out sentences
+and three book readings were used. No expected words or phones were supplied to
+any recognizer. Vosk supplies a separate word decoder; Allosaurus supplies phone
+emissions, mapped to ARPABET and compared against the pack's canonical lexicon.
+Unknown emissions remain errors rather than being silently discarded.
+
+| Diagnostic | Bounded/default | Two-phone center | Up to 12 phones |
+| --- | ---: | ---: | ---: |
+| Whisper small, development / 752 words | 89 | 92 | 83 |
+| Whisper medium, development / 752 words | 73 | 60 | 67 |
+| Whisper medium, book / 621 words | 126 | 94 | 92 |
+| Whisper medium, held-out / 872 words | 138 | 118 | 110 |
+| Vosk small English, development / 752 words | 312 | 272 | 277 |
+| Vosk small English, book / 621 words | 351 | 341 | 331 |
+| Vosk small English, held-out / 872 words | 432 | 417 | 409 |
+| Allosaurus, 48 development cases / 1290 phones | 770 | 733 | 737 |
+| Allosaurus, three readings / 1964 phones | 1042 | 1003 | 975 |
+| Allosaurus, 48 held-out cases / 1416 phones | 885 | 810 | 820 |
+
+Every number is an edit-error count within its own decoder/reference. The phone
+comparison uses the six newer development sentences and first six held-out
+sentences per voice. Canonical phone references do not cover every accent,
+allophone or reduction, so their absolute error rate is not an intelligibility
+percentage. Recognizer families agree on aggregate gains over the old renderer,
+while the two center modes trade places on some material. No listening acceptance
+is implied. Both center modes remain optional in this milestone.
+
+The implementation passes 110 native tests, a MinGW cross-build and VCTTS
+integration checks. The original/default and two-phone modes retain their exact
+previous output in the 198-case compatibility check. Aggregate diagnostics are in
+[center-long-results.json](center-long-results.json); audio, observations and
+private model/voice fingerprints stay in the workspace.

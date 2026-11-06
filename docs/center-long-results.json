@@ -1,0 +1,172 @@
+{
+  "whisper_medium": {
+    "development": {
+      "baseline": {
+        "cases": 96,
+        "errors": 73,
+        "words": 752
+      },
+      "center-installed": {
+        "cases": 96,
+        "errors": 60,
+        "words": 752
+      },
+      "center-long": {
+        "cases": 96,
+        "errors": 67,
+        "words": 752
+      }
+    },
+    "book": {
+      "baseline": {
+        "cases": 3,
+        "errors": 126,
+        "words": 621
+      },
+      "center-installed": {
+        "cases": 3,
+        "errors": 94,
+        "words": 621
+      },
+      "center-long": {
+        "cases": 3,
+        "errors": 92,
+        "words": 621
+      }
+    },
+    "heldout": {
+      "baseline": {
+        "cases": 96,
+        "errors": 138,
+        "words": 872
+      },
+      "center-installed": {
+        "cases": 96,
+        "errors": 118,
+        "words": 872
+      },
+      "center-long": {
+        "cases": 96,
+        "errors": 110,
+        "words": 872
+      }
+    }
+  },
+  "whisper_small": {
+    "baseline": 89,
+    "center-installed": 92,
+    "center-long": 83,
+    "reference_words": 752,
+    "cases_per_version": 96
+  },
+  "vosk": {
+    "development": {
+      "baseline": {
+        "cases": 96,
+        "errors": 312,
+        "words": 752
+      },
+      "center-installed": {
+        "cases": 96,
+        "errors": 272,
+        "words": 752
+      },
+      "center-long": {
+        "cases": 96,
+        "errors": 277,
+        "words": 752
+      }
+    },
+    "book": {
+      "baseline": {
+        "cases": 3,
+        "errors": 351,
+        "words": 621
+      },
+      "center-installed": {
+        "cases": 3,
+        "errors": 341,
+        "words": 621
+      },
+      "center-long": {
+        "cases": 3,
+        "errors": 331,
+        "words": 621
+      }
+    },
+    "heldout": {
+      "baseline": {
+        "cases": 96,
+        "errors": 432,
+        "words": 872
+      },
+      "center-installed": {
+        "cases": 96,
+        "errors": 417,
+        "words": 872
+      },
+      "center-long": {
+        "cases": 96,
+        "errors": 409,
+        "words": 872
+      }
+    }
+  },
+  "allosaurus": {
+    "development": {
+      "baseline": {
+        "cases": 48,
+        "errors": 770,
+        "reference": 1290
+      },
+      "center-installed": {
+        "cases": 48,
+        "errors": 733,
+        "reference": 1290
+      },
+      "center-long": {
+        "cases": 48,
+        "errors": 737,
+        "reference": 1290
+      }
+    },
+    "book": {
+      "baseline": {
+        "cases": 3,
+        "errors": 1042,
+        "reference": 1964
+      },
+      "center-installed": {
+        "cases": 3,
+        "errors": 1003,
+        "reference": 1964
+      },
+      "center-long": {
+        "cases": 3,
+        "errors": 975,
+        "reference": 1964
+      }
+    },
+    "heldout": {
+      "baseline": {
+        "cases": 48,
+        "errors": 885,
+        "reference": 1416
+      },
+      "center-installed": {
+        "cases": 48,
+        "errors": 810,
+        "reference": 1416
+      },
+      "center-long": {
+        "cases": 48,
+        "errors": 820,
+        "reference": 1416
+      }
+    }
+  },
+  "default_changed": false,
+  "human_listening_verified": false,
+  "unprompted": true,
+  "compatibility_cases": 198
+}

@@ -211,34 +211,42 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     edges=std::move(expanded);
     for(std::size_t i=0;i<target.size();++i) {
       if(options.stop_token.stop_requested()) throw std::runtime_error("Synthesis cancelled");
-      for(std::size_t length=1;length<=2 && i+length<=target.size();++length) {
+      const auto max_run=std::clamp<std::size_t>(options.center_max_phone_run,2,12);
+      for(std::size_t length=1;length<=max_run && i+length<=target.size();++length) {
         const auto last=i+length-1,first_word=word_at[i],last_word=word_at[last];
         const bool first_center=joinable(target[i]),last_center=joinable(target[last]);
         if(!first_center && !last_center) continue;
-        if(length==2 && first_word!=last_word && pauses[last_word]>0) continue;
-        const auto found=impl_->center_index.find(MakeKey(std::span<const std::string>(target.data()+i,length)));
-        if(found==impl_->center_index.end()) continue;
+        if(length>=2 && first_word!=last_word && pauses[last_word]>0) break;
+        const auto &index=length<=2?impl_->center_index:impl_->phone_index;
+        const auto found=index.find(MakeKey(std::span<const std::string>(target.data()+i,length)));
+        if(found==index.end()) continue;
         for(const auto &p:found->second) {
+          if(length>2 && !p.continuous) continue;
           if(!std::isfinite(p.acoustic_penalty) || (options.strict && p.duration_penalty>=180.)) continue;
           auto add=[&](bool leading) {
             PlannedUnit u{UnitKind::Phoneme,tokens[first_word],p.source_word,p.labels,p.clip_id,
-              (length==2 ? first_center : !leading) ? p.first_center : p.start_sample,
-              (length==2 ? last_center : leading) ? p.last_center : p.end_sample,
+              (length>=2 ? first_center : !leading) ? p.first_center : p.start_sample,
+              (length>=2 ? last_center : leading) ? p.last_center : p.end_sample,
               static_cast<std::int64_t>(first_word),p.confidence};
-            u.starts_at_phone_center=length==2 ? first_center : !leading;
-            u.ends_at_phone_center=length==2 ? last_center : leading;
+            u.starts_at_phone_center=length>=2 ? first_center : !leading;
+            u.ends_at_phone_center=length>=2 ? last_center : leading;
+            if(length>2) u.center_run_phone_count=length;
             u.end_word_group=static_cast<std::int64_t>(last_word);
             u.target_text=JoinTokens(std::vector<std::string>(tokens.begin()+first_word,tokens.begin()+last_word+1));
             u.pause_before_ms=!u.starts_at_phone_center && i==starts[first_word] ? pauses[first_word] : 0;
             double discarded=0.,duration=0.,quality=0.,stress=0.,expected_ms=0.;
             for(std::size_t n=0;n<length;++n) {
-              const double fraction=length==1?.5:((n==0?first_center:last_center)?.5:1.);
+              const double fraction=length==1?.5:((n==0?first_center:(n+1==length?last_center:false))?.5:1.);
               discarded+=fraction*(recorded_word[word_at[i+n]]?35.:0.);
-              duration+=fraction*p.center_duration[n];quality+=fraction*p.center_quality[n];
+              if(length<=2) {duration+=fraction*p.center_duration[n];quality+=fraction*p.center_quality[n];}
               const auto &wanted=stressed_target[i+n];
               if((wanted.back()=='1' || wanted.back()=='2') && p.stressed_labels[n].back()=='0') stress+=fraction*90.;
               const bool vowel=std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+target[i+n]+" ")!=std::string::npos;
               expected_ms+=fraction*(vowel?(wanted.back()=='1'?180.:140.):70.);
+            }
+            if(length>2) {
+              duration=p.duration_penalty-(first_center?p.center_duration[0]*.5:0.)-(last_center?p.center_duration[1]*.5:0.);
+              quality=p.acoustic_penalty-(first_center?p.center_quality[0]*.5:0.)-(last_center?p.center_quality[1]*.5:0.);
             }
             const double ms=1000.*(u.end_sample-u.start_sample)/impl_->sample_rate;
             // These are half-phone spans. Long emphatic vowels must not gain
@@ -247,7 +255,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             const double boundaries=(!u.starts_at_phone_center && i==starts[first_word] && !p.begins_word?50.:0.)+
               (!u.ends_at_phone_center && last+1==ends[last_word] && !p.ends_word?180.:0.);
             const auto start=i*2+(u.starts_at_phone_center?1:0);
-            const auto end=length==2?(i+1)*2+(last_center?1:2):i*2+(leading?1:2);
+            const auto end=length>=2?last*2+(last_center?1:2):i*2+(leading?1:2);
             if(u.end_sample>u.start_sample)
               edges[start].push_back({end,std::move(u),25.+duration+quality+stress+timing+discarded+boundaries+band_cost(p.pitch)+100.*(last_word-first_word)});
           };
@@ -396,6 +404,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
           !back.phones.empty() && !u.phones.empty() && back.phones.back()==u.phones.front();
       back.phones.insert(back.phones.end(), u.phones.begin()+(shared?1:0), u.phones.end());
       back.ends_at_phone_center=u.ends_at_phone_center;
+      back.center_run_phone_count=std::max(back.center_run_phone_count,u.center_run_phone_count);
       back.approximated = back.approximated || u.approximated;
       if (back.target_text != u.target_text)
         back.target_text += ' ' + u.target_text;

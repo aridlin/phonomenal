@@ -182,3 +182,18 @@ compared 96 plans and WAVs byte for byte. Controlled synthetic tests verify a
 shared-vowel join, intact words, stop-burst protection, recording gaps, punctuation,
 manual rejection and output timing. These checks establish mechanics; multi-voice
 recognition comparisons and actual listening are separate quality checks.
+
+`--center-run-phones 12` extends this experimental graph to longer naturally
+recorded sequences (the limit accepts 2 through 12 phones). Only the first and
+last phone can be partial; every interior phone remains intact. These edges reuse
+the existing source-run index and reject interior gaps over 20 ms, overlaps,
+collapsed intervals and manually rejected phones. A sentence pause blocks every
+longer edge crossing it. Costs retain full interior-phone evidence and duration
+penalties, with proportional endpoint costs. Intact recorded words remain anchors.
+
+The existing `--center-phone-joins` option retains its two-phone limit. Plans
+identify selected longer edges with `center_run_phone_count`; contiguous pieces
+still merge without crossfading their original audio. A compatibility comparison
+on the installed packs reproduced 198 default and two-phone-mode plans and WAVs
+byte for byte. Synthetic tests cover original interior samples, output duration,
+silence gaps, rejected interior phones, punctuation and invalid run limits.

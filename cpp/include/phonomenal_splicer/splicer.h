@@ -31,6 +31,7 @@ struct PlannedUnit {
   bool approximated = false;
   std::int64_t end_word_group{-1};
   bool starts_at_phone_center = false, ends_at_phone_center = false;
+  std::size_t center_run_phone_count = 0;
 };
 
 struct PlanResult {
@@ -84,6 +85,7 @@ struct SynthesizeOptions {
   bool match_pitch = false;
   bool preserve_phone_timing = false;
   bool center_phone_joins = false;
+  std::size_t center_max_phone_run = 2;
 };
 
 class VoiceBank {
