@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Sequence
 
@@ -126,9 +127,13 @@ def _common_parser() -> argparse.ArgumentParser:
     enrich = subparsers.add_parser("enrich-pack", help="Measure phone acoustics and pitch marks without realigning or changing audio.")
     enrich.add_argument("pack", type=Path)
     enrich.add_argument("--output", type=Path, required=True, help="New pack filename; keeps the original.")
+    enrich.add_argument("--refine-pitch", action="store_true")
     repair = subparsers.add_parser("repair-lexicon", help="Repair legacy English target pronunciations while preserving source audio and alignment.")
     repair.add_argument("pack", type=Path)
     repair.add_argument("--output", type=Path, required=True)
+    pitch = subparsers.add_parser("refine-pitch", help="Reanalyse recording-local pitch paths and waveform-correlated pulses without changing source speech.")
+    pitch.add_argument("pack", type=Path)
+    pitch.add_argument("--output", type=Path, required=True)
     targeted = subparsers.add_parser("coverage-script", help="Suggest original reading takes for this voice's scarce trusted phones")
     targeted.add_argument("pack",type=Path)
     targeted.add_argument("--output",type=Path,required=True)
@@ -141,6 +146,7 @@ def _common_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--whisper-model", default="small.en")
     analyze.add_argument("--phone-model", default="eng2102")
     analyze.add_argument("--limit", type=int, help="Analyze only this many recordings for a quick comparison")
+    analyze.add_argument("--refine-pitch", action="store_true")
     extend = subparsers.add_parser("extend-pack", help="Add optional binary sections and an ASCII specification without changing voice data.")
     extend.add_argument("pack", type=Path)
     extend.add_argument("--output", type=Path, help="Default: atomically update the input pack.")
@@ -165,6 +171,23 @@ def _common_parser() -> argparse.ArgumentParser:
     merc.add_argument("--force", action="store_true")
 
     return parser
+
+
+def _analyse_with_pitch(output, refine, action):
+    if not refine:
+        return action(output)
+    import importlib.util
+    import tempfile
+    from phonomenal.pitch_analysis import refine_pack
+    if output.exists():
+        raise ValueError('Choose a new output filename; the original pack is preserved')
+    if importlib.util.find_spec('parselmouth') is None:
+        raise RuntimeError('Install pitch analysis with: python -m pip install ".[prosody]"')
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.phonomenal-analysis-', dir=output.parent) as directory:
+        intermediate = Path(directory)/'analysis.vcpack'
+        action(intermediate)
+        return refine_pack(intermediate, output, progress=lambda s: print(s, file=sys.stderr))
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -209,15 +232,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "analyze-pack":
         from phonomenal.evidence import analyze_pack
-        print(json.dumps(analyze_pack(args.pack,args.output,args.cache,args.vosk_model,args.whisper_model,args.phone_model,args.limit),indent=2))
+        result = _analyse_with_pitch(args.output, args.refine_pitch,
+            lambda output: analyze_pack(args.pack,output,args.cache,args.vosk_model,args.whisper_model,args.phone_model,args.limit))
+        print(json.dumps(result,indent=2))
         return 0
     if args.command == "enrich-pack":
         from phonomenal.acoustics import enrich_pack
-        print(json.dumps(enrich_pack(args.pack, args.output), indent=2))
+        result = _analyse_with_pitch(args.output, args.refine_pitch, lambda output: enrich_pack(args.pack, output))
+        print(json.dumps(result, indent=2))
         return 0
     if args.command == "repair-lexicon":
         from phonomenal.repair_lexicon import repair_lexicon
         print(json.dumps(repair_lexicon(args.pack, args.output), indent=2))
+        return 0
+    if args.command == "refine-pitch":
+        from phonomenal.pitch_analysis import refine_pack
+        print(json.dumps(refine_pack(args.pack, args.output, progress=lambda s: print(s, file=sys.stderr)), indent=2))
         return 0
     if args.command == "extend-pack":
         from phonomenal.vcpack import extend_pack

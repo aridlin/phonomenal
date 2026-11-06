@@ -54,6 +54,7 @@ struct PitchAdjustment {
   std::string clip_id;
   double source_hz{}, target_hz{}, factor{1};
   std::int64_t start_sample{}, end_sample{};
+  std::string mode = "band";
 };
 struct BoundaryReport {
   std::vector<BoundaryCheck> boundaries;
@@ -77,6 +78,7 @@ struct SynthesizeOptions {
   std::stop_token stop_token;
   bool adaptive_word_gaps = true;
   bool normalize_duration = false;
+  bool match_pitch = false;
 };
 
 class VoiceBank {

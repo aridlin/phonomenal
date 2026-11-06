@@ -270,6 +270,35 @@ PackedData ReadVcpack(const std::filesystem::path &path) {
       ac.end();
     }
   }
+  if (sections.contains("PITC")) {
+    BinaryReader pitch{sections.at("PITC")};
+    if(pitch.u32()==1) {
+      if(pitch.u32()!=result.records.size()) throw std::runtime_error("PITC recording count differs from RECS");
+      for(auto &r:result.records) {
+        if(pitch.string()!=r.clip_id || pitch.u32()!=r.phonemes.size()) throw std::runtime_error("PITC identity differs from RECS");
+        for(auto &p:r.phonemes) {
+          auto &a=p.editing_acoustic;
+          a=p.acoustic; a.available=true; a.marks.clear();
+          a.pitch=pitch.f32(); a.spread=pitch.f32(); a.voiced=pitch.f32();
+          if(!std::isfinite(a.pitch) || !std::isfinite(a.spread) || !std::isfinite(a.voiced) ||
+             a.pitch<0 || a.pitch>2000 || a.spread<0 || a.voiced<0 || a.voiced>1)
+            throw std::runtime_error("Invalid PITC measurement");
+          const auto count=pitch.u32();
+          if(count>(pitch.data.size()-pitch.pos)/8 || count>static_cast<std::uint64_t>(p.end_sample-p.start_sample))
+            throw std::runtime_error("Invalid PITC pulse count");
+          std::int64_t previous=p.start_sample-1;
+          for(std::uint32_t i=0;i<count;++i) {
+            const auto mark=pitch.u64();
+            if(mark<static_cast<std::uint64_t>(p.start_sample) || mark>=static_cast<std::uint64_t>(p.end_sample) ||
+               (previous>=0 && mark<=static_cast<std::uint64_t>(previous)))
+              throw std::runtime_error("Invalid PITC pulse");
+            previous=static_cast<std::int64_t>(mark);a.marks.push_back(previous);
+          }
+        }
+      }
+      pitch.end();
+    }
+  }
   if (sections.contains("QREV")) {
     BinaryReader qr{sections.at("QREV")};
     if(qr.u32()==1) {

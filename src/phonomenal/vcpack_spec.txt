@@ -165,6 +165,21 @@ and provenance data, including alignment method, quality warnings, sample
 count, audio SHA-256 and licenses. Keys can be added; ignore unknown keys.
 This is data, never executable configuration. Missing section means no report.
 
+PITC (optional; rendering-only pitch and pulse evidence, version 1)
+u32 schema_version=1, u32 recording_count (must match RECS).
+For each recording in RECS order:
+  string recording_id, u32 phone_count (must match RECS).
+  For each phone in RECS order:
+    f32 pitch_hz, f32 spread_semitones, f32 voiced_fraction,
+    u32 pulse_count, pulse_count * u64 absolute_source_sample.
+All floats must be finite. Pitch is 0..2000 Hz (0 means unknown), spread
+is nonnegative, voiced_fraction is 0..1. Pulses must be strictly increasing
+inside their RECS phone interval. Missing/unknown versions do not enable
+new editing evidence. These are acoustic estimates, not identity confidence.
+PITC overrides only pitch/pulse evidence for optional signal editing, never
+FEAT/ACOU target or join costs. Keep the original selection data unchanged.
+Invalidate PITC after editing audio, phone labels or source sample positions.
+
 SPEC (optional; new writers place it LAST)
 Literal US-ASCII specification text, including these headings and line feeds.
 No length prefix, encoding wrapper, compression, or NUL terminator. Its CRC

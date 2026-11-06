@@ -60,6 +60,7 @@ struct App {
   bool recording = false, has_take = false, strict = false, auto_check = true, pitch_band = false;
   float pitch_floor = 100.f, pitch_ceiling = 180.f;
   bool adaptive_word_gaps=true, normalize_duration=false, thorough_analysis=false;
+  bool match_pitch=false;
   float minimum_word_gap=0.f;
   std::vector<std::string> microphones{"Default microphone"};
   AudioIO audio;
@@ -269,7 +270,7 @@ static void enrich(App &a) {
   const auto output=a.root/"data/packages"/(utf8(source.stem())+"-enriched-"+unique_web_name(".vcpack"));
   a.message("Analyzing phone acoustics and pitch marks. The original pack is kept.");
   a.task([&,source,output,python,browser,thorough](std::stop_token stop) {
-    const int rc=RunChild({python,utf8(a.root/"scripts/builder.py"),thorough?"analyze-pack":"enrich-pack",utf8(source),"--output",utf8(output)},a.root,a.log,stop);
+    const int rc=RunChild({python,utf8(a.root/"scripts/builder.py"),thorough?"analyze-pack":"enrich-pack",utf8(source),"--output",utf8(output),"--refine-pitch"},a.root,a.log,stop);
     if(rc) throw std::runtime_error(stop.stop_requested()?"Analysis cancelled.":"Analysis failed: "+read_tail(a.log));
     auto verified=phonomenal_splicer::VoiceBank::Load(output);
     if(browser) {
@@ -289,12 +290,12 @@ static void synthesize(App &a) {
   const bool browser = web_mode();
   const bool auto_check = a.auto_check, pitch_band = a.pitch_band;
   const double pitch_floor = a.pitch_floor, pitch_ceiling = a.pitch_ceiling;
-  const bool adaptive_gaps=a.adaptive_word_gaps, normalize_duration=a.normalize_duration;
+  const bool adaptive_gaps=a.adaptive_word_gaps, normalize_duration=a.normalize_duration, match_pitch=a.match_pitch;
   const auto minimum_gap=static_cast<std::int64_t>(a.minimum_word_gap);
   const std::string python = a.python;
   a.message("Selecting speech chunks...");
   a.task([&, path, text, strict, browser, auto_check, pitch_band,
-          pitch_floor, pitch_ceiling, python,adaptive_gaps,minimum_gap,normalize_duration](std::stop_token stop) {
+          pitch_floor, pitch_ceiling, python,adaptive_gaps,minimum_gap,normalize_duration,match_pitch](std::stop_token stop) {
     auto stamp = fs::last_write_time(path);
     if (!a.bank || a.loaded_path != path || a.loaded_time != stamp) {
       a.bank = std::make_unique<phonomenal_splicer::VoiceBank>(
@@ -306,6 +307,7 @@ static void synthesize(App &a) {
     options.strict = strict;
     options.stop_token = stop;
     options.normalize_duration=normalize_duration;options.adaptive_word_gaps=adaptive_gaps;options.word_gap_ms=minimum_gap;
+    options.match_pitch=match_pitch;
     if (pitch_band) { options.pitch_floor_hz=pitch_floor; options.pitch_ceiling_hz=pitch_ceiling; }
     auto started = std::chrono::steady_clock::now();
     auto plan = a.bank->PlanText(text, options);
@@ -672,6 +674,7 @@ int main(int argc, char **argv) {
         ft::checkbox("Automatically check generated words with STT", &a.auto_check);
         ft::checkbox("Give short words more breathing room", &a.adaptive_word_gaps);
         ft::checkbox("Normalize unusually short or long stable vowels", &a.normalize_duration);
+        ft::checkbox("Match pitch between mixed recordings", &a.match_pitch);
         ft::slider_float("Minimum pause between mixed words (ms)", &a.minimum_word_gap, 0.f, 180.f);
         ft::checkbox("Gently bring vowel pitch toward a band", &a.pitch_band);
         if(a.pitch_band) {

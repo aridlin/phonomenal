@@ -18,7 +18,8 @@ dependencies = [
 
 [project.optional-dependencies]
 detectors = ["vosk==0.3.45", "allosaurus==1.0.2", "torch>=2.5,<2.6", "faster-whisper>=1.2,<2", "numpy>=1.26"]
-builder = ["numpy>=1.26", "cmudict>=1.1", "faster-whisper>=1.2,<2"]
+builder = ["numpy>=1.26", "cmudict>=1.1", "faster-whisper>=1.2,<2", "praat-parselmouth>=0.4.7,<0.5"]
+prosody = ["numpy>=1.26", "praat-parselmouth>=0.4.7,<0.5"]
 splice = [
   "cmudict>=1.0.18",
   "g2p_en>=2.1.0"

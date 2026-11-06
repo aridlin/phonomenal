@@ -139,3 +139,29 @@ binaries were rebuilt. Browser interaction was unavailable because local browser
 use is disabled in Work settings; no browser playback or human listening result
 is claimed. Raw WAVs, source hashes, plans and unprompted transcripts are retained
 in this task workspace's `work/phonomenal/evidence` directory.
+
+## Pitch/pulse milestone, 2026-11-06
+
+A new recording-local filtered-AC pitch path and original-waveform correlated
+pulse analysis supplies a separate optional PITC section. In eight local packs,
+6,028 vowel intervals passed the editing guards, compared with 2,038 under the
+old per-vowel peak picker. This is coverage of the editing checks, not a measured
+count of correct glottal pulses or phonetic boundaries.
+
+The first experiment replaced the planner's FEAT/ACOU estimates as well. It
+regressed the 48-sentence small.en comparison from 29 to 51 word errors and was
+rejected. The final design preserves all source-selection data byte-for-byte.
+With matching disabled, all 80 plans and WAVs (eight voices, ten prompts) matched
+the previous installed engine byte-for-byte.
+
+Optional gentle pitch matching made 28/360 word errors on the six-sentence,
+eight-voice comparison, versus 29/360 without it. It helped some sentences and
+regressed others. The larger medium.en model remained at 12/135 errors on the
+Medic/Heavy/Soldier subset. Matching therefore remains off by default; these
+results do not establish a human intelligibility or naturalness improvement.
+
+Synthetic signal checks cover fundamental/pulse tracking under strong harmonics,
+silence/unvoiced rejection, bounded pitch movement, unchanged consonants and
+sample count, source-selection invariance, malformed optional data, source-edit
+invalidation, and the complete enrich/refine CLI path. Browser listening remains
+unverified. The next target is preserving short sounds at source joins.

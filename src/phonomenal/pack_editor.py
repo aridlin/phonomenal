@@ -62,7 +62,7 @@ def read_pack(path):
             word = r.string(); lexicon[word] = [r.string() for _ in range(r.count())]
         r.done()
     extras = {tag.decode('ascii'): base64.b64encode(data).decode('ascii') for tag, data in sections.items()
-              if tag not in {b'META', b'RECS', b'AUDI', b'LEXI', b'FEAT', b'ACOU', b'TRST', b'EVID', b'PROS', b'QREV', b'QARE', b'SPEC'}}
+              if tag not in {b'META', b'RECS', b'AUDI', b'LEXI', b'FEAT', b'ACOU', b'PITC', b'TRST', b'EVID', b'PROS', b'QREV', b'QARE', b'SPEC'}}
     validate_records(records, len(sections[b'AUDI'])//2, metadata['rate'])
     return metadata, records, lexicon, extras, sections[b'AUDI'], report
 

@@ -96,6 +96,8 @@ int main(int argc, char **argv) {
         options.adaptive_word_gaps = false;
       else if (arg == "--normalize-duration")
         options.normalize_duration = true;
+      else if (arg == "--match-pitch")
+        options.match_pitch = true;
       else if (arg == "--word-gap-ms")
         options.word_gap_ms = std::clamp<std::int64_t>(std::stoll(value()),0,500);
       else if (arg == "--pitch-band") {
@@ -120,7 +122,7 @@ int main(int argc, char **argv) {
         std::cout
             << "phonomenal_splicer_cli --bank voice.vcpack (--text TEXT | "
                "--stdin | --phones PHONES) [--output speech.wav] "
-               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--pitch-band 100:180]\nphonomenal_splicer_cli "
+               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--pitch-band 100:180]\nphonomenal_splicer_cli "
                "--bank voice.vcpack --inspect\n";
         return 0;
       } else

@@ -34,7 +34,7 @@ def pitch_marks(samples, rate, pitch):
     return marks
 
 
-def extract_acoustics(pcm, rate, records, feature_bytes):
+def extract_acoustics(pcm, rate, records, feature_bytes, *, pulses=None):
     from phonomenal.vcpack import string
     samples = np.frombuffer(pcm, dtype='<i2').astype(np.float32) / 32768
     hop, dims, count = struct.unpack_from('<IIQ', feature_bytes)
@@ -76,7 +76,20 @@ def extract_acoustics(pcm, rate, records, feature_bytes):
             marks = []
             if (p['label'].rstrip('012') in VOWELS and pitch and voiced_fraction >= .8
                     and spread <= 2.5 and clipping < .01 and len(audio) >= rate * .050):
-                marks = pitch_marks(audio, rate, pitch)
+                if pulses is None:
+                    marks = pitch_marks(audio, rate, pitch)
+                else:
+                    source = np.asarray(pulses.get(record['id'], ()), dtype=np.int64)
+                    local = source[(source >= start) & (source < end)] - start
+                    if len(local) >= 5:
+                        periods = np.diff(local)
+                        # Cross-check the epoch clock against the pitch path;
+                        # an octave/unstable pulse train is not editable.
+                        epoch_pitch = rate / np.median(periods)
+                        if (abs(12*np.log2(epoch_pitch/pitch)) < 1.5
+                                and np.std(periods)/np.mean(periods) <= .10
+                                and np.all((periods >= rate/800) & (periods <= rate/50))):
+                            marks = local.tolist()
             out += struct.pack('<9fI', pitch, spread, voiced_fraction, rms, clipping,
                                silence, onset, offset, duration_z, len(marks))
             out += struct.pack('<ffI', float(np.exp(median)*1000), scale, n)

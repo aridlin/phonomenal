@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--model', default='small.en')
     parser.add_argument('--strict', action='store_true')
     parser.add_argument('--pitch-band', help='Optional LOWER:UPPER in Hz, applied identically to every case')
+    parser.add_argument('--match-pitch', action='store_true')
     args=parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     # A rebuild during a long benchmark must not silently mix engine versions.
@@ -46,9 +47,10 @@ def main():
             command=[str(cli.resolve()),'--bank',str(Path(path).resolve()),'--text',prompt['text'],'--plan','--output',str(wav),'--audit',str(case/'boundaries.json')]
             if args.strict:command.append('--strict')
             if args.pitch_band:command.extend(['--pitch-band',args.pitch_band])
+            if args.match_pitch:command.append('--match-pitch')
             process=subprocess.run(command,capture_output=True,text=True,timeout=180)
             result=dict(voice=label,pack=str(Path(path).resolve()),prompt=prompt,strict=args.strict,cli_sha256=cli_sha256,
-                        pitch_band=args.pitch_band,synthesis_seconds=time.monotonic()-started,status='failed')
+                        pitch_band=args.pitch_band,match_pitch=args.match_pitch,synthesis_seconds=time.monotonic()-started,status='failed')
             if process.returncode:
                 result['error']=process.stderr.strip()
             else:

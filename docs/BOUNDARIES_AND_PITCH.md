@@ -85,3 +85,45 @@ Rendered phone-boundary reports now include `source_uncertainty_samples`,
 `independent_disputes`, and `manual_review`. Disputed or widely separated detector
 estimates are flagged even when the waveform join itself is smooth. These values
 refer to source evidence; output positions still follow the actual time map.
+
+## Recording-local pitch and gentle matching
+
+Install the optional analyzer with `python -m pip install '.[prosody]'`, or rerun
+the builder setup (the builder extra includes it). Analyze an existing pack:
+
+```sh
+python scripts/builder.py refine-pitch voice.vcpack --output voice-pitch.vcpack
+./cpp/build/phonomenal_splicer_cli --bank voice-pitch.vcpack \
+  --text "Please bring me a glass of water." --match-pitch --output speech.wav
+```
+
+The player's **Analyze pack for better selection and pitch** action also runs
+this analysis after ordinary enrichment or the selected detector comparison.
+Its **Match pitch between mixed recordings** checkbox is off by default.
+
+The analyzer applies a Gaussian low-pass transfer function to an analysis copy,
+then uses Praat's autocorrelation candidate-path search. Pulse positions are
+found by cross-correlation in the original waveform. Each recording is analyzed
+separately. The source audio, words, phone labels and sample positions are kept.
+See the [filtered-autocorrelation algorithm](https://www.fon.hum.uva.nl/praat/manual/pitch_analysis_by_filtered_autocorrelation.html)
+and [waveform pulse alignment](https://www.fon.hum.uva.nl/praat/manual/Sound___Pitch__To_PointProcess__cc_.html).
+Parselmouth 0.4.7 embeds Praat 6.1.38, so filtering is applied explicitly before
+its raw-AC command; this is not a claim to execute a newer Praat command.
+
+The optional `PITC` section holds rendering-only pitch/pulse evidence. It does
+not replace FEAT/ACOU/PROS or change source-selection costs. Missing/unknown data
+falls back to the original acoustic metadata. Known malformed measurements or
+pulse positions fail validation. Saving source edits in the pack editor drops
+PITC rather than carrying forward stale evidence; rerun analysis after edits.
+
+Matching uses stable neighbouring recorded runs as local pitch references,
+retains each run's original contour, and shifts reliable vowel interiors by at
+most 1.5 semitones. It skips standalone runs, long intact phrases, sentence pauses,
+large register differences, clipped/unstable vowels and insufficient pulse data.
+It does not snap speech to musical notes or modify consonants/phone boundaries.
+An explicit `--pitch-band` takes precedence. Duration normalization does not
+reuse the old pulse clock in any vowel that was actually pitch-shifted.
+
+This is optional signal processing, not correction of incorrect transcripts or
+phonetic alignments. Source selection and consonant preservation still matter
+more than matching F0. Listening remains necessary.

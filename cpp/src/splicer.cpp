@@ -62,6 +62,7 @@ struct Phoneme {
   std::int64_t end_sample{};
   std::optional<double> confidence;
   PhoneAcoustics acoustic;
+  PhoneAcoustics editing_acoustic;
   std::uint32_t manual_review{};
   std::uint32_t phone_support{},phone_dispute{},word_support{},word_dispute{},boundary_radius{};
 };
@@ -71,6 +72,10 @@ struct Record {
   std::vector<Word> words;
   std::vector<Phoneme> phonemes;
 };
+
+const PhoneAcoustics &EditingAcoustics(const Phoneme &phone) {
+  return phone.editing_acoustic.available ? phone.editing_acoustic : phone.acoustic;
+}
 
 struct ChunkOccurrence {
   std::string text;
@@ -1543,6 +1548,51 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     for(auto word=u.word_group;word<=last;++word)
       word_durations[word]+=1000.*(u.end_sample-u.start_sample)/wave.sample_rate/(last-u.word_group+1);
   }
+  // Estimate one pitch offset per selected recording run, rather than snapping
+  // every vowel to a note or a fixed Hz band. Stable neighbouring recordings
+  // provide a local target; natural pitch movement within each run is retained.
+  std::vector<double> run_pitch(plan.units.size()), run_factor(plan.units.size(), 1.);
+  if (options.match_pitch && options.pitch_floor_hz <= 0) {
+    for (std::size_t i=0; i<plan.units.size(); ++i) {
+      const auto &u=plan.units[i];
+      auto record=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==u.clip_id;});
+      if(record==impl_->records.end()) continue;
+      double sum=0.,weight=0.;
+      for(const auto &p:record->phonemes) {
+        const auto &a=EditingAcoustics(p);
+        if(p.start_sample<u.start_sample || p.end_sample>u.end_sample ||
+           p.manual_review==2 || (p.manual_review!=1 && p.word_support==0 && p.word_dispute>=2) ||
+           !a.available || a.pitch<=0 || a.marks.size()<5 || a.voiced<.8 || a.spread>2.5 || a.clipping>=.01) continue;
+        const double w=std::min<double>(p.end_sample-p.start_sample,wave.sample_rate*.25);
+        sum+=std::log(a.pitch)*w;weight+=w;
+      }
+      if(weight) run_pitch[i]=sum/weight;
+    }
+    for(std::size_t i=0;i<plan.units.size();++i) {
+      const auto &u=plan.units[i];
+      // Long intact phrases anchor the surrounding fragments. No processing
+      // for a standalone run, pauses, or markedly different delivery/register.
+      if(!run_pitch[i] || u.end_sample-u.start_sample>wave.sample_rate*.8) continue;
+      double target=0.,weight=0.;
+      for(int direction:{-1,1}) {
+        for(int distance=1;distance<=2;++distance) {
+          const auto j=static_cast<std::int64_t>(i)+direction*distance;
+          if(j<0 || j>=static_cast<std::int64_t>(plan.units.size())) break;
+          const auto boundary=direction<0 ? j+1 : j;
+          if(plan.units[boundary].pause_before_ms>=90) break;
+          if(!run_pitch[j]) continue;
+          const double difference=std::abs(12.*(run_pitch[j]-run_pitch[i])/std::log(2.));
+          if(difference<=6.) {target+=run_pitch[j]/distance;weight+=1./distance;}
+          break;
+        }
+      }
+      if(weight) {
+        const double semitones=std::clamp(.5*12.*(target/weight-run_pitch[i])/std::log(2.),-1.5,1.5);
+        if(std::abs(semitones)>=.15) run_factor[i]=std::pow(2.,semitones/12.);
+      }
+    }
+  }
+  std::size_t unit_index=0;
   for (const auto &unit : plan.units) {
     if (options.stop_token.stop_requested())
       throw std::runtime_error("Synthesis cancelled");
@@ -1554,20 +1604,27 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     }
     std::vector<std::int16_t> segment(wave.samples.begin() + start,
                                       wave.samples.begin() + end);
-    if (options.pitch_floor_hz > 0) {
+    const double matched_factor=run_factor[unit_index++];
+    std::unordered_map<std::int64_t,bool> pitch_edited;
+    if (options.pitch_floor_hz > 0 || matched_factor!=1.) {
       const auto record=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==unit.clip_id;});
       if(record==impl_->records.end()) throw std::runtime_error("Unknown recording in pitch plan");
       for(const auto &phone:record->phonemes) {
-        const auto &a=phone.acoustic;
+        const auto &a=EditingAcoustics(phone);
         if(phone.start_sample<start || phone.end_sample>end) continue;
         if(std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+phone.normalized_label+" ")==std::string::npos) continue;
         if(!a.available || a.pitch<=0 || a.marks.size()<5) {++checked.pitch_skipped;continue;}
-        const double target=std::clamp<double>(a.pitch,options.pitch_floor_hz,options.pitch_ceiling_hz);
+        const double target=options.pitch_floor_hz>0
+            ? std::clamp<double>(a.pitch,options.pitch_floor_hz,options.pitch_ceiling_hz)
+            : a.pitch*matched_factor;
         // A band is a preference, not permission for a destructive octave shift.
         const double factor=std::clamp(target/a.pitch,std::pow(2.,-.25),std::pow(2.,.25));
         if(std::abs(factor-1.)<.005) continue;
-        if(ShiftVowelPitch(segment,start,phone,factor,wave.sample_rate))
-          checked.pitch_adjustments.push_back({unit.clip_id,a.pitch,a.pitch*factor,factor,phone.start_sample,phone.end_sample});
+        if(ShiftVowelPitch(segment,start,phone,factor,wave.sample_rate)) {
+          checked.pitch_adjustments.push_back({unit.clip_id,a.pitch,a.pitch*factor,factor,phone.start_sample,phone.end_sample,
+              options.pitch_floor_hz>0 ? "band" : "match"});
+          pitch_edited[phone.start_sample]=true;
+        }
         else ++checked.pitch_skipped;
       }
     }
@@ -1576,10 +1633,10 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
       const auto record=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==unit.clip_id;});
       if(record==impl_->records.end()) throw std::runtime_error("Unknown recording in duration plan");
       for(auto it=record->phonemes.rbegin();it!=record->phonemes.rend();++it) {
-        const auto &p=*it; const auto &a=p.acoustic;
+        const auto &p=*it; const auto &a=EditingAcoustics(p);
         if(p.start_sample<start || p.end_sample>end || a.duration_examples<8 || std::abs(a.duration_z)<2.0) continue;
         // Pitch processing changes the pulse clock: do not reuse old marks.
-        if(options.pitch_floor_hz>0 && (a.pitch<options.pitch_floor_hz || a.pitch>options.pitch_ceiling_hz)) continue;
+        if(pitch_edited.contains(p.start_sample)) continue;
         const double duration=1000.*(p.end_sample-p.start_sample)/wave.sample_rate;
         const double factor=std::clamp(a.typical_ms/duration,.75,1.4);
         if(StretchVowel(segment,start,p,factor,wave.sample_rate,knots)) ++checked.duration_adjustments;
@@ -1727,7 +1784,7 @@ std::string BoundaryReportJson(const BoundaryReport &report) {
   out << "],\"pitch_adjustments\":[";
   for(std::size_t i=0;i<report.pitch_adjustments.size();++i) {
     const auto &p=report.pitch_adjustments[i];if(i)out<<',';
-    out << "{\"clip_id\":"<<quote(p.clip_id)<<",\"source_hz\":"<<p.source_hz<<",\"target_hz\":"<<p.target_hz<<",\"factor\":"<<p.factor<<",\"start_sample\":"<<p.start_sample<<",\"end_sample\":"<<p.end_sample<<'}';
+    out << "{\"clip_id\":"<<quote(p.clip_id)<<",\"source_hz\":"<<p.source_hz<<",\"target_hz\":"<<p.target_hz<<",\"factor\":"<<p.factor<<",\"start_sample\":"<<p.start_sample<<",\"end_sample\":"<<p.end_sample<<",\"mode\":"<<quote(p.mode)<<'}';
   }
   out << "],\"pitch_skipped\":" << report.pitch_skipped << ",\"word_pauses\":" << report.word_pauses
       << ",\"word_pause_samples\":" << report.word_pause_samples << ",\"duration_adjustments\":" << report.duration_adjustments
