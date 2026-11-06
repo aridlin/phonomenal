@@ -84,3 +84,58 @@ arbitrary text consistently intelligible. Both successful rebuilds ran in
 separate memory-limited services after an ASR laughter token caused G2P memory
 exhaustion. Heavy finished at 2.8 GiB peak and Medic at 3 GiB peak; the corrected
 builds reused transcription caches and did not require re-recording sources.
+
+## Intelligibility update, 2026-11-06
+
+The native planner now discounts internal timing/acoustic penalties when it can
+keep an intact recorded word, while preserving strict duration rejection and
+manual rejection. For phoneme fallback, a source word rejected by two word
+recognizers with no supporting word recognizer gets a substantially larger
+identity penalty. Detector evidence remains uncalibrated, and manual acceptance
+still takes precedence. The existing independently analyzed packs are now used
+by the local installation, with source audio and aligned labels preserved.
+
+`repair-lexicon INPUT --output NEW.vcpack` explicitly repairs legacy English
+target pronunciations that match no CMUdict variant. It preserves valid variants,
+unknown names, audio, forced source labels, acoustic/evidence sections and opaque
+extensions, and records every change plus its input hash. It never overwrites
+its input. This repaired 17 Medic and 16 Heavy target entries; the other six
+normal-speech merc packs needed no lexical changes.
+
+The same six everyday sentences were rendered before and after, without pitch
+or duration modification. The before engine is frozen from the starting source;
+the after engine uses identical rules for every voice. Whisper small.en received
+only each actual output WAV, with no expected-text prompt or hotwords.
+
+| Voice | Before word errors / 45 | After word errors / 45 |
+| --- | ---: | ---: |
+| Medic | 13 | 8 |
+| Heavy | 7 | 0 |
+| Soldier | 5 | 0 |
+| Scout | 16 | 5 |
+| Demoman | 22 | 3 |
+| Engineer | 6 | 4 |
+| Sniper | 21 | 8 |
+| Spy | 3 | 1 |
+| Total | 93 / 360 (25.8%) | 29 / 360 (8.1%) |
+
+A second pass over the same saved Medic/Heavy/Soldier WAVs using the larger
+Whisper medium.en model gave 15/135 (11.1%) before and 12/135 (8.9%) after.
+These are two sizes of the same recognition family, not independent human
+listening studies. The two models disagree about several sentences. The smaller
+model's much larger improvement must not be interpreted as a measured human
+intelligibility improvement of the same size.
+
+Regressions remain. Medic's "Where are we going after this game?" worsened in
+both models. Heavy's "Give me a minute. I am almost ready." improved in small.en
+but worsened in medium.en. Medic's old homework regression still fails badly
+when disputed "home" fragments are avoided. Pyro has no normal-speech coverage
+and was left unchanged. Arbitrary speech is not solved.
+
+Validation: 78 Python/native integration tests passed, including three new
+regressions for intact words, conflicting source evidence and lossless lexical
+repair; the standalone VCTTS native integration test passed. Player and VCTTS
+binaries were rebuilt. Browser interaction was unavailable because local browser
+use is disabled in Work settings; no browser playback or human listening result
+is claimed. Raw WAVs, source hashes, plans and unprompted transcripts are retained
+in this task workspace's `work/phonomenal/evidence` directory.

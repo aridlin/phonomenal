@@ -1061,7 +1061,11 @@ struct VoiceBank::Impl {
   double acoustic_penalty(const Phoneme &p) const {
     const auto &a=p.acoustic;
     if(p.manual_review==2) return std::numeric_limits<double>::infinity();
-    const double evidence=p.manual_review==1?0.:std::min(90.,p.phone_dispute*24.+p.word_dispute*18.+std::max(0.,1000.*p.boundary_radius/sample_rate-60.)*.15);
+    const double word_identity = p.word_support == 0 && p.word_dispute >= 2
+        ? 240. : p.word_dispute * 18.;
+    const double evidence=p.manual_review==1?0.:
+        word_identity + std::min(90.,p.phone_dispute*24.+
+            std::max(0.,1000.*p.boundary_radius/sample_rate-60.)*.15);
     if (!a.available) return evidence;
     const bool vowel=std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+p.normalized_label+" ")!=std::string::npos;
     // Silence in stop closures is normal. Vowels and severe clipping provide

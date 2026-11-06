@@ -28,3 +28,5 @@ logs/
 imgui.ini
 /medic.vcpack
 /reddit-post.md
+
+.quality-backups/

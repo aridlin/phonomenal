@@ -126,6 +126,9 @@ def _common_parser() -> argparse.ArgumentParser:
     enrich = subparsers.add_parser("enrich-pack", help="Measure phone acoustics and pitch marks without realigning or changing audio.")
     enrich.add_argument("pack", type=Path)
     enrich.add_argument("--output", type=Path, required=True, help="New pack filename; keeps the original.")
+    repair = subparsers.add_parser("repair-lexicon", help="Repair legacy English target pronunciations while preserving source audio and alignment.")
+    repair.add_argument("pack", type=Path)
+    repair.add_argument("--output", type=Path, required=True)
     targeted = subparsers.add_parser("coverage-script", help="Suggest original reading takes for this voice's scarce trusted phones")
     targeted.add_argument("pack",type=Path)
     targeted.add_argument("--output",type=Path,required=True)
@@ -211,6 +214,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "enrich-pack":
         from phonomenal.acoustics import enrich_pack
         print(json.dumps(enrich_pack(args.pack, args.output), indent=2))
+        return 0
+    if args.command == "repair-lexicon":
+        from phonomenal.repair_lexicon import repair_lexicon
+        print(json.dumps(repair_lexicon(args.pack, args.output), indent=2))
         return 0
     if args.command == "extend-pack":
         from phonomenal.vcpack import extend_pack

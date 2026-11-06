@@ -115,8 +115,12 @@ PlanResult VoiceBank::PlanText(std::string_view text,
           for (const auto &phone : record.phonemes) {
             if (phone.start_sample < first.start_sample || phone.end_sample > last.end_sample) continue;
             const double penalty = impl_->phone_duration_penalty(phone);
-            boundary_penalty += penalty;
-            boundary_penalty += impl_->acoustic_penalty(phone);
+            // Internal cuts are not exposed when a recorded word is kept.
+            // A short aligned vowel alone must not force that word to be
+            // rebuilt from unrelated recordings.
+            boundary_penalty += penalty * .20;
+            const double quality = impl_->acoustic_penalty(phone);
+            boundary_penalty += std::isfinite(quality) ? quality * .35 : quality;
             if(phone.acoustic.voiced>=.7 && phone.acoustic.pitch>0) {pitch_penalty+=band_cost(phone.acoustic.pitch);++pitched_phones;}
             suspect_boundary = suspect_boundary || penalty >= 180.;
           }
