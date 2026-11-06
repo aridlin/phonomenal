@@ -165,3 +165,21 @@ silence/unvoiced rejection, bounded pitch movement, unchanged consonants and
 sample count, source-selection invariance, malformed optional data, source-edit
 invalidation, and the complete enrich/refine CLI path. Browser listening remains
 unverified. The next target is preserving short sounds at source joins.
+
+## Book input and pause alignment, 2026-11-06
+
+The requested three-paragraph reading demo uses a public-domain passage from
+Chapter VI of Lewis Carroll's *Alice's Adventures in Wonderland*, preserved in
+`examples/book-demo`. Voice audio stays local. The 207-reference-word baseline
+was recognized at 19.8% WER for Heavy and 9.2% for Soldier by medium.en. These
+are diagnostics on a new longer passage, not a human listening score.
+
+Preparing the demo exposed two input bugs: typographic apostrophes split
+contractions, and a separate pause scanner lost synchronization after digits or
+ampersands expanded into spoken words. A single tokenizer now emits words and
+their preceding pauses together. It canonicalizes English book punctuation,
+keeps curly-apostrophe contractions intact, handles typographic dashes/ellipses,
+and gives blank-line paragraph breaks one 300 ms pause. Ordinary single line
+breaks remain whitespace. Tests cover the exact contraction/pause behavior and
+LF/CRLF paragraph equivalence. This fixes text/pause alignment, not source
+phoneme boundaries; duration-preserving source joins remain the next target.

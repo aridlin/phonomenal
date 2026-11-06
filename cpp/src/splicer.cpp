@@ -197,8 +197,41 @@ std::string NormalizePhoneLabel(std::string_view label) {
   return output;
 }
 
-std::vector<std::string> NormalizeTokens(std::string_view text) {
+struct SpokenText {
   std::vector<std::string> tokens;
+  std::vector<int> pauses;
+};
+
+SpokenText TokenizeText(std::string_view input) {
+  // Canonicalize English typography before either token or pause counting.
+  // A curly apostrophe is part of a contraction, not a word boundary.
+  static constexpr std::pair<std::string_view,std::string_view> punctuation[] = {
+    {"\xe2\x80\x98", "'"}, {"\xe2\x80\x99", "'"},
+    {"\xe2\x80\x9c", "\""}, {"\xe2\x80\x9d", "\""},
+    {"\xe2\x80\x93", ","}, {"\xe2\x80\x94", ","},
+    {"\xe2\x80\x90", "-"}, {"\xe2\x80\x91", "-"},
+    {"\xe2\x80\xa6", "..."}, {"\xc2\xa0", " "},
+    {"\xe2\x80\xaf", " "}, {"\xe2\x80\x89", " "},
+    {"\xef\xbb\xbf", ""}};
+  std::string text;
+  text.reserve(input.size());
+  for(std::size_t i=0;i<input.size();) {
+    bool replaced=false;
+    for(const auto &[from,to]:punctuation) {
+      if(input.substr(i,from.size())==from) {
+        text.append(to);i+=from.size();replaced=true;break;
+      }
+    }
+    if(!replaced) text.push_back(input[i++]);
+  }
+  SpokenText result;
+  auto &tokens=result.tokens;
+  int pending_pause=0, newlines=0;
+  auto emit=[&](std::string word) {
+    tokens.push_back(std::move(word));
+    result.pauses.push_back(tokens.size()==1 ? 0 : pending_pause);
+    pending_pause=0;
+  };
   std::string current;
   auto flush = [&]() {
     while (!current.empty() && current.front() == '\'') {
@@ -217,13 +250,21 @@ std::vector<std::string> NormalizeTokens(std::string_view text) {
           {"hasnt", "hasn't"}, {"hadnt", "hadn't"}, {"couldnt", "couldn't"},
           {"wouldnt", "wouldn't"}, {"shouldnt", "shouldn't"}};
       auto fixed = contractions.find(current);
-      tokens.push_back(fixed == contractions.end() ? current : fixed->second);
+      emit(fixed == contractions.end() ? current : fixed->second);
     }
     current.clear();
   };
 
   for (unsigned char raw : text) {
     const char ch = static_cast<char>(raw);
+    if(ch=='\n' || ch=='\r') {
+      flush();
+      // CRLF is one line break. Blank lines separate book paragraphs.
+      if(ch=='\n') ++newlines;
+      if(newlines>=2 && !tokens.empty()) pending_pause=std::max(pending_pause,300);
+      continue;
+    }
+    if(!std::isspace(raw)) newlines=0;
     if (ch == '-') {
       flush();
       continue;
@@ -235,16 +276,20 @@ std::vector<std::string> NormalizeTokens(std::string_view text) {
       static const std::array<const char *, 10> digits = {
           "zero", "one", "two",   "three", "four",
           "five", "six", "seven", "eight", "nine"};
-      tokens.emplace_back(digits[raw - '0']);
+      emit(digits[raw - '0']);
     } else if (ch == '&') {
       flush();
-      tokens.emplace_back("and");
+      emit("and");
     } else {
       flush();
+      if(!tokens.empty()) {
+        if(ch=='.' || ch=='!' || ch=='?') pending_pause=std::max(pending_pause,180);
+        else if(ch==',' || ch==';' || ch==':') pending_pause=std::max(pending_pause,90);
+      }
     }
   }
   flush();
-  return tokens;
+  return result;
 }
 
 std::string JoinTokens(const std::vector<std::string> &tokens,

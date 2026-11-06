@@ -4,28 +4,11 @@ PlanResult VoiceBank::PlanText(std::string_view text,
   if (text.size() > 16384)
     throw std::runtime_error(
         "Prompt exceeds 16384 UTF-8 bytes; split into sentences");
-  const auto tokens = NormalizeTokens(text);
+  const auto spoken = TokenizeText(text);
+  const auto &tokens = spoken.tokens;
   if (tokens.empty() || tokens.size() > 512)
     throw std::runtime_error("Expected 1 to 512 spoken words");
-  std::vector<int> pauses(tokens.size());
-  std::size_t token_cursor = 0;
-  std::string rawword;
-  for (char ch : std::string(text) + " ") {
-    if (std::isalpha(static_cast<unsigned char>(ch)) || ch == '\'')
-      rawword += ch;
-    else {
-      if (!rawword.empty()) {
-        ++token_cursor;
-        rawword.clear();
-      }
-      if (token_cursor < pauses.size()) {
-        if (ch == '.' || ch == '!' || ch == '?')
-          pauses[token_cursor] = 180;
-        else if (ch == ',' || ch == ';' || ch == ':')
-          pauses[token_cursor] = 90;
-      }
-    }
-  }
+  const auto &pauses = spoken.pauses;
   std::vector<std::string> target, stressed_target;
   std::vector<std::size_t> starts, ends, word_at;
   std::vector<std::string> warnings;
