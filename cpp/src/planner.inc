@@ -102,7 +102,8 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             // A short aligned vowel alone must not force that word to be
             // rebuilt from unrelated recordings.
             boundary_penalty += penalty * .20;
-            const double quality = impl_->acoustic_penalty(phone);
+            double quality = impl_->acoustic_penalty(phone);
+            if(options.acoustic_phone_scores) quality+=impl_->source_score_penalty(phone);
             boundary_penalty += std::isfinite(quality) ? quality * .35 : quality;
             if(phone.acoustic.voiced>=.7 && phone.acoustic.pitch>0) {pitch_penalty+=band_cost(phone.acoustic.pitch);++pitched_phones;}
             suspect_boundary = suspect_boundary || penalty >= 180.;
@@ -146,6 +147,8 @@ PlanResult VoiceBank::PlanText(std::string_view text,
         // Strict mode also excludes obviously collapsed/stretched phone cuts.
         if (!std::isfinite(p.acoustic_penalty) || (options.strict && p.duration_penalty >= 180.))
           continue;
+        double source_quality=p.acoustic_penalty;
+        if(options.acoustic_phone_scores) source_quality+=p.source_selection_penalty;
         double stress_penalty = 0.;
         for (std::size_t n = 0; n < len && n < p.stressed_labels.size(); ++n) {
           const auto &wanted = stressed_target[i + n];
@@ -188,7 +191,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
         edges[i].push_back(
             {i + len, std::move(u),
              .15 * static_cast<double>(len) + p.duration_penalty +
-                 stress_penalty + timing_penalty + p.acoustic_penalty + band_cost(p.pitch) + discarded_words +
+                 stress_penalty + timing_penalty + source_quality + band_cost(p.pitch) + discarded_words +
                  100. * static_cast<double>(last_word-word_at[i]) +
                  (i>0 && !p.left_context.empty() && p.left_context!=target[i-1] ? 12. : 0.) +
                  (i+len<target.size() && !p.right_context.empty() && p.right_context!=target[i+len] ? 12. : 0.) +
@@ -238,7 +241,9 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             for(std::size_t n=0;n<length;++n) {
               const double fraction=length==1?.5:((n==0?first_center:(n+1==length?last_center:false))?.5:1.);
               discarded+=fraction*(recorded_word[word_at[i+n]]?35.:0.);
-              if(length<=2) {duration+=fraction*p.center_duration[n];quality+=fraction*p.center_quality[n];}
+              if(length<=2) {duration+=fraction*p.center_duration[n];quality+=fraction*p.center_quality[n];
+                if(options.acoustic_phone_scores) quality+=fraction*p.center_source_penalty[n];
+              }
               const auto &wanted=stressed_target[i+n];
               if((wanted.back()=='1' || wanted.back()=='2') && p.stressed_labels[n].back()=='0') stress+=fraction*90.;
               const bool vowel=std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+target[i+n]+" ")!=std::string::npos;
@@ -247,6 +252,8 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             if(length>2) {
               duration=p.duration_penalty-(first_center?p.center_duration[0]*.5:0.)-(last_center?p.center_duration[1]*.5:0.);
               quality=p.acoustic_penalty-(first_center?p.center_quality[0]*.5:0.)-(last_center?p.center_quality[1]*.5:0.);
+              if(options.acoustic_phone_scores) quality+=p.source_selection_penalty-
+                (first_center?p.center_source_penalty[0]*.5:0.)-(last_center?p.center_source_penalty[1]*.5:0.);
             }
             const double ms=1000.*(u.end_sample-u.start_sample)/impl_->sample_rate;
             // These are half-phone spans. Long emphatic vowels must not gain

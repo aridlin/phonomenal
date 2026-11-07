@@ -62,6 +62,7 @@ struct Phoneme {
   std::int64_t end_sample{};
   std::optional<double> confidence;
   PhoneAcoustics acoustic;
+  double source_selection_penalty = 0.;
   PhoneAcoustics editing_acoustic;
   std::uint32_t manual_review{};
   std::uint32_t phone_support{},phone_dispute{},word_support{},word_dispute{},boundary_radius{};
@@ -101,6 +102,8 @@ struct PhoneOccurrence {
   std::int64_t first_center{}, last_center{};
   std::array<double,2> center_duration{}, center_quality{};
   bool continuous = false;
+  double source_selection_penalty = 0.;
+  std::array<double,2> center_source_penalty{};
 };
 
 struct PronunciationStats {
@@ -1128,6 +1131,10 @@ struct VoiceBank::Impl {
            std::min(120.,a.clipping*1000.) + std::max(0.,std::abs(a.duration_z)-2.)*18.;
   }
 
+  static double source_score_penalty(const Phoneme &phone) {
+    return phone.manual_review == 1 ? 0. : phone.source_selection_penalty;
+  }
+
   static std::int64_t phone_center(const Phoneme &phone) {
     const auto midpoint=phone.start_sample+(phone.end_sample-phone.start_sample)/2;
     const auto &a=EditingAcoustics(phone);
@@ -1161,13 +1168,16 @@ struct VoiceBank::Impl {
         occurrence.first_center=phone_center(p);
         occurrence.center_duration[0]=phone_duration_penalty(p);
         occurrence.center_quality[0]=acoustic_penalty(p);
+        occurrence.center_source_penalty[0]=source_score_penalty(p);
       }
       if(p.end_sample==occurrence.end_sample) {
         occurrence.last_center=phone_center(p);
         occurrence.center_duration[1]=phone_duration_penalty(p);
         occurrence.center_quality[1]=acoustic_penalty(p);
+        occurrence.center_source_penalty[1]=source_score_penalty(p);
       }
       occurrence.acoustic_penalty+=acoustic_penalty(p);
+      occurrence.source_selection_penalty+=source_score_penalty(p);
       if(p.acoustic.available && p.acoustic.pitch>0 && p.acoustic.voiced>=.7) {
         const double w=p.end_sample-p.start_sample;
         pitch_sum+=std::log(p.acoustic.pitch)*w;weight+=w;
@@ -1196,6 +1206,8 @@ struct VoiceBank::Impl {
             occurrence.labels.push_back(phone.normalized_label);occurrence.stressed_labels.push_back(phone.label);
             occurrence.center_duration[n-i]=phone_duration_penalty(phone);
             occurrence.center_quality[n-i]=acoustic_penalty(phone);
+            occurrence.center_source_penalty[n-i]=source_score_penalty(phone);
+            occurrence.source_selection_penalty+=occurrence.center_source_penalty[n-i];
             occurrence.duration_penalty+=occurrence.center_duration[n-i];
             occurrence.acoustic_penalty+=occurrence.center_quality[n-i];
             if(phone.acoustic.available && phone.acoustic.pitch>0 && phone.acoustic.voiced>=.7) {

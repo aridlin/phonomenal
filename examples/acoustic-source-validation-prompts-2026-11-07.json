@@ -1,0 +1,32 @@
+[
+  {
+    "id": "acoustic-fresh-01",
+    "text": "Please read the short message before you close the window.",
+    "corpus": "acoustic-fresh"
+  },
+  {
+    "id": "acoustic-fresh-02",
+    "text": "Turn the light off when the test is over.",
+    "corpus": "acoustic-fresh"
+  },
+  {
+    "id": "acoustic-fresh-03",
+    "text": "We should finish this work before the next meeting.",
+    "corpus": "acoustic-fresh"
+  },
+  {
+    "id": "acoustic-fresh-04",
+    "text": "I heard a quiet voice from the other room.",
+    "corpus": "acoustic-fresh"
+  },
+  {
+    "id": "acoustic-fresh-05",
+    "text": "You can find the answer on the last page.",
+    "corpus": "acoustic-fresh"
+  },
+  {
+    "id": "acoustic-fresh-06",
+    "text": "The bridge is open again after the storm.",
+    "corpus": "acoustic-fresh"
+  }
+]

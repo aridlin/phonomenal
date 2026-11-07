@@ -92,6 +92,7 @@ PackedData ReadVcpack(const std::filesystem::path &path) {
     throw std::runtime_error("Invalid vcpack header");
   std::unordered_map<std::string, std::span<const std::uint8_t>> sections;
   std::uint64_t previous = 24 + 32 * count;
+  std::unordered_map<std::string,std::uint32_t> section_checksums;
   for (std::uint32_t i = 0; i < count; ++i) {
     head.require(4);
     std::string tag(reinterpret_cast<const char *>(bytes.data() + head.pos), 4);
@@ -112,6 +113,7 @@ PackedData ReadVcpack(const std::filesystem::path &path) {
     if (Crc32(data) != crc)
       throw std::runtime_error("vcpack checksum mismatch: " + tag);
     sections.emplace(tag, data);
+    section_checksums.emplace(tag, crc);
     previous = offset + length;
   }
   if (previous != size || !sections.contains("META") ||
@@ -323,6 +325,28 @@ PackedData ReadVcpack(const std::filesystem::path &path) {
         }
       }
       tr.end();
+    }
+  }
+  // Optional experimental source-quality data. Its checksums bind it to the
+  // exact PCM and record labels; opaque chunks surviving an edit stay inert.
+  if (sections.contains("GOPQ")) {
+    BinaryReader scores{sections.at("GOPQ")};
+    if(scores.u32()==1) {
+      const auto audio_crc=scores.u32(),record_crc=scores.u32();
+      if(audio_crc==section_checksums.at("AUDI") && record_crc==section_checksums.at("RECS")) {
+        if(scores.u32()!=result.records.size()) throw std::runtime_error("GOPQ record count differs from RECS");
+        for(auto &r:result.records) {
+          if(scores.string()!=r.clip_id || scores.u32()!=r.phonemes.size())
+            throw std::runtime_error("GOPQ identity differs from RECS");
+          for(auto &p:r.phonemes) {
+            const auto penalty=scores.f32();
+            if(!std::isfinite(penalty) || (penalty<0 && penalty!=-1) || penalty>60)
+              throw std::runtime_error("Invalid GOPQ source penalty");
+            p.source_selection_penalty=penalty>=0?penalty:0.;
+          }
+        }
+        scores.end();
+      }
     }
   }
   if (sections.contains("QARE")) {

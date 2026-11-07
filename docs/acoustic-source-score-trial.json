@@ -1,0 +1,809 @@
+{
+  "status": "Experimental branch only; not installed or accepted for release.",
+  "baseline_source_commit": "73ff88e1e82a63a4b33991278800126548663ca4",
+  "voice": "medic",
+  "source_pack_sha256": "052354a875495a903c5f7f734361399a7ef4eb4b633e2c3cb78455c0ccb83069",
+  "purpose": "Test whether bounded source acoustic competition costs help native fragment selection without altering source recordings or their annotations.",
+  "option": "--acoustic-phone-scores",
+  "default": false,
+  "source_method": "Upstream MFA phone competition gaps using a disposable database copy. Only identical original phone sequences mapped; intervals reset to exact original sample positions before read-only scoring. Scores are nonnegative relative acoustic gaps, not calibrated probabilities or human labels.",
+  "calibration": "Per exact stressed source-phone label, require >=20 measured occurrences. q25/q75 use floor(p*(n-1)) order statistics. Penalty=min(60,12*max(0,(gap-q75)/max(1,q75-q25))). Unknown/unmapped/thin classes remain unpenalized; no invented confidence or hard source exclusion. Manual acceptance overrides this derived penalty; manual rejection remains absolute.",
+  "weights": "Full phones carry their whole penalty; exposed half phones carry one half. Whole recorded words/phrases apply the existing .35 source-quality weight. No new join, pitch, duration, gain, beam or lexical scoring changes.",
+  "source_measurements": {
+    "records": 370,
+    "phones": 5600,
+    "unknown_records": 1,
+    "calibrated_classes": 41,
+    "counts": {
+      "thin_class": 143,
+      "measured": 5457,
+      "positive": 1370,
+      "capped": 26,
+      "unmapped": 21
+    }
+  },
+  "source_data_preserved": [
+    "META",
+    "RECS",
+    "AUDI",
+    "LEXI",
+    "FEAT",
+    "ACOU",
+    "TRST",
+    "EVID",
+    "PROS",
+    "PITC",
+    "SPEC"
+  ],
+  "report_updated": "QARE",
+  "native_optional_chunk": {
+    "tag": "GOPQ",
+    "version": 1,
+    "flags": 0,
+    "byte_order": "little-endian",
+    "header": [
+      "uint32 version",
+      "uint32 AUDI CRC32",
+      "uint32 RECS CRC32",
+      "uint32 record count"
+    ],
+    "records": [
+      "UTF-8 record ID prefixed by uint32 byte length",
+      "uint32 phone count",
+      "one float32 cost per phone"
+    ],
+    "cost": "Finite [0,60], or -1 for unknown; unknown adds no penalty.",
+    "identity": "Ordered record IDs and phone counts must exactly match RECS. AUDI and RECS CRC32 values must match current sections.",
+    "compatibility": "Ignore future versions and stale source bindings. Reject malformed matching current-version data. Manual acceptance overrides this added penalty; manual rejection remains absolute."
+  },
+  "validation": {
+    "tests": 133,
+    "subtests": 20,
+    "exact_plan_and_wav_cases_per_control": 68,
+    "controls": [
+      "scored bank with feature off",
+      "old bank with feature on"
+    ],
+    "older_production_reader_plan_and_wav_cases": 1,
+    "existing_cases": 62,
+    "fresh_confirmation_cases": 6,
+    "public_fresh_prompt_file": "examples/acoustic-source-validation-prompts-2026-11-07.json",
+    "policy_frozen_before_synthesized_output": true,
+    "threshold_sweeps": 0
+  },
+  "structure": {
+    "baseline": {
+      "cases": 68,
+      "fragments": 2157,
+      "center_edges": 1544
+    },
+    "source-scored": {
+      "cases": 68,
+      "fragments": 2168,
+      "center_edges": 1560
+    }
+  },
+  "diagnostics": {
+    "whisper": {
+      "rows": 136,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 94
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 16,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 38,
+              "reference": 207
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 33,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 24,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 15,
+              "reference": 147
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 52,
+              "reference": 107
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 45,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 100,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 15,
+              "reference": 68
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 15,
+              "reference": 68
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 60
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 60
+            }
+          },
+          "acoustic-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 5,
+              "reference": 54
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 7,
+              "reference": 54
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 94
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 16,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 38,
+              "reference": 207
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 33,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 24,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 15,
+              "reference": 147
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 52,
+              "reference": 107
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 45,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 100,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 15,
+              "reference": 68
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 15,
+              "reference": 68
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 60
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 60
+            }
+          },
+          "acoustic-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 5,
+              "reference": 54
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 7,
+              "reference": 54
+            }
+          }
+        }
+      }
+    },
+    "vosk": {
+      "rows": 136,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 35,
+              "reference": 94
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 36,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 105,
+              "reference": 207
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 102,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 47,
+              "reference": 109
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 44,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 90,
+              "reference": 147
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 82,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 89,
+              "reference": 107
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 85,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 251,
+              "reference": 381
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 264,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 44,
+              "reference": 68
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 48,
+              "reference": 68
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 28,
+              "reference": 60
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 29,
+              "reference": 60
+            }
+          },
+          "acoustic-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 26,
+              "reference": 54
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 23,
+              "reference": 54
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 35,
+              "reference": 94
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 36,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 105,
+              "reference": 207
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 102,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 47,
+              "reference": 109
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 44,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 90,
+              "reference": 147
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 82,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 89,
+              "reference": 107
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 85,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 251,
+              "reference": 381
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 264,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 44,
+              "reference": 68
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 48,
+              "reference": 68
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 28,
+              "reference": 60
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 29,
+              "reference": 60
+            }
+          },
+          "acoustic-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 26,
+              "reference": 54
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 23,
+              "reference": 54
+            }
+          }
+        }
+      }
+    },
+    "phones": {
+      "rows": 136,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 170,
+              "reference": 301
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 172,
+              "reference": 301
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 341,
+              "reference": 655
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 340,
+              "reference": 655
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 202,
+              "reference": 343
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 213,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 283,
+              "reference": 510
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 292,
+              "reference": 510
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 285,
+              "reference": 480
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 284,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 693,
+              "reference": 1303
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 685,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 137,
+              "reference": 237
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 143,
+              "reference": 237
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 112,
+              "reference": 196
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 114,
+              "reference": 196
+            }
+          },
+          "acoustic-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 92,
+              "reference": 171
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 96,
+              "reference": 171
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 170,
+              "reference": 301
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 172,
+              "reference": 301
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 341,
+              "reference": 655
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 340,
+              "reference": 655
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 202,
+              "reference": 343
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 213,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 283,
+              "reference": 510
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 292,
+              "reference": 510
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 285,
+              "reference": 480
+            },
+            "source-scored": {
+              "cases": 12,
+              "errors": 284,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 693,
+              "reference": 1303
+            },
+            "source-scored": {
+              "cases": 1,
+              "errors": 685,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 137,
+              "reference": 237
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 143,
+              "reference": 237
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 112,
+              "reference": 196
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 114,
+              "reference": 196
+            }
+          },
+          "acoustic-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 92,
+              "reference": 171
+            },
+            "source-scored": {
+              "cases": 6,
+              "errors": 96,
+              "reference": 171
+            }
+          }
+        }
+      }
+    }
+  },
+  "totals": {
+    "whisper": {
+      "baseline": {
+        "cases": 68,
+        "errors": 261,
+        "reference": 1227
+      },
+      "source-scored": {
+        "cases": 68,
+        "errors": 258,
+        "reference": 1227
+      }
+    },
+    "vosk": {
+      "baseline": {
+        "cases": 68,
+        "errors": 715,
+        "reference": 1227
+      },
+      "source-scored": {
+        "cases": 68,
+        "errors": 713,
+        "reference": 1227
+      }
+    },
+    "phones": {
+      "baseline": {
+        "cases": 68,
+        "errors": 2315,
+        "reference": 4196
+      },
+      "source-scored": {
+        "cases": 68,
+        "errors": 2339,
+        "reference": 4196
+      }
+    }
+  },
+  "interpretation": "Mixed independent diagnostics: weak overall word-error reductions, phone-error increase, and inconsistent fresh confirmation and book results. No human intelligibility gain established. Keep original bank and default behavior.",
+  "human_intelligibility": "Unproven. Recognition agreement and source competition costs are diagnostics, not human listening acceptance."
+}
