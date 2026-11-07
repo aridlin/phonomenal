@@ -1007,6 +1007,7 @@ struct VoiceBank::Impl {
   std::filesystem::path master_audio_path;
   std::string merc;
   std::string language = "en-us", report;
+  double center_join_cost = 35.;
   std::uint32_t feature_hop{};
   std::vector<FeatureFrame> features;
   mutable std::recursive_mutex mutex;
@@ -1427,6 +1428,7 @@ VoiceBank VoiceBank::Load(const std::filesystem::path &bank_path) {
     impl->master_wave = std::move(packed.wave);
     impl->records = std::move(packed.records);
     impl->pronunciation_index = std::move(packed.lexicon);
+    impl->center_join_cost = packed.center_join_cost;
     impl->feature_hop = packed.hop;
     impl->features = std::move(packed.features);
     impl->build_pronunciation_index();

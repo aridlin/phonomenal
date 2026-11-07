@@ -9,6 +9,7 @@ struct PackedData {
   WaveData wave;
   std::vector<Record> records;
   std::unordered_map<std::string, std::vector<std::string>> lexicon;
+  double center_join_cost = 35.;
   std::uint32_t hop{};
   std::vector<FeatureFrame> features;
 };
@@ -323,6 +324,16 @@ PackedData ReadVcpack(const std::filesystem::path &path) {
         }
       }
       tr.end();
+    }
+  }
+  if (sections.contains("SOPT")) {
+    BinaryReader options{sections.at("SOPT")};
+    if(options.u32()==1) {
+      const auto cost=options.f32();
+      if(!std::isfinite(cost) || cost<0. || cost>1000.)
+        throw std::runtime_error("Center join cost must be finite and between 0 and 1000");
+      options.end();
+      result.center_join_cost=cost;
     }
   }
   if (sections.contains("QARE")) {

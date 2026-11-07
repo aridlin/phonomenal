@@ -4,6 +4,9 @@ PlanResult VoiceBank::PlanText(std::string_view text,
   if (text.size() > 16384)
     throw std::runtime_error(
         "Prompt exceeds 16384 UTF-8 bytes; split into sentences");
+  const double center_join_cost=options.center_join_cost.value_or(impl_->center_join_cost);
+  if(!std::isfinite(center_join_cost) || center_join_cost<0. || center_join_cost>1000.)
+    throw std::runtime_error("Center join cost must be finite and between 0 and 1000");
   const auto spoken = TokenizeText(text);
   const auto &tokens = spoken.tokens;
   if (tokens.empty() || tokens.size() > 512)
@@ -312,7 +315,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     const auto right = feature(
         std::min(b.end_sample - 1, b.start_sample + wave.sample_rate / 100));
     double cost = a.ends_at_phone_center && b.starts_at_phone_center &&
-        !a.phones.empty() && !b.phones.empty() && a.phones.back()==b.phones.front() ? 35. : 100.;
+        !a.phones.empty() && !b.phones.empty() && a.phones.back()==b.phones.front() ? center_join_cost : 100.;
     if (left.pitch > 0 && right.pitch > 0 && left.voicing > .65 &&
         right.voicing > .65) {
       const double st = std::abs(12. * std::log2(right.pitch / left.pitch));

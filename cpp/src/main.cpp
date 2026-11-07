@@ -1,4 +1,5 @@
 #include "phonomenal_splicer/splicer.h"
+#include <cmath>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
@@ -111,6 +112,13 @@ static int run_cli(int argc, char **argv) {
         options.adaptive_word_gaps = false;
       else if (arg == "--normalize-duration")
         options.normalize_duration = true;
+      else if (arg == "--center-join-cost") {
+        const auto input=value();std::size_t consumed=0;
+        const auto cost=std::stod(input,&consumed);
+        if(consumed!=input.size() || !std::isfinite(cost) || cost<0. || cost>1000.)
+          throw std::runtime_error("Center join cost must be finite and between 0 and 1000");
+        options.center_join_cost=cost;
+      }
       else if (arg == "--match-pitch")
         options.match_pitch = true;
       else if (arg == "--center-phone-joins") {
@@ -156,7 +164,7 @@ static int run_cli(int argc, char **argv) {
         std::cout
             << "phonomenal_splicer_cli --bank voice.vcpack (--text TEXT | "
                "--stdin | --phones PHONES) [--output speech.wav] "
-               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--center-phone-joins] [--center-run-phones 2..12] [--boundary-phone-joins] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
+               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--center-phone-joins] [--center-run-phones 2..12] [--center-join-cost 0..1000] [--boundary-phone-joins] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
                "--bank voice.vcpack --inspect\n";
         return 0;
       } else

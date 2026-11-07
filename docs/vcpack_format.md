@@ -76,3 +76,20 @@ marks per phone in RECS order. See the complete [ASCII wire specification](../sr
 and [runtime behavior](BOUNDARIES_AND_PITCH.md). Unknown versions are skipped.
 Enrichment preserves all audio, alignment and lexicon bytes; editor saves
 regenerate measurements and marks after changes.
+
+## Per-bank synthesis defaults
+
+Optional `SOPT` stores `u32 version=1` and one `float32 center_join_cost`.
+The cost must be finite and in `[0,1000]`. Missing or future-version SOPT uses
+35, preserving earlier banks. Current-version malformed data is rejected.
+This is a rendering preference, not alignment confidence or source evidence.
+It does not change recordings, labels, cuts, acoustic data or review decisions.
+
+Explicit `SynthesizeOptions.center_join_cost` or CLI `--center-join-cost` wins
+over the bank preference. Other splices keep their existing cost of 100;
+contiguous original audio keeps zero join cost. VCTTS and the native frontend
+use the bank preference through their normal default planning calls.
+
+Python: `configure_synthesis` in `phonomenal.synthesis_defaults` writes the
+optional preference atomically, preserving other payloads. Pass
+`center_join_cost=None` to remove it. Older readers ignore the optional chunk.
