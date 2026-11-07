@@ -22,8 +22,10 @@ def main():
     parser.add_argument('--strict', action='store_true')
     parser.add_argument('--pitch-band', help='Optional LOWER:UPPER in Hz, applied identically to every case')
     parser.add_argument('--match-pitch', action='store_true')
-    parser.add_argument('--center-phone-joins', action='store_true')
-    parser.add_argument('--center-run-phones', type=int, choices=range(2,13))
+    planning=parser.add_mutually_exclusive_group()
+    planning.add_argument('--center-phone-joins', action='store_true')
+    planning.add_argument('--center-run-phones', type=int, choices=range(2,13))
+    planning.add_argument('--boundary-phone-joins', action='store_true')
     parser.add_argument('--join-mode', choices=['preserve', 'legacy'])
     args=parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
@@ -53,10 +55,11 @@ def main():
             if args.match_pitch:command.append('--match-pitch')
             if args.center_phone_joins:command.append('--center-phone-joins')
             if args.center_run_phones:command.extend(['--center-run-phones',str(args.center_run_phones)])
+            if args.boundary_phone_joins:command.append('--boundary-phone-joins')
             if args.join_mode:command.append('--preserve-phone-timing' if args.join_mode=='preserve' else '--legacy-overlap')
             process=subprocess.run(command,capture_output=True,text=True,timeout=180)
             result=dict(voice=label,pack=str(Path(path).resolve()),prompt=prompt,strict=args.strict,cli_sha256=cli_sha256,
-                        pitch_band=args.pitch_band,match_pitch=args.match_pitch,join_mode=args.join_mode,center_phone_joins=args.center_phone_joins,center_run_phones=args.center_run_phones,synthesis_seconds=time.monotonic()-started,status='failed')
+                        pitch_band=args.pitch_band,match_pitch=args.match_pitch,join_mode=args.join_mode,center_phone_joins=args.center_phone_joins,center_run_phones=args.center_run_phones,boundary_phone_joins=args.boundary_phone_joins,planning_mode='boundary' if args.boundary_phone_joins or args.join_mode=='legacy' else ('center-'+str(args.center_run_phones) if args.center_run_phones else ('center-2' if args.center_phone_joins else 'engine-default')),synthesis_seconds=time.monotonic()-started,status='failed')
             if process.returncode:
                 result['error']=process.stderr.strip()
             else:

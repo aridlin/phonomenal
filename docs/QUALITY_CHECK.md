@@ -1,5 +1,11 @@
 # Speech regression check
 
+The current default is the verified long-transition center planner. The previous
+bounded renderer remains available with `--boundary-phone-joins` or
+`--legacy-overlap`. The historical experiments below retain their original
+labels; see the current-default evaluation at the end for the promotion decision
+and known limitations. Recognition diagnostics remain separate from listening.
+
 The diagnostic sentence is **I hate getting homework**. These are unprompted
 `small.en` STT results on the actual rendered WAV, without the expected text
 supplied as a prompt or hotword. They are diagnostics, not listening scores.
@@ -315,3 +321,40 @@ integration checks. The original/default and two-phone modes retain their exact
 previous output in the 198-case compatibility check. Aggregate diagnostics are in
 [center-long-results.json](center-long-results.json); audio, observations and
 private model/voice fingerprints stay in the workspace.
+
+## Current default: long native transitions
+
+The up-to-12-phone center planner is now the ordinary synthesis path in the CLI,
+desktop frontend and VCTTS library defaults. This promotes the same output already
+evaluated above; it adds no pitch or duration normalization. Exact recorded words
+and phrases remain anchors. The previous bounded planner is selectable with
+`--boundary-phone-joins` (also `--legacy-overlap`). `--center-phone-joins` explicitly
+keeps the earlier two-phone variant. The benchmark helper records the requested
+planning mode and offers the boundary-planner control.
+
+Across the eight game voices, the long mode improves the aggregate results over
+the previous renderer for both Whisper sizes, Vosk, and canonical-phone
+recognition. An additional 188-clip ordinary audiobook narrator was checked on
+the same unrelated text: medium-model errors changed from 5 to 3 over the 94
+development words, stayed at 7 over the 109 held-out words, and fell from 14 to
+10 over the 207 Alice words. Its original waveform and labels were retained;
+the local test copy received optional pitch analysis. See
+[narrator-center-results.json](narrator-center-results.json).
+
+This is an aggregate improvement, with remaining per-prompt and per-voice
+regressions. Demoman's Vosk and phone totals still worsen, and Spy has small word
+decoder regressions. The retained boundary option permits direct comparison.
+No human-listening acceptance is claimed, and source-label/alignment work remains.
+
+A more restrictive source-center policy was tested and rejected. It preserved
+brief/uncertain phones whole, but medium-model development errors rose from 67
+to 83 and held-out errors from 110 to 124; the small-model count rose from 83 to
+97. Its improvement on the game book readings did not generalize to ordinary
+sentences or the narrator. That policy is not part of the shipped default.
+
+The promotion passes 112 native tests, a MinGW cross-build and the VCTTS
+integration check. A 372-case comparison across all eight game voices and the
+narrator verifies that the ordinary default reproduces the previously evaluated
+long-mode plans and WAVs byte for byte. The explicit two-phone and boundary modes
+also reproduce their earlier outputs. This changes which verified mode is chosen;
+it does not introduce a newly measured waveform variant at deployment time.

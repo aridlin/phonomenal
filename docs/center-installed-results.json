@@ -47,7 +47,7 @@
       "words": 752
     }
   },
-  "default": "unchanged: retain bounded overlap; matching-phone joins experimental",
+  "default": "Historical bounded comparison; current default is long center joins. This file evaluates the earlier two-phone option.",
   "packs_include_pitc": true,
   "same_baseline_plans_and_audio": 195
 }

@@ -115,6 +115,7 @@ static int run_cli(int argc, char **argv) {
         options.match_pitch = true;
       else if (arg == "--center-phone-joins") {
         options.center_phone_joins = true;
+        options.center_max_phone_run = 2;
         options.preserve_phone_timing = true;
       }
       else if (arg == "--center-run-phones") {
@@ -127,8 +128,10 @@ static int run_cli(int argc, char **argv) {
       }
       else if (arg == "--preserve-phone-timing")
         options.preserve_phone_timing = true;
-      else if (arg == "--legacy-overlap")
+      else if (arg == "--legacy-overlap" || arg == "--boundary-phone-joins") {
+        options.center_phone_joins = false;
         options.preserve_phone_timing = false;
+      }
       else if (arg == "--word-gap-ms")
         options.word_gap_ms = std::clamp<std::int64_t>(std::stoll(value()),0,500);
       else if (arg == "--pitch-band") {
@@ -153,7 +156,7 @@ static int run_cli(int argc, char **argv) {
         std::cout
             << "phonomenal_splicer_cli --bank voice.vcpack (--text TEXT | "
                "--stdin | --phones PHONES) [--output speech.wav] "
-               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--center-phone-joins] [--center-run-phones 2..12] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
+               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--center-phone-joins] [--center-run-phones 2..12] [--boundary-phone-joins] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
                "--bank voice.vcpack --inspect\n";
         return 0;
       } else

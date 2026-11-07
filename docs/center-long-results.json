@@ -165,8 +165,10 @@
       }
     }
   },
-  "default_changed": false,
+  "default_changed": true,
   "human_listening_verified": false,
   "unprompted": true,
-  "compatibility_cases": 198
+  "compatibility_cases": 198,
+  "default_mode": "center-long",
+  "previous_mode": "bounded"
 }

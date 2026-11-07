@@ -130,7 +130,7 @@ more than matching F0. Listening remains necessary.
 
 ## Short-fragment protection and experimental timing-preserving joins
 
-The default crossfade is now bounded by one quarter of **both** adjacent
+The previous boundary planner's crossfade is bounded by one quarter of **both** adjacent
 rendered fragments. Previously its left bound used the entire output buffer,
 which could erase a complete short preceding consonant. This is a waveform
 retention guarantee, not evidence that the source label or cut is correct.
@@ -143,12 +143,13 @@ samples. Intact contiguous source audio stays unchanged. The boundary report
 records `duration_preserving_joins`, `contextual_joins`, and
 `overlap_samples_removed`; mappings retain their actual output sample clock.
 
-`--legacy-overlap` selects the default, now bounded, overlap method. The
-preserving mode is not the default: its recognition comparisons are mixed,
-including a regression on the Heavy book passage. It is retained for controlled
-experiments on the next coarticulation-aware planner.
+`--boundary-phone-joins` (alias `--legacy-overlap`) selects that previous bounded
+overlap method and its boundary planner. Add `--preserve-phone-timing` after it
+to test timing preservation on the previous planner. Timing preservation alone
+gave mixed recognition results, including a Heavy book regression. The current
+default couples it with the center-join planner described below.
 
-## Experimental joins inside matching phones
+## Joins inside matching phones
 
 `--center-phone-joins` adds source transitions between the middles of matching
 phones to the planning graph. The beginning and ending of a word can still use
@@ -177,13 +178,16 @@ Plans identify partial-phone endpoints with `starts_at_phone_center` and
 evidence and actual output clock. Optional pitch/duration processing still edits
 only complete reliable vowels; partial vowels are skipped.
 
-This mode remains experimental and off by default. An unchanged-default check
-compared 96 plans and WAVs byte for byte. Controlled synthetic tests verify a
+The default now uses matching-phone joins with source runs up to 12 phones.
+`--boundary-phone-joins` restores the previous planner and bounded overlap.
+The explicit `--center-phone-joins` option retains the earlier two-phone limit.
+Before promotion, an unchanged-default check compared 96 plans and WAVs byte for
+byte. Controlled synthetic tests verify a
 shared-vowel join, intact words, stop-burst protection, recording gaps, punctuation,
 manual rejection and output timing. These checks establish mechanics; multi-voice
 recognition comparisons and actual listening are separate quality checks.
 
-`--center-run-phones 12` extends this experimental graph to longer naturally
+`--center-run-phones 12` explicitly selects the current default, retaining longer naturally
 recorded sequences (the limit accepts 2 through 12 phones). Only the first and
 last phone can be partial; every interior phone remains intact. These edges reuse
 the existing source-run index and reject interior gaps over 20 ms, overlaps,

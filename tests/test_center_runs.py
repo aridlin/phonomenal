@@ -73,3 +73,17 @@ class CenterRunTests(unittest.TestCase):
             result=self.native('--phones','K AA1','--center-run-phones',limit,'--plan',check=False)
             self.assertNotEqual(result.returncode,0)
             self.assertIn(b'between 2 and 12',result.stderr)
+
+    def test_default_plan_and_audio_use_the_verified_long_transition_mode(self):
+        default=json.loads(self.native('--phones','K AA1 S IH1 T','--plan').stdout)
+        self.assertEqual(default,self.plan())
+        self.assertTrue(any(u.get('center_run_phone_count',0)>=4 for u in default['units']))
+        default_audio=self.native('--phones','K AA1 S IH1 T','--stdout-wav').stdout
+        explicit_audio=self.native('--phones','K AA1 S IH1 T','--center-run-phones','12','--stdout-wav').stdout
+        self.assertEqual(default_audio,explicit_audio)
+
+    def test_boundary_option_and_legacy_alias_retain_the_previous_planner(self):
+        boundary=json.loads(self.native('--phones','K AA1 S IH1 T','--boundary-phone-joins','--plan').stdout)
+        legacy=json.loads(self.native('--phones','K AA1 S IH1 T','--legacy-overlap','--plan').stdout)
+        self.assertEqual(boundary,legacy)
+        self.assertTrue(all(not u.get('starts_at_phone_center') and not u.get('ends_at_phone_center') for u in boundary['units']))

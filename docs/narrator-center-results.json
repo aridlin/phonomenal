@@ -1,0 +1,53 @@
+{
+  "development": {
+    "baseline": {
+      "cases": 12,
+      "errors": 5,
+      "words": 94
+    },
+    "center": {
+      "cases": 12,
+      "errors": 6,
+      "words": 94
+    },
+    "long": {
+      "cases": 12,
+      "errors": 3,
+      "words": 94
+    }
+  },
+  "heldout": {
+    "baseline": {
+      "cases": 12,
+      "errors": 7,
+      "words": 109
+    },
+    "center": {
+      "cases": 12,
+      "errors": 7,
+      "words": 109
+    },
+    "long": {
+      "cases": 12,
+      "errors": 7,
+      "words": 109
+    }
+  },
+  "book": {
+    "baseline": {
+      "cases": 1,
+      "errors": 14,
+      "words": 207
+    },
+    "center": {
+      "cases": 1,
+      "errors": 12,
+      "words": 207
+    },
+    "long": {
+      "cases": 1,
+      "errors": 10,
+      "words": 207
+    }
+  }
+}

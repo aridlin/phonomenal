@@ -84,8 +84,8 @@ struct SynthesizeOptions {
   bool normalize_duration = false;
   bool match_pitch = false;
   bool preserve_phone_timing = false;
-  bool center_phone_joins = false;
-  std::size_t center_max_phone_run = 2;
+  bool center_phone_joins = true;
+  std::size_t center_max_phone_run = 12;
 };
 
 class VoiceBank {
