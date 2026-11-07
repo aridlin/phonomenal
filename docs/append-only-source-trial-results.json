@@ -1,0 +1,361 @@
+{
+  "date": "2026-11-07",
+  "engine_commit": "474ea74764052a73396887ed23d4916ed0a2c1a2",
+  "status": "Candidate retained separately; installed bank unchanged; human listening comparison pending.",
+  "source_policy": "Preserve all original recordings, record labels and typed acoustic/pitch/trust/manual-review blocks. Consider only unused native SHA256s with unambiguous file-linked reference, existing accepted unprompted large-v3 English ASR, median word confidence >= .8, exact reference agreement for <=6 words and <=.15 word errors otherwise. Reject stage annotations, eye dialect, unknown dictionary words and vocalization-only text. No matching or selection against evaluation prompts.",
+  "source_reference_pages": [
+    "https://wiki.teamfortress.com/wiki/Medic_responses",
+    "https://wiki.teamfortress.com/wiki/Medic_voice_commands",
+    "https://wiki.teamfortress.com/wiki/Medic_taunts"
+  ],
+  "candidate": {
+    "sha256": "67d459c8f7b1175b3fb3f74dd86b23e4a7e21239671fc3a903f728d96fb386e0",
+    "original_pack_sha256": "052354a875495a903c5f7f734361399a7ef4eb4b633e2c3cb78455c0ccb83069",
+    "original_records": 371,
+    "new_records": 24,
+    "total_records": 395,
+    "original_metadata_blocks_verified": 1113,
+    "original_record_payload_preserved": true,
+    "original_feature_frames_preserved": 183273,
+    "original_audio_prefix_unchanged": true,
+    "original_target_lexicon_unchanged": true,
+    "original_independent_observations_preserved": true,
+    "new_source_disputed_phones": 133,
+    "words": 1706,
+    "phones": 5833,
+    "installed": false
+  },
+  "coverage": {
+    "added_words": 58,
+    "added_word_types": 16,
+    "added_recordings": 24
+  },
+  "validation": {
+    "pairs": 62,
+    "changed_audio_pairs": 38,
+    "old_medic_cases": 50,
+    "prior_fresh_cases": 6,
+    "new_fresh_cases": 6,
+    "unchanged_production_engine": true,
+    "reference_words_per_version": 1173,
+    "manual_review": "Original bank had no optional QREV section; candidate preserves its absence and adds no manual acceptance.",
+    "alignment": "MFA fine-tuning completed for all 24 new source clips; boundary accuracy remains unmeasured.",
+    "source_detectors": [
+      "unprompted small.en",
+      "Vosk small-en-us-0.15",
+      "Allosaurus eng2102"
+    ]
+  },
+  "diagnostics": {
+    "whisper": {
+      "rows": 124,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 94
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 16,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 38,
+              "reference": 207
+            },
+            "append-source": {
+              "cases": 1,
+              "errors": 37,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 12,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 15,
+              "reference": 147
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 12,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 52,
+              "reference": 107
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 37,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            },
+            "append-source": {
+              "cases": 1,
+              "errors": 80,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 15,
+              "reference": 68
+            },
+            "append-source": {
+              "cases": 6,
+              "errors": 13,
+              "reference": 68
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 60
+            },
+            "append-source": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 60
+            }
+          }
+        }
+      }
+    },
+    "vosk": {
+      "rows": 124,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 35,
+              "reference": 94
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 39,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 105,
+              "reference": 207
+            },
+            "append-source": {
+              "cases": 1,
+              "errors": 99,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 47,
+              "reference": 109
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 54,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 90,
+              "reference": 147
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 91,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 89,
+              "reference": 107
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 90,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 251,
+              "reference": 381
+            },
+            "append-source": {
+              "cases": 1,
+              "errors": 259,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 44,
+              "reference": 68
+            },
+            "append-source": {
+              "cases": 6,
+              "errors": 45,
+              "reference": 68
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 28,
+              "reference": 60
+            },
+            "append-source": {
+              "cases": 6,
+              "errors": 31,
+              "reference": 60
+            }
+          }
+        }
+      }
+    },
+    "phones": {
+      "rows": 124,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 170,
+              "reference": 301
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 165,
+              "reference": 301
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 341,
+              "reference": 655
+            },
+            "append-source": {
+              "cases": 1,
+              "errors": 332,
+              "reference": 655
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 202,
+              "reference": 343
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 214,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 283,
+              "reference": 510
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 275,
+              "reference": 510
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 285,
+              "reference": 480
+            },
+            "append-source": {
+              "cases": 12,
+              "errors": 283,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 693,
+              "reference": 1303
+            },
+            "append-source": {
+              "cases": 1,
+              "errors": 689,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 137,
+              "reference": 237
+            },
+            "append-source": {
+              "cases": 6,
+              "errors": 131,
+              "reference": 237
+            }
+          },
+          "append-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 112,
+              "reference": 196
+            },
+            "append-source": {
+              "cases": 6,
+              "errors": 126,
+              "reference": 196
+            }
+          }
+        }
+      }
+    }
+  },
+  "interpretation": "Whisper medium improves across seven groups and ties the newest group. Vosk worsens in seven groups and improves on Alice; canonical-phone results are mixed and regress on the newest sentences. Do not treat any recognizer as a human listening score or promote the candidate based on one model alone."
+}

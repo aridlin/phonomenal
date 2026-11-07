@@ -526,3 +526,29 @@ remains uninstalled and unreleased.
 [Fixed policy and complete aggregate results](spectral-join-trial-results.json).
 The new text is retained in
 [the validation prompts](../examples/spectral-validation-prompts-2026-11-07.json).
+
+
+## Append-only recording coverage candidate, 2026-11-07
+
+A separate Medic candidate adds 24 previously unused native recordings,
+containing 58 words and 16 new source-word types. Selection used native source
+hashes, unambiguous file-linked reference text and already accepted unprompted
+large-v3 English recognition. Filters and thresholds were fixed before synthesis;
+no clips were chosen against evaluation text. The original 371 recordings,
+labels, audio prefix, target lexicon, 1,113 acoustic/pitch/trust blocks and
+183,273 coarse feature frames were verified unchanged. No manual acceptance was
+added. The new recordings received MFA fine-tuning and independent local word
+and phone observations.
+
+The unchanged production engine compared 62 Medic cases, including both book
+passages and two groups of newer sentences. The candidate changed 38 WAVs.
+Medium.en word errors fell 256 to 215 of 1,173 reference words, with improvements
+in seven groups and a tie in the newest six sentences. Vosk errors rose 689 to
+708; canonical-phone errors fell 2,223 to 2,215 overall, but rose 112 to 126 on
+the newest sentences. The Time Machine reading improves under medium.en
+(94 to 80 of 381 words), while Vosk worsens (251 to 259). The candidate remains
+separate from the installed pack pending listening comparison and stronger
+cross-checks; these diagnostics do not establish human intelligibility.
+
+[Policy, preservation checks and complete results](append-only-source-trial-results.json).
+[Newest validation text](../examples/source-append-validation-prompts-2026-11-07.json).

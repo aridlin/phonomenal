@@ -1,0 +1,32 @@
+[
+  {
+    "id": "append-fresh-01",
+    "text": "It took us an hour to find the missing key.",
+    "corpus": "append-fresh"
+  },
+  {
+    "id": "append-fresh-02",
+    "text": "The smaller box belongs on the shelf beside the window.",
+    "corpus": "append-fresh"
+  },
+  {
+    "id": "append-fresh-03",
+    "text": "Will you remember to bring a bottle of water?",
+    "corpus": "append-fresh"
+  },
+  {
+    "id": "append-fresh-04",
+    "text": "Everyone stopped talking when the lights went out.",
+    "corpus": "append-fresh"
+  },
+  {
+    "id": "append-fresh-05",
+    "text": "He folded the paper carefully and put it in his pocket.",
+    "corpus": "append-fresh"
+  },
+  {
+    "id": "append-fresh-06",
+    "text": "I thought the road would be quiet at this time of night.",
+    "corpus": "append-fresh"
+  }
+]
