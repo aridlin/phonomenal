@@ -433,3 +433,51 @@ This enables faster source-search experiments while keeping the verified
 production speech unchanged. It is a performance improvement, not an additional
 intelligibility claim. Measurements and validation details are in
 [search-performance-results.json](search-performance-results.json).
+
+## Runtime pronunciation adapter repair, 2026-11-07
+
+Words absent from a pack's dictionary previously lost eSpeak vowel stress, and
+valid ASCII phoneme variants could reject an entire pronunciation. The new book
+passage reproduced this with `futurity`, which fell through to the spelling
+heuristic. The adapter now requests IPA, maps supported English phones to ARPABET
+and retains primary/secondary vowel stress. Unknown phones still reject the
+conversion and keep the existing explicit fallback behavior. eSpeak supplies
+pronunciation only; all rendered audio remains from the selected pack.
+
+The 328 existing sentence/book plans and WAVs remain byte-identical. All nine
+voices were additionally checked on 12 extended-vocabulary sentences and the
+first three paragraphs of chapter V of H. G. Wells's *The Time Machine*.
+The original adapter, IPA conversion without stress, and the complete repair
+were compared without pitch, gain, duration or source-cost changes.
+
+| TF2 diagnostic | Original | IPA phones only | IPA + stress |
+| --- | ---: | ---: | ---: |
+| medium.en, vocabulary / 856 words | 311 | 300 | 298 |
+| medium.en, new book / 3,048 words | 658 | 664 | 666 |
+| Vosk, vocabulary / 856 words | 701 | 700 | 695 |
+| Vosk, new book / 3,048 words | 1,870 | 1,838 | 1,823 |
+| Canonical phones, vocabulary / 3,840 phones | 2,120 | 2,109 | 2,111 |
+| Canonical phones, new book / 10,424 phones | 5,309 | 5,266 | 5,263 |
+
+The ordinary narrator remains mixed: vocabulary medium.en errors change
+20 → 23 and book errors 31 → 29, while Vosk changes 60 → 57 and 109 → 121.
+Canonical-phone errors change 164 → 165 and 476 → 469. This repairs information
+lost by the adapter; the modest aggregates do not establish generally intelligible
+speech. Source coverage, alignment and individual prompt regressions remain.
+G2P itself is also imperfect: eSpeak's `futurity` stress differs from dictionary
+variants. Phone references for five dictionary-missing book words and five
+additional challenge forms are fixed separately and documented; no reference
+pronunciation is supplied to the recognizers or synthesis.
+
+Validation includes 113 Python/native integration tests, 13 native parser
+fixtures, the Windows cross-build and VCTTS integration. Parser fixtures run on
+Linux and Windows CI without requiring a system eSpeak install. UTF-8 byte
+literals also cover embedded Windows consumers that compile the source directly.
+[Complete results and reference provenance](pronunciation-repair-results.json)
+retain per-voice regressions and the private phone-only control.
+
+The separate stable-vowel-cut experiment was rejected. On the new book's game
+voices, medium.en / Vosk / phone errors changed 658 → 688, 1,870 → 1,875 and
+5,309 → 5,320. A locally steadier spectrum did not reliably improve rendered
+speech. Its policy and comparison totals remain in
+[experimental-join-results.json](experimental-join-results.json).

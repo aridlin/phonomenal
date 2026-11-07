@@ -1,0 +1,1370 @@
+{
+  "date": "2026-11-07",
+  "baseline_commit": "9ff28ac21049b87044063387d4a052da0a822349",
+  "change": "Use eSpeak IPA instead of table-specific ASCII symbols; map supported English phones, preserve vowel stress, and reject an unrecognized phone rather than silently dropping it. The existing warning/heuristic fallback still handles unavailable or unsupported G2P.",
+  "controls": {
+    "baseline": "Original ASCII adapter discarding stress",
+    "ipa_phones": "IPA conversion without stress (private diagnostic control)",
+    "ipa_stress": "IPA conversion retaining primary/secondary stress (selected repair)"
+  },
+  "cases": {
+    "unchanged_existing_sentence_book_cases": 328,
+    "new_vocabulary_sentence_cases_per_version": 108,
+    "new_book_cases_per_version": 9,
+    "voices": 9,
+    "parser_fixture_cases": 13
+  },
+  "method": "Unchanged private voice packs; same default source-selection costs, beam 32 and rendering. No pitch, duration or gain edits. medium.en on GPU 1 int8_float16, Vosk small-en-us-0.15 and Allosaurus eng2102 receive actual output audio without expected-text prompts. Identical WAV observations are reused by content hash.",
+  "results": {
+    "whisper": {
+      "cohorts": {
+        "tf2": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 96,
+              "errors": 311,
+              "reference": 856
+            },
+            "ipa-stress": {
+              "cases": 96,
+              "errors": 298,
+              "reference": 856
+            },
+            "ipa-phones": {
+              "cases": 96,
+              "errors": 300,
+              "reference": 856
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 658,
+              "reference": 3048
+            },
+            "ipa-stress": {
+              "cases": 8,
+              "errors": 666,
+              "reference": 3048
+            },
+            "ipa-phones": {
+              "cases": 8,
+              "errors": 664,
+              "reference": 3048
+            }
+          }
+        },
+        "narrator": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 20,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 23,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 22,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 31,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 29,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 29,
+              "reference": 381
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 54,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 52,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 54,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 93,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 90,
+              "reference": 381
+            }
+          }
+        },
+        "heavy": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 24,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 22,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 22,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 73,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 76,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 75,
+              "reference": 381
+            }
+          }
+        },
+        "soldier": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 9,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 51,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 49,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 49,
+              "reference": 381
+            }
+          }
+        },
+        "scout": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 29,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 99,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 107,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 107,
+              "reference": 381
+            }
+          }
+        },
+        "sniper": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 78,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 68,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 71,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 118,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 130,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 119,
+              "reference": 381
+            }
+          }
+        },
+        "spy": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 27,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 26,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 27,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 47,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 46,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 60,
+              "reference": 381
+            }
+          }
+        },
+        "engineer": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 34,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 40,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 39,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 81,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 70,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 70,
+              "reference": 381
+            }
+          }
+        },
+        "demoman": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 54,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 56,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 52,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 96,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            }
+          }
+        },
+        "librivox-phil": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 20,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 23,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 22,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 31,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 29,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 29,
+              "reference": 381
+            }
+          }
+        }
+      }
+    },
+    "vosk": {
+      "cohorts": {
+        "tf2": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 96,
+              "errors": 701,
+              "reference": 856
+            },
+            "ipa-stress": {
+              "cases": 96,
+              "errors": 695,
+              "reference": 856
+            },
+            "ipa-phones": {
+              "cases": 96,
+              "errors": 700,
+              "reference": 856
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 1870,
+              "reference": 3048
+            },
+            "ipa-stress": {
+              "cases": 8,
+              "errors": 1823,
+              "reference": 3048
+            },
+            "ipa-phones": {
+              "cases": 8,
+              "errors": 1838,
+              "reference": 3048
+            }
+          }
+        },
+        "narrator": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 60,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 57,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 57,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 109,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 121,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 117,
+              "reference": 381
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 86,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 89,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 88,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 256,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 251,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 251,
+              "reference": 381
+            }
+          }
+        },
+        "heavy": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 86,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 86,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 86,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 265,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 261,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 262,
+              "reference": 381
+            }
+          }
+        },
+        "soldier": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 86,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 82,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 83,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 226,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 201,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 217,
+              "reference": 381
+            }
+          }
+        },
+        "scout": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 73,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 71,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 74,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 215,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 208,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 209,
+              "reference": 381
+            }
+          }
+        },
+        "sniper": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 98,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 94,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 98,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 253,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 247,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 253,
+              "reference": 381
+            }
+          }
+        },
+        "spy": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 69,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 70,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 68,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 182,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 173,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 164,
+              "reference": 381
+            }
+          }
+        },
+        "engineer": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 82,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 85,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 83,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 211,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 207,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 207,
+              "reference": 381
+            }
+          }
+        },
+        "demoman": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 121,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 118,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 120,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 262,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 275,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 275,
+              "reference": 381
+            }
+          }
+        },
+        "librivox-phil": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 60,
+              "reference": 107
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 57,
+              "reference": 107
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 57,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 109,
+              "reference": 381
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 121,
+              "reference": 381
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 117,
+              "reference": 381
+            }
+          }
+        }
+      }
+    },
+    "phones": {
+      "cohorts": {
+        "tf2": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 96,
+              "errors": 2120,
+              "reference": 3840
+            },
+            "ipa-stress": {
+              "cases": 96,
+              "errors": 2111,
+              "reference": 3840
+            },
+            "ipa-phones": {
+              "cases": 96,
+              "errors": 2109,
+              "reference": 3840
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 5309,
+              "reference": 10424
+            },
+            "ipa-stress": {
+              "cases": 8,
+              "errors": 5263,
+              "reference": 10424
+            },
+            "ipa-phones": {
+              "cases": 8,
+              "errors": 5266,
+              "reference": 10424
+            }
+          }
+        },
+        "narrator": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 164,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 165,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 166,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 476,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 469,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 464,
+              "reference": 1303
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 292,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 285,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 282,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 700,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 693,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 694,
+              "reference": 1303
+            }
+          }
+        },
+        "heavy": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 290,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 291,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 291,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 675,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 690,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 689,
+              "reference": 1303
+            }
+          }
+        },
+        "soldier": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 256,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 254,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 256,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 634,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 624,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 624,
+              "reference": 1303
+            }
+          }
+        },
+        "scout": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 217,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 219,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 218,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 681,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 675,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 675,
+              "reference": 1303
+            }
+          }
+        },
+        "sniper": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 290,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 288,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 289,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 759,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 745,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 754,
+              "reference": 1303
+            }
+          }
+        },
+        "spy": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 212,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 210,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 211,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 557,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 557,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 551,
+              "reference": 1303
+            }
+          }
+        },
+        "engineer": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 267,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 269,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 268,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 596,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 596,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 596,
+              "reference": 1303
+            }
+          }
+        },
+        "demoman": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 296,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 295,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 294,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 707,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 683,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 683,
+              "reference": 1303
+            }
+          }
+        },
+        "librivox-phil": {
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 164,
+              "reference": 480
+            },
+            "ipa-stress": {
+              "cases": 12,
+              "errors": 165,
+              "reference": 480
+            },
+            "ipa-phones": {
+              "cases": 12,
+              "errors": 166,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 476,
+              "reference": 1303
+            },
+            "ipa-stress": {
+              "cases": 1,
+              "errors": 469,
+              "reference": 1303
+            },
+            "ipa-phones": {
+              "cases": 1,
+              "errors": 464,
+              "reference": 1303
+            }
+          }
+        }
+      }
+    }
+  },
+  "references": {
+    "book": "examples/book-demo/time-machine.txt",
+    "book_source": "https://www.gutenberg.org/files/35/35-h/35-h.htm#chap05",
+    "extended_prompts": "examples/pronunciation-validation-prompts.json",
+    "phone_reference_additions": {
+      "pronunciations": {
+        "futurity": [
+          "F",
+          "Y",
+          "UW2",
+          "CH",
+          "ER1",
+          "AH0",
+          "T",
+          "IY0"
+        ],
+        "ninepins": [
+          "N",
+          "AY1",
+          "N",
+          "P",
+          "IH2",
+          "N",
+          "Z"
+        ],
+        "unscrewed": [
+          "AH0",
+          "N",
+          "S",
+          "K",
+          "R",
+          "UW1",
+          "D"
+        ],
+        "prettiness": [
+          "P",
+          "R",
+          "IH1",
+          "T",
+          "IY0",
+          "N",
+          "AH0",
+          "S"
+        ],
+        "chins": [
+          "CH",
+          "IH1",
+          "N",
+          "Z"
+        ],
+        "mispronunciations": [
+          "M",
+          "IH0",
+          "S",
+          "P",
+          "R",
+          "OW0",
+          "N",
+          "AH2",
+          "N",
+          "S",
+          "IY0",
+          "EY1",
+          "SH",
+          "AH0",
+          "N",
+          "Z"
+        ],
+        "retiming": [
+          "R",
+          "IY0",
+          "T",
+          "AY1",
+          "M",
+          "IH0",
+          "NG"
+        ],
+        "overcorrecting": [
+          "OW2",
+          "V",
+          "ER0",
+          "K",
+          "ER0",
+          "EH1",
+          "K",
+          "T",
+          "IH0",
+          "NG"
+        ],
+        "synchronisation": [
+          "S",
+          "IH2",
+          "NG",
+          "K",
+          "R",
+          "AH0",
+          "N",
+          "AH0",
+          "Z",
+          "EY1",
+          "SH",
+          "AH0",
+          "N"
+        ],
+        "uncompressed": [
+          "AH2",
+          "N",
+          "K",
+          "AH0",
+          "M",
+          "P",
+          "R",
+          "EH1",
+          "S",
+          "T"
+        ]
+      },
+      "method": "Fixed canonical references only, never supplied to synthesis or recognizers. Five book additions as documented; additional regular prefixes compose CMUdict roots, and synchronisation uses the synchronization entry. No speech labels or pack lexicons are modified.",
+      "sources": [
+        "https://dictionary.cambridge.org/dictionary/english/futurity",
+        "https://dictionary.cambridge.org/us/pronunciation/english/prettiness",
+        "https://www.dictionary.com/browse/ninepins",
+        "CMUdict installed package: screwed / chin"
+      ],
+      "limitations": "One dictionary pronunciation per word; accent/allophone differences remain. Futurity has multiple valid variants. This is a comparative canonical-phone check, not human intelligibility.",
+      "cmudict_version": "1.1.3"
+    },
+    "espeak_api": "https://github.com/espeak-ng/espeak-ng/blob/master/src/include/espeak-ng/speak_lib.h",
+    "espeak_phone_tables": "https://github.com/espeak-ng/espeak-ng/blob/master/phsource/ph_english_us"
+  },
+  "limitations": [
+    "Recognition agreement is not human intelligibility or a hand-labelled boundary study.",
+    "The adapter repair does not correct eSpeak dictionary/G2P errors; its futurity stress differs from cited dictionary variants.",
+    "Ordinary dictionary-backed outputs remain identical. Effects are limited to runtime G2P fallback.",
+    "Individual regressions remain: TF2 book medium.en errors rise, narrator vocabulary medium.en and book Vosk errors rise. Canonical-phone diagnostics include accent/allophone/reference limitations.",
+    "No broad readability or listening-quality claim is made from these small aggregate differences."
+  ],
+  "validation": {
+    "python_native_tests": 113,
+    "parser_fixtures": 13,
+    "windows_cross_build": true,
+    "vctts_integration": true,
+    "ci": "Parser fixture executable is invoked by the existing Python unittest suite; no workflow-file change."
+  }
+}

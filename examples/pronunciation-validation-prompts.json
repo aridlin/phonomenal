@@ -1,0 +1,62 @@
+[
+  {
+    "id": "pron-01",
+    "text": "The new recording needs better alignment and fewer mispronunciations.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-02",
+    "text": "She unscrewed the cap and placed it beside the bottle.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-03",
+    "text": "Their chins were covered with dust after the long walk.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-04",
+    "text": "The prettiness of the garden surprised everyone.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-05",
+    "text": "The wooden pieces fell over like ninepins.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-06",
+    "text": "The headphones stayed muted until she finished unwrapping the cable.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-07",
+    "text": "We are retiming the last sentence to match the recording.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-08",
+    "text": "Please avoid overcorrecting the pitch of every syllable.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-09",
+    "text": "The software was misinterpreting the quieter parts of the recording.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-10",
+    "text": "An unrehearsed answer can still sound natural and clear.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-11",
+    "text": "She checked the synchronisation before reopening the window.",
+    "corpus": "pronunciation"
+  },
+  {
+    "id": "pron-12",
+    "text": "The uncompressed recording includes a few unfamiliar place names.",
+    "corpus": "pronunciation"
+  }
+]

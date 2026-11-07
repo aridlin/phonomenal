@@ -1347,5 +1347,411 @@
       }
     },
     "decision": "Fresh exposed-cut penalty helps game word diagnostics but not narrator phone diagnostics; earlier book regressions remain. No prototype is promoted. Beam 32 remains the production default."
+  },
+  "stable_vowel_cut_trial": {
+    "base_commit": "9ff28ac21049b87044063387d4a052da0a822349",
+    "policy": "Keep original center as fallback. For vowels at least 80 ms long with reliable pulse metadata and acoustic voicing, consider pulse marks within the middle third and at most min(20 ms,15 percent of phone duration) from the original center. Compare normalized 8-band spectral shapes 10 ms on either side of each mark using existing FEAT. Require voiced, nonsilent windows and at least 25 percent reduction in spectral flux; choose minimum flux, then closest to original. Stop/affricate/sonorant/fricative cuts and complete native words remain unchanged.",
+    "shipped": false,
+    "decision": "Rejected for default: the new 381-reference-word Time Machine passage regresses across the game voices in all three diagnostics, despite a narrator gain in two. Existing-corpus results are also mixed.",
+    "existing_results": {
+      "whisper": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 96,
+              "errors": 67,
+              "reference": 752
+            },
+            "stable-cuts": {
+              "cases": 96,
+              "errors": 65,
+              "reference": 752
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 3,
+              "errors": 92,
+              "reference": 621
+            },
+            "stable-cuts": {
+              "cases": 3,
+              "errors": 100,
+              "reference": 621
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 110,
+              "reference": 872
+            },
+            "stable-cuts": {
+              "cases": 96,
+              "errors": 110,
+              "reference": 872
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 142,
+              "reference": 1176
+            },
+            "stable-cuts": {
+              "cases": 96,
+              "errors": 144,
+              "reference": 1176
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            },
+            "stable-cuts": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            },
+            "stable-cuts": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 10,
+              "reference": 207
+            },
+            "stable-cuts": {
+              "cases": 1,
+              "errors": 11,
+              "reference": 207
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 147
+            },
+            "stable-cuts": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 147
+            }
+          }
+        }
+      },
+      "vosk": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 96,
+              "errors": 277,
+              "reference": 752
+            },
+            "stable-cuts": {
+              "cases": 96,
+              "errors": 276,
+              "reference": 752
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 3,
+              "errors": 331,
+              "reference": 621
+            },
+            "stable-cuts": {
+              "cases": 3,
+              "errors": 325,
+              "reference": 621
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 409,
+              "reference": 872
+            },
+            "stable-cuts": {
+              "cases": 96,
+              "errors": 408,
+              "reference": 872
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 601,
+              "reference": 1176
+            },
+            "stable-cuts": {
+              "cases": 96,
+              "errors": 611,
+              "reference": 1176
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 94
+            },
+            "stable-cuts": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 18,
+              "reference": 109
+            },
+            "stable-cuts": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 42,
+              "reference": 207
+            },
+            "stable-cuts": {
+              "cases": 1,
+              "errors": 52,
+              "reference": 207
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 39,
+              "reference": 147
+            },
+            "stable-cuts": {
+              "cases": 12,
+              "errors": 34,
+              "reference": 147
+            }
+          }
+        }
+      },
+      "phones": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 48,
+              "errors": 737,
+              "reference": 1290
+            },
+            "stable-cuts": {
+              "cases": 48,
+              "errors": 740,
+              "reference": 1290
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 3,
+              "errors": 975,
+              "reference": 1964
+            },
+            "stable-cuts": {
+              "cases": 3,
+              "errors": 980,
+              "reference": 1964
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 48,
+              "errors": 820,
+              "reference": 1416
+            },
+            "stable-cuts": {
+              "cases": 48,
+              "errors": 815,
+              "reference": 1416
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 48,
+              "errors": 1117,
+              "reference": 2020
+            },
+            "stable-cuts": {
+              "cases": 48,
+              "errors": 1109,
+              "reference": 2020
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "baseline": {
+              "cases": 6,
+              "errors": 67,
+              "reference": 162
+            },
+            "stable-cuts": {
+              "cases": 6,
+              "errors": 69,
+              "reference": 162
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 6,
+              "errors": 71,
+              "reference": 177
+            },
+            "stable-cuts": {
+              "cases": 6,
+              "errors": 68,
+              "reference": 177
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 242,
+              "reference": 658
+            },
+            "stable-cuts": {
+              "cases": 1,
+              "errors": 247,
+              "reference": 658
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 6,
+              "errors": 88,
+              "reference": 253
+            },
+            "stable-cuts": {
+              "cases": 6,
+              "errors": 86,
+              "reference": 253
+            }
+          }
+        }
+      }
+    },
+    "new_book_results": {
+      "whisper": {
+        "tf2": {
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 658,
+              "reference": 3048
+            },
+            "stable-cuts": {
+              "cases": 8,
+              "errors": 688,
+              "reference": 3048
+            }
+          }
+        },
+        "narrator": {
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 31,
+              "reference": 381
+            },
+            "stable-cuts": {
+              "cases": 1,
+              "errors": 29,
+              "reference": 381
+            }
+          }
+        }
+      },
+      "vosk": {
+        "tf2": {
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 1870,
+              "reference": 3048
+            },
+            "stable-cuts": {
+              "cases": 8,
+              "errors": 1875,
+              "reference": 3048
+            }
+          }
+        },
+        "narrator": {
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 109,
+              "reference": 381
+            },
+            "stable-cuts": {
+              "cases": 1,
+              "errors": 119,
+              "reference": 381
+            }
+          }
+        }
+      },
+      "phones": {
+        "tf2": {
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 5309,
+              "reference": 10424
+            },
+            "stable-cuts": {
+              "cases": 8,
+              "errors": 5320,
+              "reference": 10424
+            }
+          }
+        },
+        "narrator": {
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 476,
+              "reference": 1303
+            },
+            "stable-cuts": {
+              "cases": 1,
+              "errors": 466,
+              "reference": 1303
+            }
+          }
+        }
+      }
+    }
   }
 }

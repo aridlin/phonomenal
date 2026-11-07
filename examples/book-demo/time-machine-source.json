@@ -1,0 +1,11 @@
+{
+  "title": "The Time Machine",
+  "author": "H. G. Wells",
+  "first_publication": 1895,
+  "chapter": "V. In the Golden Age",
+  "paragraphs": 3,
+  "source": "https://www.gutenberg.org/files/35/35-h/35-h.htm#chap05",
+  "notes": "First three original paragraphs of chapter V; original typography retained, HTML line wrapping normalized. New text selected after the stable-cut policy was fixed, before its complete comparison results.",
+  "source_html_sha256": "83cc027c91506d19f512436999edd049063afbb15ca9494bb3a89dcd7ea74812",
+  "text_sha256": "27b334ccfe6c5153691d91d6a0437e92a8b84d1762d6018e944539295f155a81"
+}

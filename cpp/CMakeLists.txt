@@ -20,6 +20,17 @@ else()
     target_compile_options(phonomenal_splicer PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+set(PHONOMENAL_TEST_DEFAULT OFF)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(PHONOMENAL_TEST_DEFAULT ON)
+endif()
+option(PHONOMENAL_BUILD_TESTS "Build native pronunciation tests" ${PHONOMENAL_TEST_DEFAULT})
+if(PHONOMENAL_BUILD_TESTS)
+    enable_testing()
+    add_executable(phonomenal_pronunciation_test tests/pronunciation_test.cpp)
+    add_test(NAME pronunciation COMMAND phonomenal_pronunciation_test)
+endif()
+
 add_executable(phonomenal_splicer_cli
     src/main.cpp
 )
