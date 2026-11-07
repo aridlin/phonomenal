@@ -311,8 +311,9 @@ PlanResult VoiceBank::PlanText(std::string_view text,
         std::max(a.start_sample, a.end_sample - wave.sample_rate / 100));
     const auto right = feature(
         std::min(b.end_sample - 1, b.start_sample + wave.sample_rate / 100));
-    double cost = a.ends_at_phone_center && b.starts_at_phone_center &&
-        !a.phones.empty() && !b.phones.empty() && a.phones.back()==b.phones.front() ? 35. : 100.;
+    // Experimental policy: sharing a phone label alone does not establish
+    // acoustic compatibility. Charge the ordinary cost at every new splice.
+    double cost = 100.;
     if (left.pitch > 0 && right.pitch > 0 && left.voicing > .65 &&
         right.voicing > .65) {
       const double st = std::abs(12. * std::log2(right.pitch / left.pitch));

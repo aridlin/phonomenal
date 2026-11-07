@@ -1,0 +1,344 @@
+{
+  "status": "Experimental branch only; not installed or accepted for release.",
+  "hypothesis": "An unconditional lower price for same-phone center splices can favor changes of recording over native source transitions.",
+  "baseline_source_commit": "73ff88e1e82a63a4b33991278800126548663ca4",
+  "voice": "spy",
+  "source_bank_sha256": "f7bba97deb2637f16fbf41a80fa9d0aa8a07bf6a1c433c5472b94ed4cfac71d2",
+  "change": {
+    "previous_center_base_cost": 35,
+    "experimental_center_base_cost": 100,
+    "ordinary_splice_base_cost": 100,
+    "contiguous_original_audio_cost": 0,
+    "other_selection_costs_unchanged": true,
+    "rendering_and_source_data_unchanged": true
+  },
+  "protocol": "One fixed alternative, chosen to equal the existing ordinary splice base cost. No threshold sweep. Compare original engine and candidate with identical source audio and prompts.",
+  "structure": {
+    "baseline": {
+      "cases": 61,
+      "source_fragments": 1700,
+      "center_edges": 1318
+    },
+    "equal-join-cost": {
+      "cases": 61,
+      "source_fragments": 1451,
+      "center_edges": 264
+    }
+  },
+  "diagnostics": {
+    "whisper": {
+      "public_cases": 61,
+      "cohorts": {
+        "development": {
+          "baseline": {
+            "cases": 12,
+            "errors": 3,
+            "reference": 94
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 3,
+            "reference": 94
+          }
+        },
+        "heldout": {
+          "baseline": {
+            "cases": 12,
+            "errors": 11,
+            "reference": 109
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 11,
+            "reference": 109
+          }
+        },
+        "fresh-heldout": {
+          "baseline": {
+            "cases": 12,
+            "errors": 11,
+            "reference": 147
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 11,
+            "reference": 147
+          }
+        },
+        "pronunciation": {
+          "baseline": {
+            "cases": 12,
+            "errors": 26,
+            "reference": 107
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 41,
+            "reference": 107
+          }
+        },
+        "new-book": {
+          "baseline": {
+            "cases": 1,
+            "errors": 46,
+            "reference": 381
+          },
+          "equal-join-cost": {
+            "cases": 1,
+            "errors": 68,
+            "reference": 381
+          }
+        },
+        "spectral-fresh": {
+          "baseline": {
+            "cases": 6,
+            "errors": 7,
+            "reference": 68
+          },
+          "equal-join-cost": {
+            "cases": 6,
+            "errors": 4,
+            "reference": 68
+          }
+        },
+        "append-fresh": {
+          "baseline": {
+            "cases": 6,
+            "errors": 7,
+            "reference": 60
+          },
+          "equal-join-cost": {
+            "cases": 6,
+            "errors": 7,
+            "reference": 60
+          }
+        }
+      },
+      "total": {
+        "baseline": {
+          "cases": 61,
+          "errors": 111,
+          "reference": 966
+        },
+        "equal-join-cost": {
+          "cases": 61,
+          "errors": 145,
+          "reference": 966
+        }
+      }
+    },
+    "vosk": {
+      "public_cases": 61,
+      "cohorts": {
+        "development": {
+          "baseline": {
+            "cases": 12,
+            "errors": 21,
+            "reference": 94
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 25,
+            "reference": 94
+          }
+        },
+        "heldout": {
+          "baseline": {
+            "cases": 12,
+            "errors": 37,
+            "reference": 109
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 31,
+            "reference": 109
+          }
+        },
+        "fresh-heldout": {
+          "baseline": {
+            "cases": 12,
+            "errors": 56,
+            "reference": 147
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 44,
+            "reference": 147
+          }
+        },
+        "pronunciation": {
+          "baseline": {
+            "cases": 12,
+            "errors": 70,
+            "reference": 107
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 70,
+            "reference": 107
+          }
+        },
+        "new-book": {
+          "baseline": {
+            "cases": 1,
+            "errors": 173,
+            "reference": 381
+          },
+          "equal-join-cost": {
+            "cases": 1,
+            "errors": 177,
+            "reference": 381
+          }
+        },
+        "spectral-fresh": {
+          "baseline": {
+            "cases": 6,
+            "errors": 32,
+            "reference": 68
+          },
+          "equal-join-cost": {
+            "cases": 6,
+            "errors": 31,
+            "reference": 68
+          }
+        },
+        "append-fresh": {
+          "baseline": {
+            "cases": 6,
+            "errors": 23,
+            "reference": 60
+          },
+          "equal-join-cost": {
+            "cases": 6,
+            "errors": 24,
+            "reference": 60
+          }
+        }
+      },
+      "total": {
+        "baseline": {
+          "cases": 61,
+          "errors": 412,
+          "reference": 966
+        },
+        "equal-join-cost": {
+          "cases": 61,
+          "errors": 402,
+          "reference": 966
+        }
+      }
+    },
+    "phones": {
+      "public_cases": 61,
+      "cohorts": {
+        "development": {
+          "baseline": {
+            "cases": 12,
+            "errors": 144,
+            "reference": 298
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 153,
+            "reference": 298
+          }
+        },
+        "heldout": {
+          "baseline": {
+            "cases": 12,
+            "errors": 161,
+            "reference": 343
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 173,
+            "reference": 343
+          }
+        },
+        "fresh-heldout": {
+          "baseline": {
+            "cases": 12,
+            "errors": 249,
+            "reference": 508
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 264,
+            "reference": 508
+          }
+        },
+        "pronunciation": {
+          "baseline": {
+            "cases": 12,
+            "errors": 210,
+            "reference": 480
+          },
+          "equal-join-cost": {
+            "cases": 12,
+            "errors": 212,
+            "reference": 480
+          }
+        },
+        "new-book": {
+          "baseline": {
+            "cases": 1,
+            "errors": 557,
+            "reference": 1303
+          },
+          "equal-join-cost": {
+            "cases": 1,
+            "errors": 539,
+            "reference": 1303
+          }
+        },
+        "spectral-fresh": {
+          "baseline": {
+            "cases": 6,
+            "errors": 115,
+            "reference": 237
+          },
+          "equal-join-cost": {
+            "cases": 6,
+            "errors": 110,
+            "reference": 237
+          }
+        },
+        "append-fresh": {
+          "baseline": {
+            "cases": 6,
+            "errors": 105,
+            "reference": 196
+          },
+          "equal-join-cost": {
+            "cases": 6,
+            "errors": 104,
+            "reference": 196
+          }
+        }
+      },
+      "total": {
+        "baseline": {
+          "cases": 61,
+          "errors": 1541,
+          "reference": 3365
+        },
+        "equal-join-cost": {
+          "cases": 61,
+          "errors": 1555,
+          "reference": 3365
+        }
+      }
+    }
+  },
+  "tests": {
+    "python_native_tests": 123,
+    "subtests": 6,
+    "passed": true
+  },
+  "interpretation": "Fewer fragments and center edges are structural results. Independent recognition is mixed, including a book regression. Neither fragmentation nor recognition establishes human intelligibility; a listening comparison is required before promotion.",
+  "reproduce": [
+    "cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release -DPHONOMENAL_BUILD_FRONTEND=OFF",
+    "cmake --build cpp/build --parallel 3",
+    "cpp/build/phonomenal_splicer_cli --bank voice.vcpack --text \"Please explain this part again.\" --plan --audit boundaries.json --output sample.wav"
+  ]
+}
