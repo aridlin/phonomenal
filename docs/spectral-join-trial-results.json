@@ -1,0 +1,2719 @@
+{
+  "date": "2026-11-07",
+  "production_base": "474ea74764052a73396887ed23d4916ed0a2c1a2",
+  "prototype_released": false,
+  "policy": {
+    "base_commit": "474ea74764052a73396887ed23d4916ed0a2c1a2",
+    "policy": "Optional --spectral-joins, default off. Replace only the coarse eight-band term at same-vowel center joins where both old FEAT windows are reliably voiced. Full native contiguous transitions still cost zero.",
+    "descriptor": "40 ms centered window, wholly inside the aligned source vowel; centered PCM RMS >= .003; sample-rate-adjusted .97 at 16 kHz preemphasis; Hann; radix-2 power FFT; 24 triangular mel filters 80 Hz to min(7600 Hz, .95 Nyquist); log filter energy floored relative to total power at 1e-10; orthonormal DCT c1..12, discard energy c0.",
+    "cost": "RMS distance of 12 cepstral coefficients times 12, capped at 60. Invalid or unavailable envelope keeps old spectral term. No tuning after corpus results.",
+    "cache": "Per request, by absolute source-center sample; no shared mutable bank cache. No audio editing or pack format changes.",
+    "validation": "Signal fixtures including gain/DC invariance, silence guards, spectral identity and separation; all existing native tests; default exact comparisons; nine-voice old and vocabulary/book corpus, then new text after fixed policy.",
+    "limitations": "ASR and phone diagnostics do not establish human intelligibility."
+  },
+  "validation": {
+    "decision": "Rejected; optional fine spectral joins remain isolated and uninstalled.",
+    "reason": "No consistent benefit across independent diagnostics or fresh speech. Same-vowel fine spectral distance did not improve the general corpus or both reading passages.",
+    "pairs": 499,
+    "default_exact_pairs": 499,
+    "changed_optional_audio_pairs": 131,
+    "native_tests": 118,
+    "sanitized_tests": 118,
+    "mingw_build": "success",
+    "installed": false
+  },
+  "corpus": {
+    "paired_cases": 499,
+    "voices": 9,
+    "existing_cases": 328,
+    "extended_vocabulary_and_new_book_cases": 117,
+    "new_sentences_after_fixed_policy": 6,
+    "new_sentence_voice_cases": 54,
+    "book_passages": [
+      "Alice chapter VI: three paragraphs, 207 reference words",
+      "The Time Machine chapter V: three paragraphs, 381 reference words"
+    ]
+  },
+  "diagnostics": {
+    "whisper": {
+      "rows": 998,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 96,
+              "errors": 67,
+              "reference": 752
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 66,
+              "reference": 752
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 3,
+              "errors": 92,
+              "reference": 621
+            },
+            "spectral": {
+              "cases": 3,
+              "errors": 87,
+              "reference": 621
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 110,
+              "reference": 872
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 104,
+              "reference": 872
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 142,
+              "reference": 1176
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 143,
+              "reference": 1176
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 96,
+              "errors": 298,
+              "reference": 856
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 304,
+              "reference": 856
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 666,
+              "reference": 3048
+            },
+            "spectral": {
+              "cases": 8,
+              "errors": 683,
+              "reference": 3048
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 48,
+              "errors": 100,
+              "reference": 544
+            },
+            "spectral": {
+              "cases": 48,
+              "errors": 104,
+              "reference": 544
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 4,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 10,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 10,
+              "reference": 207
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 5,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 23,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 28,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 29,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 35,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 68
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 38,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 33,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 15,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 19,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 52,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 58,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 95,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 15,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 20,
+              "reference": 68
+            }
+          }
+        },
+        "heavy": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 30,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 30,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 8,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 8,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 22,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 76,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 75,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 5,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 5,
+              "reference": 68
+            }
+          }
+        },
+        "soldier": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 24,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 24,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 2,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 2,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 13,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 13,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 9,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 9,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 49,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 49,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 6,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 6,
+              "reference": 68
+            }
+          }
+        },
+        "scout": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 14,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 21,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 107,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 89,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 18,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 17,
+              "reference": 68
+            }
+          }
+        },
+        "sniper": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 18,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 19,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 68,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 70,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 130,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 144,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 33,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 33,
+              "reference": 68
+            }
+          }
+        },
+        "spy": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 26,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 23,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 46,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 50,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 7,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 7,
+              "reference": 68
+            }
+          }
+        },
+        "engineer": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 6,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 5,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 13,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 24,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 24,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 40,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 38,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 70,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 77,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 7,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 7,
+              "reference": 68
+            }
+          }
+        },
+        "demoman": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 14,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 14,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 28,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 28,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 25,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 26,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 56,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 56,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 94,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 104,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 9,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 9,
+              "reference": 68
+            }
+          }
+        },
+        "librivox-phil": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 4,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 10,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 10,
+              "reference": 207
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 5,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 23,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 28,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 29,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 35,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 8,
+              "reference": 68
+            }
+          }
+        }
+      }
+    },
+    "vosk": {
+      "rows": 998,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 96,
+              "errors": 277,
+              "reference": 752
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 284,
+              "reference": 752
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 3,
+              "errors": 331,
+              "reference": 621
+            },
+            "spectral": {
+              "cases": 3,
+              "errors": 329,
+              "reference": 621
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 409,
+              "reference": 872
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 406,
+              "reference": 872
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 601,
+              "reference": 1176
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 603,
+              "reference": 1176
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 96,
+              "errors": 695,
+              "reference": 856
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 702,
+              "reference": 856
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 1823,
+              "reference": 3048
+            },
+            "spectral": {
+              "cases": 8,
+              "errors": 1858,
+              "reference": 3048
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 48,
+              "errors": 358,
+              "reference": 544
+            },
+            "spectral": {
+              "cases": 48,
+              "errors": 365,
+              "reference": 544
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 18,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 42,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 44,
+              "reference": 207
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 39,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 38,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 57,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 60,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 121,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 120,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 13,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 14,
+              "reference": 68
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 35,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 35,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 105,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 103,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 47,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 49,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 90,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 91,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 89,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 86,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 251,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 263,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 44,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 48,
+              "reference": 68
+            }
+          }
+        },
+        "heavy": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 48,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 47,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 126,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 126,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 67,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 67,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 98,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 96,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 86,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 89,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 261,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 256,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 54,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 54,
+              "reference": 68
+            }
+          }
+        },
+        "soldier": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 26,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 26,
+              "reference": 94
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 100,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 100,
+              "reference": 207
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 36,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 36,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 59,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 59,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 82,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 82,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 201,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 201,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 44,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 44,
+              "reference": 68
+            }
+          }
+        },
+        "scout": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 31,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 39,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 42,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 37,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 63,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 64,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 71,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 75,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 208,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 216,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 42,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 45,
+              "reference": 68
+            }
+          }
+        },
+        "sniper": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 37,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 37,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 56,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 58,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 81,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 81,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 94,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 93,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 247,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 249,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 47,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 47,
+              "reference": 68
+            }
+          }
+        },
+        "spy": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 21,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 21,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 37,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 37,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 56,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 55,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 70,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 70,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 173,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 175,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 32,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 32,
+              "reference": 68
+            }
+          }
+        },
+        "engineer": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 34,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 33,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 54,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 54,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 63,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 64,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 85,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 88,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 207,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 215,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 40,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 39,
+              "reference": 68
+            }
+          }
+        },
+        "demoman": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 45,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 46,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 70,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 68,
+              "reference": 109
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 91,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 93,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 118,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 119,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 275,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 283,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 55,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 56,
+              "reference": 68
+            }
+          }
+        },
+        "librivox-phil": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 94
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 10,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 18,
+              "reference": 109
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 42,
+              "reference": 207
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 44,
+              "reference": 207
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 39,
+              "reference": 147
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 38,
+              "reference": 147
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 57,
+              "reference": 107
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 60,
+              "reference": 107
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 121,
+              "reference": 381
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 120,
+              "reference": 381
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 13,
+              "reference": 68
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 14,
+              "reference": 68
+            }
+          }
+        }
+      }
+    },
+    "phones": {
+      "rows": 998,
+      "cohorts": {
+        "tf2": {
+          "development": {
+            "baseline": {
+              "cases": 96,
+              "errors": 1408,
+              "reference": 2390
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 1420,
+              "reference": 2390
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 3,
+              "errors": 975,
+              "reference": 1964
+            },
+            "spectral": {
+              "cases": 3,
+              "errors": 990,
+              "reference": 1964
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 1606,
+              "reference": 2744
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 1600,
+              "reference": 2744
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 96,
+              "errors": 2224,
+              "reference": 4068
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 2241,
+              "reference": 4068
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 96,
+              "errors": 2111,
+              "reference": 3840
+            },
+            "spectral": {
+              "cases": 96,
+              "errors": 2149,
+              "reference": 3840
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 8,
+              "errors": 5263,
+              "reference": 10424
+            },
+            "spectral": {
+              "cases": 8,
+              "errors": 5305,
+              "reference": 10424
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 48,
+              "errors": 1076,
+              "reference": 1896
+            },
+            "spectral": {
+              "cases": 48,
+              "errors": 1076,
+              "reference": 1896
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 120,
+              "reference": 301
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 120,
+              "reference": 301
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 130,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 131,
+              "reference": 343
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 242,
+              "reference": 658
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 248,
+              "reference": 658
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 216,
+              "reference": 509
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 205,
+              "reference": 509
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 165,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 173,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 469,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 472,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 76,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 76,
+              "reference": 237
+            }
+          }
+        }
+      },
+      "voices": {
+        "medic": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 170,
+              "reference": 301
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 172,
+              "reference": 301
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 341,
+              "reference": 655
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 356,
+              "reference": 655
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 202,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 205,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 283,
+              "reference": 510
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 292,
+              "reference": 510
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 285,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 290,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 693,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 704,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 137,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 140,
+              "reference": 237
+            }
+          }
+        },
+        "heavy": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 210,
+              "reference": 301
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 214,
+              "reference": 301
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 324,
+              "reference": 655
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 324,
+              "reference": 655
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 234,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 234,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 289,
+              "reference": 510
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 285,
+              "reference": 510
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 291,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 293,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 690,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 691,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 160,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 160,
+              "reference": 237
+            }
+          }
+        },
+        "soldier": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 178,
+              "reference": 298
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 178,
+              "reference": 298
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 310,
+              "reference": 654
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 310,
+              "reference": 654
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 183,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 183,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 261,
+              "reference": 508
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 261,
+              "reference": 508
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 254,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 254,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 624,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 624,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 128,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 128,
+              "reference": 237
+            }
+          }
+        },
+        "scout": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 155,
+              "reference": 298
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 158,
+              "reference": 298
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 183,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 179,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 262,
+              "reference": 508
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 269,
+              "reference": 508
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 219,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 233,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 675,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 685,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 122,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 120,
+              "reference": 237
+            }
+          }
+        },
+        "sniper": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 197,
+              "reference": 298
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 197,
+              "reference": 298
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 215,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 215,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 298,
+              "reference": 508
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 298,
+              "reference": 508
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 288,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 289,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 745,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 742,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 139,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 139,
+              "reference": 237
+            }
+          }
+        },
+        "spy": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 144,
+              "reference": 298
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 144,
+              "reference": 298
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 161,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 161,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 249,
+              "reference": 508
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 247,
+              "reference": 508
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 210,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 216,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 557,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 555,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 115,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 115,
+              "reference": 237
+            }
+          }
+        },
+        "engineer": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 157,
+              "reference": 298
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 158,
+              "reference": 298
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 197,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 192,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 278,
+              "reference": 508
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 279,
+              "reference": 508
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 269,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 274,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 596,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 611,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 120,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 120,
+              "reference": 237
+            }
+          }
+        },
+        "demoman": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 197,
+              "reference": 298
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 199,
+              "reference": 298
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 231,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 231,
+              "reference": 343
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 304,
+              "reference": 508
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 310,
+              "reference": 508
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 295,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 300,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 683,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 693,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 155,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 154,
+              "reference": 237
+            }
+          }
+        },
+        "librivox-phil": {
+          "development": {
+            "baseline": {
+              "cases": 12,
+              "errors": 120,
+              "reference": 301
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 120,
+              "reference": 301
+            }
+          },
+          "heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 130,
+              "reference": 343
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 131,
+              "reference": 343
+            }
+          },
+          "book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 242,
+              "reference": 658
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 248,
+              "reference": 658
+            }
+          },
+          "fresh-heldout": {
+            "baseline": {
+              "cases": 12,
+              "errors": 216,
+              "reference": 509
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 205,
+              "reference": 509
+            }
+          },
+          "pronunciation": {
+            "baseline": {
+              "cases": 12,
+              "errors": 165,
+              "reference": 480
+            },
+            "spectral": {
+              "cases": 12,
+              "errors": 173,
+              "reference": 480
+            }
+          },
+          "new-book": {
+            "baseline": {
+              "cases": 1,
+              "errors": 469,
+              "reference": 1303
+            },
+            "spectral": {
+              "cases": 1,
+              "errors": 472,
+              "reference": 1303
+            }
+          },
+          "spectral-fresh": {
+            "baseline": {
+              "cases": 6,
+              "errors": 76,
+              "reference": 237
+            },
+            "spectral": {
+              "cases": 6,
+              "errors": 76,
+              "reference": 237
+            }
+          }
+        }
+      }
+    }
+  },
+  "limitation": "Comparative word and canonical-phone errors are not human-listening intelligibility percentages. Default outputs were byte-identical; prototype not installed or released."
+}

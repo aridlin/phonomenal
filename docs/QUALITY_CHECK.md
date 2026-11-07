@@ -502,3 +502,27 @@ diagnostics also failed to establish a consistent gain. These results concern
 a small repair pilot, not all possible source transcription or alignment work.
 
 [Policies, provenance and complete aggregate results](source-transcript-trial-results.json).
+
+
+## Fine spectral join comparison, 2026-11-07
+
+A private, optional prototype replaced the coarse eight-band spectral term at
+reliably voiced, matching vowel-center joins with a 24-band mel cepstral
+comparison. Its 40 ms windows had to fit entirely inside the source vowel;
+intact native transitions still cost zero. The fixed scoring policy was not
+tuned after seeing corpus results. No audio or bank data was modified.
+
+All 499 default plan/WAV controls matched exactly. The option changed 131 WAVs.
+Its isolated native and sanitizer builds each passed 118 tests, including signal
+identity, gain/DC invariance, silence guards and real planner fixtures. MinGW
+cross-compilation passed. Those mechanical checks did not establish a quality
+gain. On the eight game voices, medium.en Time Machine errors rose 666 to 683
+of 3,048 words and Vosk errors rose 1,823 to 1,858; phone errors rose 5,263 to
+5,305 of 10,424. The six newly written sentences also regressed under both word
+recognizers (medium 100 to 104 of 544 words; Vosk 358 to 365). Some older cases
+improved, but the pattern did not generalize. The prototype was rejected and
+remains uninstalled and unreleased.
+
+[Fixed policy and complete aggregate results](spectral-join-trial-results.json).
+The new text is retained in
+[the validation prompts](../examples/spectral-validation-prompts-2026-11-07.json).
