@@ -546,9 +546,16 @@ Medium.en word errors fell 256 to 215 of 1,173 reference words, with improvement
 in seven groups and a tie in the newest six sentences. Vosk errors rose 689 to
 708; canonical-phone errors fell 2,223 to 2,215 overall, but rose 112 to 126 on
 the newest sentences. The Time Machine reading improves under medium.en
-(94 to 80 of 381 words), while Vosk worsens (251 to 259). The candidate remains
-separate from the installed pack pending listening comparison and stronger
-cross-checks; these diagnostics do not establish human intelligibility.
+(94 to 80 of 381 words), while Vosk worsens (251 to 259). The candidate is not promoted; the original bank remains installed. These
+diagnostics do not establish human intelligibility.
 
 [Policy, preservation checks and complete results](append-only-source-trial-results.json).
 [Newest validation text](../examples/source-append-validation-prompts-2026-11-07.json).
+
+
+## Quality acceptance policy
+
+Recognition agreement is a diagnostic, not a listening acceptance gate. A
+production clarity claim requires intelligibility review on varied real speech,
+including longer narration. Preserve voice character and keep evaluated
+candidates separate until the evidence supports promotion.

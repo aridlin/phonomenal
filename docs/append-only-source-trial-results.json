@@ -1,7 +1,7 @@
 {
   "date": "2026-11-07",
   "engine_commit": "474ea74764052a73396887ed23d4916ed0a2c1a2",
-  "status": "Candidate retained separately; installed bank unchanged; human listening comparison pending.",
+  "status": "Not promoted; original production bank remains installed.",
   "source_policy": "Preserve all original recordings, record labels and typed acoustic/pitch/trust/manual-review blocks. Consider only unused native SHA256s with unambiguous file-linked reference, existing accepted unprompted large-v3 English ASR, median word confidence >= .8, exact reference agreement for <=6 words and <=.15 word errors otherwise. Reject stage annotations, eye dialect, unknown dictionary words and vocalization-only text. No matching or selection against evaluation prompts.",
   "source_reference_pages": [
     "https://wiki.teamfortress.com/wiki/Medic_responses",
