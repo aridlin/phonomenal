@@ -559,3 +559,22 @@ Recognition agreement is a diagnostic, not a listening acceptance gate. A
 production clarity claim requires intelligibility review on varied real speech,
 including longer narration. Preserve voice character and keep evaluated
 candidates separate until the evidence supports promotion.
+
+
+## Optional spoken-form source evidence
+
+`compare_record(..., word_pronunciations=...)` can add source-word matches when
+different spellings have the same complete aligned ARPABET sequence, ignoring
+stress suffixes. The supplied dictionary must support both spellings. Exact
+matching anchors remain fixed; additional matches must be unique, ordered,
+one-to-one and overlap in physical time. Vocal interjections and ambiguous or crossed
+matches are excluded. No words are merged or split, and raw source and
+recognizer text stays unchanged. Tagged pronunciation matches remain distinct
+from exact spelling matches in the evidence record.
+
+The default comparison remains unchanged when no pronunciation lookup is
+provided. Tests cover incorrect source pronunciations, distinct consonants,
+insertion errors, ambiguity, timing, recording crossings and a native selection
+fixture that recovers an intact transition while preserving manual rejection.
+This source-analysis correction is not a human intelligibility acceptance or an
+automatic production voice-bank update.

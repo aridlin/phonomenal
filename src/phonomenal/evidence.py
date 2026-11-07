@@ -10,6 +10,7 @@ from difflib import SequenceMatcher
 import hashlib
 import importlib.metadata
 import json
+import math
 from pathlib import Path
 import re
 import struct
@@ -36,14 +37,76 @@ def matched_indices(reference, observed):
     return {a+k: b+k for a, b, n in matcher.get_matching_blocks() for k in range(n)}
 
 
-def compare_record(record, observations, rate, origin):
+def spoken_word_matches(record, observation, rate, origin, pronunciations):
+    """Add conservative spoken-form matches without changing observed text.
+
+    Exact matching islands anchor unmatched gaps. A pronunciation match needs
+    the entire aligned source word to be a valid pronunciation of both spellings
+    and overlapping physical intervals. It is phonetic evidence, not a claim
+    that the recognizer supplied the reference spelling or semantic identity.
+    `pronunciations` maps normalized spellings to complete ARPABET variants;
+    stress suffixes are ignored. The caller supplies the pronunciation data.
+    """
+    reference = [normalized(w['label']) for w in record['words']]
+    observed = [normalized(w['label']) for w in observation['items']]
+    matches = matched_indices(reference, observed)
+    aliases = {}
+    interjections = set('ah eh uh oh ha huh hm hmm ooh ugh ow aw ho duh'.split())
+    def variants(word):
+        return {tuple(p.upper().rstrip('012') for p in pron)
+                for pron in pronunciations.get(word, ())}
+    anchors = [(-1, -1), *sorted(matches.items()), (len(reference), len(observed))]
+    def candidate(ri, oi):
+        a, b = reference[ri], observed[oi]
+        if a == b or min(len(a), len(b)) < 2 or a in interjections or b in interjections:
+            return None
+        phones = tuple(p['label'].upper().rstrip('012') for p in record['phones'] if p['word'] == ri)
+        if not phones or phones not in variants(a) or phones not in variants(b):
+            return None
+        item = observation['items'][oi]
+        if item.get('crossed_file_boundary'):
+            return None
+        start, end = item['start'], item['end']
+        if not math.isfinite(start) or not math.isfinite(end) or end <= start:
+            return None
+        begin, finish = origin+round(start*rate), origin+round(end*rate)
+        word = record['words'][ri]
+        shorter = min(word['end']-word['start'], finish-begin)
+        overlap = min(word['end'], finish)-max(word['start'], begin)
+        if shorter <= 0 or overlap < .25*shorter:
+            return None
+        return dict(observed_label=item['label'], pronunciation=list(phones))
+    for (left_r, left_o), (right_r, right_o) in zip(anchors, anchors[1:]):
+        possible = [(ri, oi, value) for ri in range(left_r+1, right_r)
+                    for oi in range(left_o+1, right_o)
+                    if (value := candidate(ri, oi)) is not None]
+        # Insertions/deletions elsewhere in the gap must not erase a supported
+        # word. Require unique one-to-one, ordered matches; never merge tokens.
+        ref_counts = Counter(ri for ri, _, _ in possible)
+        obs_counts = Counter(oi for _, oi, _ in possible)
+        unique = [(ri, oi, v) for ri, oi, v in possible
+                  if ref_counts[ri] == obs_counts[oi] == 1]
+        indices = [oi for _, oi, _ in unique]
+        if indices != sorted(indices):
+            continue
+        for ri, oi, value in unique:
+            matches[ri] = oi
+            aliases[ri] = value
+    return matches, aliases
+
+
+def compare_record(record, observations, rate, origin, word_pronunciations=None):
     words = record['words']; phones = record['phones']
     word_rows = [dict(support=0, dispute=0, radius_samples=0, alternatives=[]) for _ in words]
     phone_rows = [dict(support=0, dispute=0, radius_samples=0, alternatives=[]) for _ in phones]
     for observation in observations:
         if observation['kind'] == 'words':
             seen = observation['items']
-            matches = matched_indices([normalized(w['label']) for w in words], [normalized(w['label']) for w in seen])
+            aliases = {}
+            if word_pronunciations is None:
+                matches = matched_indices([normalized(w['label']) for w in words], [normalized(w['label']) for w in seen])
+            else:
+                matches, aliases = spoken_word_matches(record, observation, rate, origin, word_pronunciations)
             for i, w in enumerate(words):
                 row = word_rows[i]
                 if i not in matches:
@@ -55,7 +118,10 @@ def compare_record(record, observations, rate, origin):
                 start = origin + round(other['start'] * rate); end = origin + round(other['end'] * rate)
                 radius = max(abs(w['start']-start), abs(w['end']-end)) + round(observation['resolution_ms']*rate/1000)
                 row['radius_samples'] = max(row['radius_samples'], radius)
-                row['alternatives'].append(dict(detector=observation['detector'], start=start, end=end))
+                alternative = dict(detector=observation['detector'], start=start, end=end)
+                if i in aliases:
+                    alternative.update(match_type='pronunciation', **aliases[i])
+                row['alternatives'].append(alternative)
         else:
             seen = observation['items']
             matches = matched_indices([p['label'].rstrip('012') for p in phones], [p.get('arpabet', '?') for p in seen])
