@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-07",
+  "baseline_commit": "beb37cf01649337d36e976a55ff21e94b0da7d76",
+  "change": "Per-request boundary-feature cache and shared immutable search history replace repeated acoustic windows and full planned-unit history copies. Costs, beam width, tie ordering, source selection and WAV rendering are unchanged.",
+  "validation": {
+    "paired_plan_wav_comparisons": 440,
+    "voices": 9,
+    "beam_widths": [
+      32,
+      128
+    ],
+    "maximum_word_stress_cases": [
+      {
+        "mode": "default",
+        "engine": "before",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 0.044262533003347926
+      },
+      {
+        "mode": "default",
+        "engine": "optimized",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 0.04310252699360717
+      },
+      {
+        "mode": "default",
+        "engine": "sanitized",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 1.5231136079964926
+      },
+      {
+        "mode": "wide",
+        "engine": "before",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 0.04179637199558783
+      },
+      {
+        "mode": "wide",
+        "engine": "optimized",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 0.038382069004001096
+      },
+      {
+        "mode": "wide",
+        "engine": "sanitized",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 1.4978087899944512
+      },
+      {
+        "mode": "boundary",
+        "engine": "before",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 0.04337352799484506
+      },
+      {
+        "mode": "boundary",
+        "engine": "optimized",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 0.03150353700038977
+      },
+      {
+        "mode": "boundary",
+        "engine": "sanitized",
+        "word_count": 512,
+        "same_plan_and_wav": true,
+        "seconds": 1.4634361540083773
+      }
+    ],
+    "native_tests": 112,
+    "address_undefined_sanitizer_tests": 112,
+    "leak_sanitizer": "Disabled: LeakSanitizer cannot run under this execution environment ptrace. No leak-sanitizer pass is claimed.",
+    "windows_cross_build": true,
+    "vctts_integration": true
+  },
+  "timings": {
+    "method": "Three interleaved fresh CLI processes per engine and case; wall clock includes pack load, plan and WAV rendering. Concurrent background recognition may affect timings. No microbenchmark or human-intelligibility claim.",
+    "cases": [
+      {
+        "voice": "medic",
+        "prompt": "alice",
+        "beam": 32,
+        "median_seconds": {
+          "before": 7.059026567992987,
+          "cached": 0.8793874200055143
+        },
+        "speedup": 8.027208949553454
+      },
+      {
+        "voice": "medic",
+        "prompt": "alice",
+        "beam": 128,
+        "median_seconds": {
+          "before": 10.478586552999332,
+          "cached": 2.097261991002597
+        },
+        "speedup": 4.996317388077032
+      },
+      {
+        "voice": "librivox-phil",
+        "prompt": "alice",
+        "beam": 32,
+        "median_seconds": {
+          "before": 7.867286360997241,
+          "cached": 1.0986715580074815
+        },
+        "speedup": 7.160726336872797
+      },
+      {
+        "voice": "librivox-phil",
+        "prompt": "alice",
+        "beam": 128,
+        "median_seconds": {
+          "before": 13.075260333003826,
+          "cached": 2.7229360260098474
+        },
+        "speedup": 4.801897733955994
+      },
+      {
+        "voice": "sniper",
+        "prompt": "fresh-04",
+        "beam": 32,
+        "median_seconds": {
+          "before": 0.32392677300958894,
+          "cached": 0.26692129400908016
+        },
+        "speedup": 1.2135666216220635
+      },
+      {
+        "voice": "sniper",
+        "prompt": "fresh-04",
+        "beam": 128,
+        "median_seconds": {
+          "before": 0.4912338020076277,
+          "cached": 0.3234731869888492
+        },
+        "speedup": 1.5186229392934554
+      }
+    ]
+  },
+  "limitation": "Performance evidence only. Speech matches the current default byte-for-byte; this optimization is not a new intelligibility or listening result."
+}

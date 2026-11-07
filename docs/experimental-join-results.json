@@ -1,0 +1,1351 @@
+{
+  "date": "2026-11-07",
+  "baseline_commit": "beb37cf01649337d36e976a55ff21e94b0da7d76",
+  "baseline": "Default 12-phone native-transition planner; exact unchanged installed private packs including PITC. No pitch/duration edits.",
+  "method": {
+    "cases_per_version": 220,
+    "voices": "Eight normal-speech TF2 voices and an ordinary LibriVox narrator",
+    "corpora": "12 development and 12 previously held-out sentences per voice; the 207-word Alice passage in Medic, Heavy, Soldier and narrator.",
+    "recognizers": "Unprompted Whisper medium.en on GPU 1 int8_float16; Vosk small-en-us-0.15; Allosaurus eng2102 independent phone diagnostic on a 112-case subset per variant.",
+    "limitations": "Recognizer agreement is not a human-listening score. Canonical phone error includes accent, reduction and model inventory limitations. These prompts are now development evidence after repeated evaluation. No new human-labelled boundary or listening study."
+  },
+  "experiments": {
+    "recording-level-gain": {
+      "policy": "Use a cached robust recording level as the reference, with at most 6 dB gain and peak limiting. Constant gain within a selected native source run.",
+      "decision": "Some aggregates improve, but several voices and book results regress; actual matching-vowel PCM jumps can worsen. Not promoted.",
+      "shipped": false,
+      "engine_sha256": "de4d42b888e74b0350aac02b1d2c21cd19d215ae0a3f6f45cd1f76f49989436f",
+      "results": {
+        "whisper": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 67,
+                "reference": 752
+              },
+              "matched-level": {
+                "cases": 96,
+                "errors": 67,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 92,
+                "reference": 621
+              },
+              "matched-level": {
+                "cases": 3,
+                "errors": 95,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 110,
+                "reference": 872
+              },
+              "matched-level": {
+                "cases": 96,
+                "errors": 104,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 3,
+                "reference": 94
+              },
+              "matched-level": {
+                "cases": 12,
+                "errors": 2,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 7,
+                "reference": 109
+              },
+              "matched-level": {
+                "cases": 12,
+                "errors": 6,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 10,
+                "reference": 207
+              },
+              "matched-level": {
+                "cases": 1,
+                "errors": 7,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "vosk": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 277,
+                "reference": 752
+              },
+              "matched-level": {
+                "cases": 96,
+                "errors": 274,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 331,
+                "reference": 621
+              },
+              "matched-level": {
+                "cases": 3,
+                "errors": 335,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 409,
+                "reference": 872
+              },
+              "matched-level": {
+                "cases": 96,
+                "errors": 410,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 11,
+                "reference": 94
+              },
+              "matched-level": {
+                "cases": 12,
+                "errors": 11,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 18,
+                "reference": 109
+              },
+              "matched-level": {
+                "cases": 12,
+                "errors": 18,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 42,
+                "reference": 207
+              },
+              "matched-level": {
+                "cases": 1,
+                "errors": 42,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "phones": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 48,
+                "errors": 737,
+                "reference": 1290
+              },
+              "matched-level": {
+                "cases": 48,
+                "errors": 720,
+                "reference": 1290
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 975,
+                "reference": 1964
+              },
+              "matched-level": {
+                "cases": 3,
+                "errors": 975,
+                "reference": 1964
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 48,
+                "errors": 820,
+                "reference": 1416
+              },
+              "matched-level": {
+                "cases": 48,
+                "errors": 809,
+                "reference": 1416
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 6,
+                "errors": 67,
+                "reference": 162
+              },
+              "matched-level": {
+                "cases": 6,
+                "errors": 69,
+                "reference": 162
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 6,
+                "errors": 71,
+                "reference": 177
+              },
+              "matched-level": {
+                "cases": 6,
+                "errors": 68,
+                "reference": 177
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 242,
+                "reference": 658
+              },
+              "matched-level": {
+                "cases": 1,
+                "errors": 243,
+                "reference": 658
+              }
+            }
+          }
+        }
+      }
+    },
+    "vowel-seam-gain": {
+      "policy": "Correct only >=3 dB RMS mismatch at sufficiently long, stable same-vowel center joins. Each contiguous native run retains one bounded gain.",
+      "decision": "Actual seam RMS discontinuity generally falls, yet medium.en sentence and book errors increase. Not promoted.",
+      "shipped": false,
+      "engine_sha256": "800b81c037859dd25b9ad8bb95d9f0021e8e9c0bf0c1a390f3b50205cb2c9097",
+      "results": {
+        "whisper": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 67,
+                "reference": 752
+              },
+              "matched-seam-level": {
+                "cases": 96,
+                "errors": 71,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 92,
+                "reference": 621
+              },
+              "matched-seam-level": {
+                "cases": 3,
+                "errors": 98,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 110,
+                "reference": 872
+              },
+              "matched-seam-level": {
+                "cases": 96,
+                "errors": 114,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 3,
+                "reference": 94
+              },
+              "matched-seam-level": {
+                "cases": 12,
+                "errors": 3,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 7,
+                "reference": 109
+              },
+              "matched-seam-level": {
+                "cases": 12,
+                "errors": 7,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 10,
+                "reference": 207
+              },
+              "matched-seam-level": {
+                "cases": 1,
+                "errors": 9,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "vosk": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 277,
+                "reference": 752
+              },
+              "matched-seam-level": {
+                "cases": 96,
+                "errors": 276,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 331,
+                "reference": 621
+              },
+              "matched-seam-level": {
+                "cases": 3,
+                "errors": 333,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 409,
+                "reference": 872
+              },
+              "matched-seam-level": {
+                "cases": 96,
+                "errors": 410,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 11,
+                "reference": 94
+              },
+              "matched-seam-level": {
+                "cases": 12,
+                "errors": 11,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 18,
+                "reference": 109
+              },
+              "matched-seam-level": {
+                "cases": 12,
+                "errors": 18,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 42,
+                "reference": 207
+              },
+              "matched-seam-level": {
+                "cases": 1,
+                "errors": 39,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "phones": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 48,
+                "errors": 737,
+                "reference": 1290
+              },
+              "matched-seam-level": {
+                "cases": 48,
+                "errors": 735,
+                "reference": 1290
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 975,
+                "reference": 1964
+              },
+              "matched-seam-level": {
+                "cases": 3,
+                "errors": 974,
+                "reference": 1964
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 48,
+                "errors": 820,
+                "reference": 1416
+              },
+              "matched-seam-level": {
+                "cases": 48,
+                "errors": 822,
+                "reference": 1416
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 6,
+                "errors": 67,
+                "reference": 162
+              },
+              "matched-seam-level": {
+                "cases": 6,
+                "errors": 67,
+                "reference": 162
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 6,
+                "errors": 71,
+                "reference": 177
+              },
+              "matched-seam-level": {
+                "cases": 6,
+                "errors": 71,
+                "reference": 177
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 242,
+                "reference": 658
+              },
+              "matched-seam-level": {
+                "cases": 1,
+                "errors": 242,
+                "reference": 658
+              }
+            }
+          }
+        }
+      }
+    },
+    "all-fallback-vowel-evidence": {
+      "policy": "Add a soft identity penalty for disputed unsupported vowels in phoneme fallback. Exact source words/phrases and manual acceptance keep priority.",
+      "decision": "Vosk ordinary sentences improve, but medium.en book and independent phone diagnostics regress. Not promoted.",
+      "shipped": false,
+      "engine_sha256": "23dbc1806a88685b4d0322608cb9fbbb28a2274a187e1946e27b348f01d06eed",
+      "results": {
+        "whisper": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 67,
+                "reference": 752
+              },
+              "vowel-evidence": {
+                "cases": 96,
+                "errors": 63,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 92,
+                "reference": 621
+              },
+              "vowel-evidence": {
+                "cases": 3,
+                "errors": 98,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 110,
+                "reference": 872
+              },
+              "vowel-evidence": {
+                "cases": 96,
+                "errors": 111,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 3,
+                "reference": 94
+              },
+              "vowel-evidence": {
+                "cases": 12,
+                "errors": 3,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 7,
+                "reference": 109
+              },
+              "vowel-evidence": {
+                "cases": 12,
+                "errors": 7,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 10,
+                "reference": 207
+              },
+              "vowel-evidence": {
+                "cases": 1,
+                "errors": 10,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "vosk": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 277,
+                "reference": 752
+              },
+              "vowel-evidence": {
+                "cases": 96,
+                "errors": 262,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 331,
+                "reference": 621
+              },
+              "vowel-evidence": {
+                "cases": 3,
+                "errors": 334,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 409,
+                "reference": 872
+              },
+              "vowel-evidence": {
+                "cases": 96,
+                "errors": 394,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 11,
+                "reference": 94
+              },
+              "vowel-evidence": {
+                "cases": 12,
+                "errors": 12,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 18,
+                "reference": 109
+              },
+              "vowel-evidence": {
+                "cases": 12,
+                "errors": 18,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 42,
+                "reference": 207
+              },
+              "vowel-evidence": {
+                "cases": 1,
+                "errors": 40,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "phones": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 48,
+                "errors": 737,
+                "reference": 1290
+              },
+              "vowel-evidence": {
+                "cases": 48,
+                "errors": 743,
+                "reference": 1290
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 975,
+                "reference": 1964
+              },
+              "vowel-evidence": {
+                "cases": 3,
+                "errors": 991,
+                "reference": 1964
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 48,
+                "errors": 820,
+                "reference": 1416
+              },
+              "vowel-evidence": {
+                "cases": 48,
+                "errors": 823,
+                "reference": 1416
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 6,
+                "errors": 67,
+                "reference": 162
+              },
+              "vowel-evidence": {
+                "cases": 6,
+                "errors": 66,
+                "reference": 162
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 6,
+                "errors": 71,
+                "reference": 177
+              },
+              "vowel-evidence": {
+                "cases": 6,
+                "errors": 72,
+                "reference": 177
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 242,
+                "reference": 658
+              },
+              "vowel-evidence": {
+                "cases": 1,
+                "errors": 239,
+                "reference": 658
+              }
+            }
+          }
+        }
+      }
+    },
+    "exposed-vowel-cut-evidence": {
+      "policy": "Apply the extra identity penalty only to exposed partial vowel endpoints, leaving complete native interiors untouched.",
+      "decision": "Mixed results remain across recognizer families; medium.en existing sentences and book regress. Not promoted on current evidence; further fresh-text results retained separately.",
+      "shipped": false,
+      "engine_sha256": "72fca30bfa3fa7cebaefbb4ace41805697d9e93e516411bcb1673dd4399a83f4",
+      "results": {
+        "whisper": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 67,
+                "reference": 752
+              },
+              "supported-vowel-cuts": {
+                "cases": 96,
+                "errors": 69,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 92,
+                "reference": 621
+              },
+              "supported-vowel-cuts": {
+                "cases": 3,
+                "errors": 98,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 110,
+                "reference": 872
+              },
+              "supported-vowel-cuts": {
+                "cases": 96,
+                "errors": 112,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 3,
+                "reference": 94
+              },
+              "supported-vowel-cuts": {
+                "cases": 12,
+                "errors": 3,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 7,
+                "reference": 109
+              },
+              "supported-vowel-cuts": {
+                "cases": 12,
+                "errors": 8,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 10,
+                "reference": 207
+              },
+              "supported-vowel-cuts": {
+                "cases": 1,
+                "errors": 10,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "vosk": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 96,
+                "errors": 277,
+                "reference": 752
+              },
+              "supported-vowel-cuts": {
+                "cases": 96,
+                "errors": 262,
+                "reference": 752
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 331,
+                "reference": 621
+              },
+              "supported-vowel-cuts": {
+                "cases": 3,
+                "errors": 329,
+                "reference": 621
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 96,
+                "errors": 409,
+                "reference": 872
+              },
+              "supported-vowel-cuts": {
+                "cases": 96,
+                "errors": 407,
+                "reference": 872
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 12,
+                "errors": 11,
+                "reference": 94
+              },
+              "supported-vowel-cuts": {
+                "cases": 12,
+                "errors": 12,
+                "reference": 94
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 12,
+                "errors": 18,
+                "reference": 109
+              },
+              "supported-vowel-cuts": {
+                "cases": 12,
+                "errors": 16,
+                "reference": 109
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 42,
+                "reference": 207
+              },
+              "supported-vowel-cuts": {
+                "cases": 1,
+                "errors": 45,
+                "reference": 207
+              }
+            }
+          }
+        },
+        "phones": {
+          "tf2": {
+            "development": {
+              "center-long": {
+                "cases": 48,
+                "errors": 737,
+                "reference": 1290
+              },
+              "supported-vowel-cuts": {
+                "cases": 48,
+                "errors": 732,
+                "reference": 1290
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 3,
+                "errors": 975,
+                "reference": 1964
+              },
+              "supported-vowel-cuts": {
+                "cases": 3,
+                "errors": 980,
+                "reference": 1964
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 48,
+                "errors": 820,
+                "reference": 1416
+              },
+              "supported-vowel-cuts": {
+                "cases": 48,
+                "errors": 822,
+                "reference": 1416
+              }
+            }
+          },
+          "narrator": {
+            "development": {
+              "center-long": {
+                "cases": 6,
+                "errors": 67,
+                "reference": 162
+              },
+              "supported-vowel-cuts": {
+                "cases": 6,
+                "errors": 66,
+                "reference": 162
+              }
+            },
+            "heldout": {
+              "center-long": {
+                "cases": 6,
+                "errors": 71,
+                "reference": 177
+              },
+              "supported-vowel-cuts": {
+                "cases": 6,
+                "errors": 67,
+                "reference": 177
+              }
+            },
+            "book": {
+              "center-long": {
+                "cases": 1,
+                "errors": 242,
+                "reference": 658
+              },
+              "supported-vowel-cuts": {
+                "cases": 1,
+                "errors": 239,
+                "reference": 658
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "wider_beam_existing_option": {
+    "policy": "Existing --beam 128 compared with current default beam 32; no source, acoustic cost or rendering changes.",
+    "decision": "Not promoted to default: earlier TF2 book medium.en improvement fails to generalize consistently to fresh ordinary sentences in both word-recognizer families.",
+    "results": {
+      "whisper": {
+        "tf2": {
+          "development": {
+            "center-long": {
+              "cases": 96,
+              "errors": 67,
+              "reference": 752
+            },
+            "beam128": {
+              "cases": 96,
+              "errors": 61,
+              "reference": 752
+            }
+          },
+          "book": {
+            "center-long": {
+              "cases": 3,
+              "errors": 92,
+              "reference": 621
+            },
+            "beam128": {
+              "cases": 3,
+              "errors": 77,
+              "reference": 621
+            }
+          },
+          "heldout": {
+            "center-long": {
+              "cases": 96,
+              "errors": 110,
+              "reference": 872
+            },
+            "beam128": {
+              "cases": 96,
+              "errors": 108,
+              "reference": 872
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "center-long": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            },
+            "beam128": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "center-long": {
+              "cases": 12,
+              "errors": 7,
+              "reference": 109
+            },
+            "beam128": {
+              "cases": 12,
+              "errors": 8,
+              "reference": 109
+            }
+          },
+          "book": {
+            "center-long": {
+              "cases": 1,
+              "errors": 10,
+              "reference": 207
+            },
+            "beam128": {
+              "cases": 1,
+              "errors": 11,
+              "reference": 207
+            }
+          }
+        }
+      },
+      "vosk": {
+        "tf2": {
+          "development": {
+            "center-long": {
+              "cases": 96,
+              "errors": 277,
+              "reference": 752
+            },
+            "beam128": {
+              "cases": 96,
+              "errors": 274,
+              "reference": 752
+            }
+          },
+          "book": {
+            "center-long": {
+              "cases": 3,
+              "errors": 331,
+              "reference": 621
+            },
+            "beam128": {
+              "cases": 3,
+              "errors": 335,
+              "reference": 621
+            }
+          },
+          "heldout": {
+            "center-long": {
+              "cases": 96,
+              "errors": 409,
+              "reference": 872
+            },
+            "beam128": {
+              "cases": 96,
+              "errors": 405,
+              "reference": 872
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "center-long": {
+              "cases": 12,
+              "errors": 11,
+              "reference": 94
+            },
+            "beam128": {
+              "cases": 12,
+              "errors": 12,
+              "reference": 94
+            }
+          },
+          "heldout": {
+            "center-long": {
+              "cases": 12,
+              "errors": 18,
+              "reference": 109
+            },
+            "beam128": {
+              "cases": 12,
+              "errors": 17,
+              "reference": 109
+            }
+          },
+          "book": {
+            "center-long": {
+              "cases": 1,
+              "errors": 42,
+              "reference": 207
+            },
+            "beam128": {
+              "cases": 1,
+              "errors": 47,
+              "reference": 207
+            }
+          }
+        }
+      },
+      "phones": {
+        "tf2": {
+          "development": {
+            "center-long": {
+              "cases": 48,
+              "errors": 737,
+              "reference": 1290
+            },
+            "beam128": {
+              "cases": 48,
+              "errors": 734,
+              "reference": 1290
+            }
+          },
+          "book": {
+            "center-long": {
+              "cases": 3,
+              "errors": 975,
+              "reference": 1964
+            },
+            "beam128": {
+              "cases": 3,
+              "errors": 958,
+              "reference": 1964
+            }
+          },
+          "heldout": {
+            "center-long": {
+              "cases": 48,
+              "errors": 820,
+              "reference": 1416
+            },
+            "beam128": {
+              "cases": 48,
+              "errors": 823,
+              "reference": 1416
+            }
+          }
+        },
+        "narrator": {
+          "development": {
+            "center-long": {
+              "cases": 6,
+              "errors": 67,
+              "reference": 162
+            },
+            "beam128": {
+              "cases": 6,
+              "errors": 67,
+              "reference": 162
+            }
+          },
+          "heldout": {
+            "center-long": {
+              "cases": 6,
+              "errors": 71,
+              "reference": 177
+            },
+            "beam128": {
+              "cases": 6,
+              "errors": 67,
+              "reference": 177
+            }
+          },
+          "book": {
+            "center-long": {
+              "cases": 1,
+              "errors": 242,
+              "reference": 658
+            },
+            "beam128": {
+              "cases": 1,
+              "errors": 239,
+              "reference": 658
+            }
+          }
+        }
+      }
+    }
+  },
+  "fresh_validation": {
+    "prompts": "examples/validation-prompts-2026-11-07.json",
+    "timing": "Authored after the policies were fixed, before their complete existing-corpus results were examined.",
+    "cases_per_version": 108,
+    "phone_subset_per_version": 54,
+    "results": {
+      "whisper": {
+        "tf2": {
+          "fresh-heldout": {
+            "default": {
+              "cases": 96,
+              "errors": 142,
+              "reference": 1176
+            },
+            "beam128": {
+              "cases": 96,
+              "errors": 148,
+              "reference": 1176
+            },
+            "supported-vowel-cuts": {
+              "cases": 96,
+              "errors": 137,
+              "reference": 1176
+            }
+          }
+        },
+        "narrator": {
+          "fresh-heldout": {
+            "default": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 147
+            },
+            "beam128": {
+              "cases": 12,
+              "errors": 2,
+              "reference": 147
+            },
+            "supported-vowel-cuts": {
+              "cases": 12,
+              "errors": 3,
+              "reference": 147
+            }
+          }
+        }
+      },
+      "vosk": {
+        "tf2": {
+          "fresh-heldout": {
+            "default": {
+              "cases": 96,
+              "errors": 601,
+              "reference": 1176
+            },
+            "beam128": {
+              "cases": 96,
+              "errors": 616,
+              "reference": 1176
+            },
+            "supported-vowel-cuts": {
+              "cases": 96,
+              "errors": 586,
+              "reference": 1176
+            }
+          }
+        },
+        "narrator": {
+          "fresh-heldout": {
+            "default": {
+              "cases": 12,
+              "errors": 39,
+              "reference": 147
+            },
+            "beam128": {
+              "cases": 12,
+              "errors": 34,
+              "reference": 147
+            },
+            "supported-vowel-cuts": {
+              "cases": 12,
+              "errors": 36,
+              "reference": 147
+            }
+          }
+        }
+      },
+      "phones": {
+        "tf2": {
+          "fresh-heldout": {
+            "default": {
+              "cases": 48,
+              "errors": 1117,
+              "reference": 2020
+            },
+            "beam128": {
+              "cases": 48,
+              "errors": 1091,
+              "reference": 2020
+            },
+            "supported-vowel-cuts": {
+              "cases": 48,
+              "errors": 1098,
+              "reference": 2020
+            }
+          }
+        },
+        "narrator": {
+          "fresh-heldout": {
+            "default": {
+              "cases": 6,
+              "errors": 88,
+              "reference": 253
+            },
+            "beam128": {
+              "cases": 6,
+              "errors": 77,
+              "reference": 253
+            },
+            "supported-vowel-cuts": {
+              "cases": 6,
+              "errors": 97,
+              "reference": 253
+            }
+          }
+        }
+      }
+    },
+    "decision": "Fresh exposed-cut penalty helps game word diagnostics but not narrator phone diagnostics; earlier book regressions remain. No prototype is promoted. Beam 32 remains the production default."
+  }
+}

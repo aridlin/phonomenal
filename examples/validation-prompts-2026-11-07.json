@@ -1,0 +1,62 @@
+[
+  {
+    "id": "fresh-01",
+    "text": "Before you close the window, please move the papers away from the rain.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-02",
+    "text": "The train arrived early, but nobody was waiting at the station.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-03",
+    "text": "I thought the answer was simple until she explained the missing step.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-04",
+    "text": "We should bring a spare battery and check the microphone before we leave.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-05",
+    "text": "Could you repeat the last sentence a little more slowly?",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-06",
+    "text": "There is a small difference between what I said and what you heard.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-07",
+    "text": "Put the empty bottle on the table beside the yellow notebook.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-08",
+    "text": "After a quiet breakfast, they walked through the village towards the bridge.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-09",
+    "text": "If the first attempt fails, wait a moment and try the other direction.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-10",
+    "text": "You do not need to shout. I can hear you from here.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-11",
+    "text": "The old clock stopped during the night, so we almost missed the meeting.",
+    "corpus": "fresh-heldout"
+  },
+  {
+    "id": "fresh-12",
+    "text": "Some people prefer to read a book while others listen to the same story.",
+    "corpus": "fresh-heldout"
+  }
+]

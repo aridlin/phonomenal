@@ -358,3 +358,78 @@ narrator verifies that the ordinary default reproduces the previously evaluated
 long-mode plans and WAVs byte for byte. The explicit two-phone and boundary modes
 also reproduce their earlier outputs. This changes which verified mode is chosen;
 it does not introduce a newly measured waveform variant at deployment time.
+
+## Rejected gain and vowel-evidence trials, 2026-11-07
+
+Four private prototypes were evaluated against the current default on the same
+220 sentence/book cases across eight game voices and the ordinary narrator.
+None is promoted or exposed as a new production option. Source audio and labels
+were unchanged. Policies and complete cohort totals are retained in
+[experimental-join-results.json](experimental-join-results.json).
+
+| TF2 medium.en errors | Development / 752 words | Prior heldout / 872 | Book / 621 |
+| --- | ---: | ---: | ---: |
+| Current default | 67 | 110 | 92 |
+| Recording-level gain | 67 | 104 | 95 |
+| Matching-vowel seam gain | 71 | 114 | 98 |
+| Extra unsupported-vowel fallback cost | 63 | 111 | 98 |
+| Extra unsupported-vowel exposed-cut cost | 69 | 112 | 98 |
+
+Vosk and independent phone diagnostics do not support a broad readability claim
+for these changes. Recording-level normalization improves some aggregate results
+and the narrator, but harms particular game voices; its recording-level proxy
+also hides worse actual vowel amplitude jumps in Soldier and Sniper. Restricting
+correction to stable same-vowel joins reduces measured RMS discontinuity but still
+increases medium.en errors. A smoother amplitude trace alone is insufficient.
+Soft vowel-identity penalties likewise improve some Vosk results while worsening
+other families or book passages. Manual acceptance and intact-word priority were
+preserved in those experiments.
+
+Every recognizer received only the actual output audio, without the requested
+text as a prompt. Canonical-phone diagnostics include accent, reduction and
+inventory mismatch; their absolute errors are not human intelligibility scores.
+Repeatedly evaluated prompts are now development evidence. The unchanged current
+default remains the comparison point for subsequent fresh-text checks.
+
+A further 12 fresh sentences were fixed after those policies and before their
+complete existing-corpus results were examined, then tested in all nine voices.
+The existing `--beam 128` search was also checked without changing cost weights.
+On the fresh 96 game-voice cases, default / wider search / exposed-cut penalty
+made 142 / 148 / 137 medium.en word errors out of 1,176 reference words; Vosk
+made 601 / 616 / 586. On the 48-case phone subset the corresponding errors were
+1,117 / 1,091 / 1,098 out of 2,020 canonical phones. Narrator word errors were
+3 / 2 / 3 (147 words), while phone errors were 88 / 77 / 97 (253 phones).
+The wider search's earlier book gain does not consistently generalize to fresh
+sentences. The exposed-cut penalty's fresh game-word gain does not erase its
+book regressions or the narrator phone regression. Production beam width stays
+32. Fresh prompts and all cohort totals are retained alongside the decisions;
+no weight or threshold was retuned to individual voices or these new sentences.
+
+## Search performance without changing speech, 2026-11-07
+
+The planner now shares immutable path history and caches acoustic boundary
+windows within each request. It retains the same costs, beam width and tie
+ordering. All 440 plan/WAV pairs across nine voices and beam widths 32/128
+match the previous implementation exactly. Maximum-length 512-word renders
+also match in default, wider-search and boundary modes, including sanitizer
+runs. The regular and address/undefined-behavior suites each pass 112 tests;
+leak detection was disabled because this execution environment uses ptrace.
+The Windows cross-build and VCTTS integration check pass.
+
+Three interleaved CLI runs per engine/case measured the following median wall
+clock times, including pack loading, planning and WAV output. Background work
+can affect timings; these are local measurements, not portable latency promises.
+
+| Voice / prompt | Beam | Before seconds | Optimized seconds | Speedup |
+| --- | ---: | ---: | ---: | ---: |
+| medic / alice | 32 | 7.059 | 0.879 | 8.03x |
+| medic / alice | 128 | 10.479 | 2.097 | 5.00x |
+| librivox-phil / alice | 32 | 7.867 | 1.099 | 7.16x |
+| librivox-phil / alice | 128 | 13.075 | 2.723 | 4.80x |
+| sniper / fresh-04 | 32 | 0.324 | 0.267 | 1.21x |
+| sniper / fresh-04 | 128 | 0.491 | 0.323 | 1.52x |
+
+This enables faster source-search experiments while keeping the verified
+production speech unchanged. It is a performance improvement, not an additional
+intelligibility claim. Measurements and validation details are in
+[search-performance-results.json](search-performance-results.json).
