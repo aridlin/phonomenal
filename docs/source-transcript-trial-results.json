@@ -1,0 +1,512 @@
+{
+  "date": "2026-11-07",
+  "production_engine": "474ea74764052a73396887ed23d4916ed0a2c1a2",
+  "decision": "Both isolated source-transcript pilots rejected; installed voice pack unchanged.",
+  "scope": {
+    "voice": "Medic",
+    "original_recordings": 371,
+    "v1_changed_text_records": 4,
+    "v2_changed_text_records": 3,
+    "cases_per_version": 50,
+    "corpora": [
+      "12 development sentences",
+      "12 held-out sentences",
+      "12 fresh sentences",
+      "12 vocabulary sentences",
+      "Alice three paragraphs",
+      "The Time Machine three paragraphs"
+    ]
+  },
+  "provenance": {
+    "quotation_sources": [
+      "https://wiki.teamfortress.com/wiki/Medic_responses",
+      "https://wiki.teamfortress.com/wiki/Medic_voice_commands",
+      "https://wiki.teamfortress.com/wiki/Medic_taunts"
+    ],
+    "matching": "Quoted audio-file links joined to native source SHA-256 and isolated unprompted ASR. Stage annotations and eye dialect excluded; short quotations require exact ASR agreement. Wiki text and ASR are supporting observations, not phonetic truth.",
+    "alignment": "MFA English ARPA with fine tuning. Separate candidate packs retained all original recordings and exact audio, lexicon and coarse-feature payloads. Untouched record acoustic, pitch, trust and manual-review payloads were reused byte-for-byte. No human boundary labels were available."
+  },
+  "v1": "Four text repairs; one changed compound-word grouping, another resolved ambiguous interjection spelling. Failed to improve the complete comparison.",
+  "v2": "Policy fixed before V2 evaluation: preserve word grouping when dictionary phone sequences are equivalent and retain ambiguous interjections. Three text repairs remained. Aggregate diagnostic results equalled V1.",
+  "results": {
+    "v1": {
+      "whisper": {
+        "rows": 100,
+        "cohorts": {
+          "tf2": {
+            "development": {
+              "baseline": {
+                "cases": 12,
+                "errors": 17,
+                "reference": 94
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 17,
+                "reference": 94
+              }
+            },
+            "book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 38,
+                "reference": 207
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 46,
+                "reference": 207
+              }
+            },
+            "heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 17,
+                "reference": 109
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 16,
+                "reference": 109
+              }
+            },
+            "fresh-heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 15,
+                "reference": 147
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 15,
+                "reference": 147
+              }
+            },
+            "pronunciation": {
+              "baseline": {
+                "cases": 12,
+                "errors": 52,
+                "reference": 107
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 52,
+                "reference": 107
+              }
+            },
+            "new-book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 94,
+                "reference": 381
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 94,
+                "reference": 381
+              }
+            }
+          }
+        }
+      },
+      "vosk": {
+        "rows": 100,
+        "cohorts": {
+          "tf2": {
+            "development": {
+              "baseline": {
+                "cases": 12,
+                "errors": 35,
+                "reference": 94
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 35,
+                "reference": 94
+              }
+            },
+            "book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 105,
+                "reference": 207
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 101,
+                "reference": 207
+              }
+            },
+            "heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 47,
+                "reference": 109
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 50,
+                "reference": 109
+              }
+            },
+            "fresh-heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 90,
+                "reference": 147
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 94,
+                "reference": 147
+              }
+            },
+            "pronunciation": {
+              "baseline": {
+                "cases": 12,
+                "errors": 89,
+                "reference": 107
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 89,
+                "reference": 107
+              }
+            },
+            "new-book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 251,
+                "reference": 381
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 251,
+                "reference": 381
+              }
+            }
+          }
+        }
+      },
+      "phones": {
+        "rows": 100,
+        "cohorts": {
+          "tf2": {
+            "development": {
+              "baseline": {
+                "cases": 12,
+                "errors": 170,
+                "reference": 301
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 170,
+                "reference": 301
+              }
+            },
+            "book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 341,
+                "reference": 655
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 346,
+                "reference": 655
+              }
+            },
+            "heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 202,
+                "reference": 343
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 200,
+                "reference": 343
+              }
+            },
+            "fresh-heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 283,
+                "reference": 510
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 286,
+                "reference": 510
+              }
+            },
+            "pronunciation": {
+              "baseline": {
+                "cases": 12,
+                "errors": 285,
+                "reference": 480
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 285,
+                "reference": 480
+              }
+            },
+            "new-book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 693,
+                "reference": 1303
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 693,
+                "reference": 1303
+              }
+            }
+          }
+        }
+      }
+    },
+    "v2": {
+      "whisper": {
+        "rows": 100,
+        "cohorts": {
+          "tf2": {
+            "development": {
+              "baseline": {
+                "cases": 12,
+                "errors": 17,
+                "reference": 94
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 17,
+                "reference": 94
+              }
+            },
+            "book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 38,
+                "reference": 207
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 46,
+                "reference": 207
+              }
+            },
+            "heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 17,
+                "reference": 109
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 16,
+                "reference": 109
+              }
+            },
+            "fresh-heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 15,
+                "reference": 147
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 15,
+                "reference": 147
+              }
+            },
+            "pronunciation": {
+              "baseline": {
+                "cases": 12,
+                "errors": 52,
+                "reference": 107
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 52,
+                "reference": 107
+              }
+            },
+            "new-book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 94,
+                "reference": 381
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 94,
+                "reference": 381
+              }
+            }
+          }
+        }
+      },
+      "vosk": {
+        "rows": 100,
+        "cohorts": {
+          "tf2": {
+            "development": {
+              "baseline": {
+                "cases": 12,
+                "errors": 35,
+                "reference": 94
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 35,
+                "reference": 94
+              }
+            },
+            "book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 105,
+                "reference": 207
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 101,
+                "reference": 207
+              }
+            },
+            "heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 47,
+                "reference": 109
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 50,
+                "reference": 109
+              }
+            },
+            "fresh-heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 90,
+                "reference": 147
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 94,
+                "reference": 147
+              }
+            },
+            "pronunciation": {
+              "baseline": {
+                "cases": 12,
+                "errors": 89,
+                "reference": 107
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 89,
+                "reference": 107
+              }
+            },
+            "new-book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 251,
+                "reference": 381
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 251,
+                "reference": 381
+              }
+            }
+          }
+        }
+      },
+      "phones": {
+        "rows": 100,
+        "cohorts": {
+          "tf2": {
+            "development": {
+              "baseline": {
+                "cases": 12,
+                "errors": 170,
+                "reference": 301
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 170,
+                "reference": 301
+              }
+            },
+            "book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 341,
+                "reference": 655
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 346,
+                "reference": 655
+              }
+            },
+            "heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 202,
+                "reference": 343
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 200,
+                "reference": 343
+              }
+            },
+            "fresh-heldout": {
+              "baseline": {
+                "cases": 12,
+                "errors": 283,
+                "reference": 510
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 286,
+                "reference": 510
+              }
+            },
+            "pronunciation": {
+              "baseline": {
+                "cases": 12,
+                "errors": 285,
+                "reference": 480
+              },
+              "reference-repair": {
+                "cases": 12,
+                "errors": 285,
+                "reference": 480
+              }
+            },
+            "new-book": {
+              "baseline": {
+                "cases": 1,
+                "errors": 693,
+                "reference": 1303
+              },
+              "reference-repair": {
+                "cases": 1,
+                "errors": 693,
+                "reference": 1303
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "interpretation": "The smaller text corrections did not improve the complete reading check. This narrow pilot does not rule out better source transcripts or alignment; it provides no basis to install these candidate packs. Recognition and canonical-phone errors are comparative diagnostics, not human intelligibility percentages."
+}

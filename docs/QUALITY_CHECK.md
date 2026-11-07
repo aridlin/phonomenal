@@ -481,3 +481,24 @@ voices, medium.en / Vosk / phone errors changed 658 → 688, 1,870 → 1,875 and
 5,309 → 5,320. A locally steadier spectrum did not reliably improve rendered
 speech. Its policy and comparison totals remain in
 [experimental-join-results.json](experimental-join-results.json).
+
+
+## File-matched source transcript pilot, 2026-11-07
+
+Two isolated Medic pilots tested small transcript corrections supported by
+file-linked quotations, original recording hashes and independent unprompted
+ASR. Both retained all 371 original recordings; audio, lexicon and coarse
+features remained byte-identical. MFA fine-tuning changed only the affected
+record labels and their derived metadata. Manual review was preserved.
+
+The first pilot changed four transcripts. A second policy, fixed before its
+comparison, preserved compound grouping with equivalent dictionary phones and
+avoided ambiguous interjection spellings; it changed three. Each was compared
+against the original pack on all 50 Medic sentence and book cases. Neither was
+installed. Both produced the same aggregate diagnostic results: medium.en Alice
+errors rose 38 to 46 of 207 words, while held-out sentence errors fell 17 to 16
+of 109 and the longer Time Machine reading stayed at 94 of 381. Vosk and phone
+diagnostics also failed to establish a consistent gain. These results concern
+a small repair pilot, not all possible source transcription or alignment work.
+
+[Policies, provenance and complete aggregate results](source-transcript-trial-results.json).
