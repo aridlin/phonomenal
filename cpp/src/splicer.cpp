@@ -1651,7 +1651,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
        options.pitch_floor_hz < 50 || options.pitch_ceiling_hz > 600 || options.pitch_floor_hz > options.pitch_ceiling_hz))
     throw std::runtime_error("Pitch band must satisfy 50 <= lower <= upper <= 600 Hz");
   BoundaryReport checked;
-  struct Placement { const PlannedUnit *unit; std::int64_t offset; std::vector<std::pair<std::int64_t,std::int64_t>> knots; };
+  struct Placement { const PlannedUnit *unit; std::int64_t offset; std::vector<std::pair<std::int64_t,std::int64_t>> knots; std::vector<std::int16_t> after_context; };
   std::vector<Placement> placements;
   std::vector<std::int16_t> output;
   const PlannedUnit *previous = nullptr;
@@ -1674,10 +1674,15 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
       double sum=0.,weight=0.;
       for(const auto &p:record->phonemes) {
         const auto &a=EditingAcoustics(p);
-        if(p.start_sample<u.start_sample || p.end_sample>u.end_sample ||
+        const auto overlap=std::max<std::int64_t>(0,std::min(p.end_sample,u.end_sample)-std::max(p.start_sample,u.start_sample));
+        const bool contained=p.start_sample>=u.start_sample && p.end_sample<=u.end_sample;
+        const bool partial=options.match_partial_pitch && overlap>=wave.sample_rate*.040 &&
+            (p.manual_review==1 || p.phone_dispute==0 || p.phone_support>0) &&
+            std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+p.normalized_label+" ")!=std::string::npos;
+        if((!contained && !partial) ||
            p.manual_review==2 || (p.manual_review!=1 && p.word_support==0 && p.word_dispute>=2) ||
            !a.available || a.pitch<=0 || a.marks.size()<5 || a.voiced<.8 || a.spread>2.5 || a.clipping>=.01) continue;
-        const double w=std::min<double>(p.end_sample-p.start_sample,wave.sample_rate*.25);
+        const double w=std::min<double>(contained?p.end_sample-p.start_sample:overlap,wave.sample_rate*.25);
         sum+=std::log(a.pitch)*w;weight+=w;
       }
       if(weight) run_pitch[i]=sum/weight;
@@ -1720,13 +1725,22 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
                                       wave.samples.begin() + end);
     const double matched_factor=run_factor[unit_index++];
     std::unordered_map<std::int64_t,bool> pitch_edited;
+    std::vector<std::int16_t> edited_before,edited_after;
     if (options.pitch_floor_hz > 0 || matched_factor!=1.) {
       const auto record=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==unit.clip_id;});
       if(record==impl_->records.end()) throw std::runtime_error("Unknown recording in pitch plan");
       for(const auto &phone:record->phonemes) {
         const auto &a=EditingAcoustics(phone);
-        if(phone.start_sample<start || phone.end_sample>end) continue;
+        const auto selected_start=std::max(start,phone.start_sample),selected_end=std::min(end,phone.end_sample);
+        if(selected_end<=selected_start) continue;
+        const bool partial=phone.start_sample<start || phone.end_sample>end;
+        if(partial && !options.match_partial_pitch) continue;
         if(std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+phone.normalized_label+" ")==std::string::npos) continue;
+        if(partial && (selected_end-selected_start<wave.sample_rate*.040 ||
+            phone.start_sample<0 || phone.end_sample>static_cast<std::int64_t>(wave.samples.size()) ||
+            (phone.start_sample<start && phone.end_sample>end) || phone.manual_review==2 ||
+            (phone.manual_review!=1 && ((phone.word_support==0 && phone.word_dispute>=2) ||
+                                      (phone.phone_support==0 && phone.phone_dispute>0))))) {++checked.pitch_skipped;continue;}
         if(!a.available || a.pitch<=0 || a.marks.size()<5) {++checked.pitch_skipped;continue;}
         const double target=options.pitch_floor_hz>0
             ? std::clamp<double>(a.pitch,options.pitch_floor_hz,options.pitch_ceiling_hz)
@@ -1734,9 +1748,28 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         // A band is a preference, not permission for a destructive octave shift.
         const double factor=std::clamp(target/a.pitch,std::pow(2.,-.25),std::pow(2.,.25));
         if(std::abs(factor-1.)<.005) continue;
-        if(ShiftVowelPitch(segment,start,phone,factor,wave.sample_rate)) {
-          checked.pitch_adjustments.push_back({unit.clip_id,a.pitch,a.pitch*factor,factor,phone.start_sample,phone.end_sample,
-              options.pitch_floor_hz>0 ? "band" : "match"});
+        bool changed=false;
+        if(partial) {
+          std::vector<std::int16_t> full(wave.samples.begin()+phone.start_sample,wave.samples.begin()+phone.end_sample);
+          const auto anchor=phone.start_sample<start?start:end;
+          changed=ShiftVowelPitch(full,phone.start_sample,phone,factor,wave.sample_rate,anchor);
+          if(changed) {
+            std::copy(full.begin()+selected_start-phone.start_sample,full.begin()+selected_end-phone.start_sample,
+                      segment.begin()+selected_start-start);
+            const auto context=std::max<std::int64_t>(0,std::min(overlap/2,wave.sample_rate/500));
+            if(phone.start_sample<start) {
+              const auto before=std::max(phone.start_sample,start-context)-phone.start_sample;
+              edited_before.assign(full.begin()+before,full.begin()+start-phone.start_sample);
+            }
+            if(phone.end_sample>end) {
+              const auto after=std::min(phone.end_sample,end+context)-phone.start_sample;
+              edited_after.assign(full.begin()+end-phone.start_sample,full.begin()+after);
+            }
+          }
+        } else changed=ShiftVowelPitch(segment,start,phone,factor,wave.sample_rate);
+        if(changed) {
+          checked.pitch_adjustments.push_back({unit.clip_id,a.pitch,a.pitch*factor,factor,selected_start,selected_end,
+              partial ? (options.pitch_floor_hz>0?"band-partial":"match-partial") : (options.pitch_floor_hz>0?"band":"match")});
           pitch_edited[phone.start_sample]=true;
         }
         else ++checked.pitch_skipped;
@@ -1778,7 +1811,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         segment[i]=ClampI16(segment[i]*gain);
       }
       output.insert(output.end(),static_cast<std::size_t>(pause),0);
-      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots});
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots,edited_after});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1786,7 +1819,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     if (output.empty() || overlap <= 0 ||
         (previous && previous->clip_id == unit.clip_id &&
          previous->end_sample == unit.start_sample)) {
-      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots});
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots,edited_after});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1808,8 +1841,11 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         for(std::int64_t i=0;i<2*half;++i) {
           const double t=static_cast<double>(i)/(2*half-1);
           const double blend=t*t*(3.-2.*t);
-          const double a=i<half ? output[prefix+i] : wave.samples[previous->end_sample+i-half];
-          const double b=i<half ? wave.samples[unit.start_sample-half+i] : segment[i-half];
+          const auto &previous_context=placements.back().after_context;
+          const double a=i<half ? output[prefix+i] :
+              (previous_context.size()>=static_cast<std::size_t>(half)?previous_context[i-half]:wave.samples[previous->end_sample+i-half]);
+          const double b=i<half ?
+              (edited_before.size()>=static_cast<std::size_t>(half)?edited_before[edited_before.size()-half+i]:wave.samples[unit.start_sample-half+i]) :segment[i-half];
           const auto sample=ClampI16(a*(1.-blend)+b*blend);
           if(i<half) output[prefix+i]=sample;
           else output.push_back(sample);
@@ -1827,7 +1863,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         }
         output.insert(output.end(),segment.begin(),segment.end());
       }
-      placements.push_back({&unit,offset,knots});
+      placements.push_back({&unit,offset,knots,edited_after});
       ++checked.duration_preserving_joins;
       previous=&unit;
       continue;
@@ -1840,7 +1876,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         std::min<std::int64_t>(static_cast<std::int64_t>(output.size()),
             std::min<std::int64_t>(previous_length/4,static_cast<std::int64_t>(segment.size() / 4))));
     if (actual_overlap <= 0) {
-      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots});
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots,edited_after});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1849,7 +1885,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     const auto prefix_size =
         output.size() - static_cast<std::size_t>(actual_overlap);
     checked.overlap_samples_removed+=actual_overlap;
-    placements.push_back({&unit, static_cast<std::int64_t>(prefix_size),knots});
+    placements.push_back({&unit, static_cast<std::int64_t>(prefix_size),knots,edited_after});
     std::vector<std::int16_t> merged;
     merged.reserve(prefix_size + static_cast<std::size_t>(actual_overlap) +
                    segment.size());

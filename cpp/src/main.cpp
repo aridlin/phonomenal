@@ -113,6 +113,10 @@ static int run_cli(int argc, char **argv) {
         options.normalize_duration = true;
       else if (arg == "--match-pitch")
         options.match_pitch = true;
+      else if (arg == "--match-partial-pitch") {
+        options.match_pitch=true;
+        options.match_partial_pitch=true;
+      }
       else if (arg == "--center-phone-joins") {
         options.center_phone_joins = true;
         options.preserve_phone_timing = true;

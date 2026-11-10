@@ -3,7 +3,8 @@
 // Consonants, phone boundaries, sample count and untrusted regions stay intact.
 static bool ShiftVowelPitch(std::vector<std::int16_t> &segment,
                            std::int64_t segment_start, const Phoneme &phone,
-                           double factor, std::int64_t rate) {
+                           double factor, std::int64_t rate,
+                           std::optional<std::int64_t> pulse_anchor=std::nullopt) {
   const auto &a=EditingAcoustics(phone);
   if(a.marks.size()<5 || a.voiced<.8 || a.spread>2.5 || a.clipping>=.01 ||
      phone.start_sample<segment_start || phone.end_sample>segment_start+static_cast<std::int64_t>(segment.size())) return false;
@@ -13,7 +14,35 @@ static bool ShiftVowelPitch(std::vector<std::int16_t> &segment,
   const auto &marks=a.marks;
   double destination=static_cast<double>(marks[1]-phone.start_sample);
   std::size_t source=1;
-  while(destination<marks[marks.size()-2]-phone.start_sample) {
+  if(pulse_anchor) {
+    if(*pulse_anchor<marks[1] || *pulse_anchor>marks[marks.size()-2]) return false;
+    auto grain=[&](double position) {
+      const double absolute=phone.start_sample+position;
+      auto nearest=std::lower_bound(marks.begin()+1,marks.end()-1,absolute);
+      std::size_t index=std::clamp<std::size_t>(nearest-marks.begin(),1,marks.size()-2);
+      if(index>1 && std::abs(marks[index-1]-absolute)<std::abs(marks[index]-absolute)) --index;
+      const double left=marks[index]-marks[index-1],right=marks[index+1]-marks[index];
+      const double period=(left+right)*.5;
+      if(period<rate/600. || period>rate/50. || left/right<.7 || left/right>1.4) return 0.;
+      const auto centre=std::llround(position);
+      for(std::int64_t j=-static_cast<std::int64_t>(left);j<=static_cast<std::int64_t>(right);++j) {
+        const auto dst=centre+j;
+        const auto src=marks[index]-segment_start+j;
+        if(dst<0 || dst>=count || src<begin || src>=begin+count) continue;
+        const double phase=j/(j<0?left:right),w=.5+.5*std::cos(3.141592653589793*phase);
+        sum[dst]+=segment[src]*w;weights[dst]+=w;
+      }
+      return period/factor;
+    };
+    const double anchor=*pulse_anchor-phone.start_sample;
+    const auto step=grain(anchor);if(step<=0) return false;
+    for(double position=anchor+step;position<marks[marks.size()-2]-phone.start_sample;) {
+      const auto next=grain(position);if(next<=0) return false;position+=next;
+    }
+    for(double position=anchor-step;position>=marks[1]-phone.start_sample;) {
+      const auto next=grain(position);if(next<=0) return false;position-=next;
+    }
+  } else while(destination<marks[marks.size()-2]-phone.start_sample) {
     const double absolute=phone.start_sample+destination;
     while(source+2<marks.size() && std::abs(marks[source+1]-absolute)<std::abs(marks[source]-absolute)) ++source;
     const double left=marks[source]-marks[source-1];
