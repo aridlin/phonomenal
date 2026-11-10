@@ -1,0 +1,21 @@
+{
+  "snapshot": "2026-11-10",
+  "project": "phonomenal-pronunciation-phones",
+  "status": "prerelease local-work snapshot",
+  "artifacts": [
+    {
+      "path": "build-release/phonomenal_splicer_cli",
+      "size": 416984,
+      "sha256": "61344b792b4db5d7246af224161be9f3105d0aa2f0f0020604dff9963fccdfdb"
+    }
+  ],
+  "checks": [
+    {
+      "job": "phonomenal-pronunciation-phones",
+      "passed": true,
+      "command": ""
+    }
+  ],
+  "notes": [],
+  "runtime": "Linux x86_64 dynamic system libraries for ELF binaries; .exe cross-compiled Windows x64; APK preview/debug; OXT platform independent. Source/API compatibility and hardware behavior are not implied by compilation."
+}

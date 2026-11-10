@@ -15,9 +15,19 @@ add_library(phonomenal_splicer STATIC
 target_include_directories(phonomenal_splicer PUBLIC include)
 target_link_libraries(phonomenal_splicer PUBLIC ${CMAKE_DL_LIBS})
 if(MSVC)
-    target_compile_options(phonomenal_splicer PRIVATE /W4 /permissive-)
+    target_compile_options(phonomenal_splicer PRIVATE /W4 /permissive- /utf-8)
 else()
     target_compile_options(phonomenal_splicer PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+option(PHONOMENAL_BUILD_TESTS "Build native pronunciation tests" OFF)
+if(PHONOMENAL_BUILD_TESTS)
+    enable_testing()
+    add_executable(phonomenal_pronunciation_test tests/pronunciation_test.cpp)
+    if(MSVC)
+        target_compile_options(phonomenal_pronunciation_test PRIVATE /utf-8)
+    endif()
+    add_test(NAME pronunciation COMMAND phonomenal_pronunciation_test)
 endif()
 
 add_executable(phonomenal_splicer_cli
