@@ -265,7 +265,12 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     }
   }
   const auto &wave = impl_->ensure_master_wave();
+  // The beam compares the same boundary against many predecessor states.
+  // Its acoustic window depends only on this source position, not the path.
+  std::unordered_map<std::int64_t,FeatureFrame> boundary_features;
   auto feature = [&](std::int64_t sample) {
+    if(const auto found=boundary_features.find(sample);found!=boundary_features.end())
+      return found->second;
     FeatureFrame f;
     if (!impl_->features.empty()) {
       const auto centre=std::min<std::size_t>(impl_->features.size()-1,
@@ -286,6 +291,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
           f.pitch=pitches[pitches.size()/2];f.voicing=1.;
         }
       }
+      boundary_features.emplace(sample,f);
       return f;
     }
     auto p = impl_->profile_for_range(
@@ -295,6 +301,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     f.pitch = static_cast<float>(p.pitch_hz.value_or(0));
     f.rms = static_cast<float>(p.rms);
     f.voicing = f.pitch > 0 ? 1.f : 0.f;
+    boundary_features.emplace(sample,f);
     return f;
   };
   auto join_cost = [&](const PlannedUnit &a, const PlannedUnit &b) {
@@ -322,9 +329,15 @@ PlanResult VoiceBank::PlanText(std::string_view text,
       cost += 2.;
     return cost;
   };
+  // Paths share their immutable prefixes. Copying every selected unit into
+  // every candidate becomes expensive on paragraphs and wider beams.
+  struct Path {
+    const PlannedUnit *unit;
+    std::shared_ptr<const Path> previous;
+  };
   struct State {
     double cost{};
-    std::vector<PlannedUnit> units;
+    std::shared_ptr<const Path> path;
   };
   std::vector<std::vector<State>> dp(edges.size() + 1);
   dp[0].push_back({});
@@ -348,17 +361,15 @@ PlanResult VoiceBank::PlanText(std::string_view text,
       for (const auto &state : dp[i]) {
         double cost = state.cost + edge.penalty +
                       (1. - edge.unit.confidence.value_or(.5));
-        if (!state.units.empty())
-          cost += join_cost(state.units.back(), edge.unit);
+        if (state.path)
+          cost += join_cost(*state.path->unit, edge.unit);
         if (cost < best_cost) {
           best_cost = cost;
           best = &state;
         }
       }
       if (best) {
-        auto next = *best;
-        next.cost = best_cost;
-        next.units.push_back(edge.unit);
+        State next{best_cost,std::make_shared<Path>(Path{&edge.unit,best->path})};
         auto &dest = dp[edge.end];
         dest.push_back(std::move(next));
         if (dest.size() > beam * 4)
@@ -375,15 +386,18 @@ PlanResult VoiceBank::PlanText(std::string_view text,
         "were rejected. Rebuild/inspect the pack or try best-effort mode");
   trim(completed);
   auto best = std::move(completed.front());
+  std::vector<PlannedUnit> selected;
+  for(auto path=best.path;path;path=path->previous) selected.push_back(*path->unit);
+  std::reverse(selected.begin(),selected.end());
   bool phone_splicing =
-      std::any_of(best.units.begin(), best.units.end(),
+      std::any_of(selected.begin(), selected.end(),
                   [](const auto &u) { return u.kind == UnitKind::Phoneme; });
   if (phone_splicing &&
       impl_->report.find("legacy-import") != std::string::npos)
     warnings.push_back(
         "This pack uses legacy imported alignments. Rebuild it from "
         "recordings; strict coverage cannot repair wrong timestamps.");
-  if (std::count_if(best.units.begin(), best.units.end(), [](const auto &u) {
+  if (std::count_if(selected.begin(), selected.end(), [](const auto &u) {
         return u.kind == UnitKind::Phoneme;
       }) > 1)
     warnings.push_back("Some words are assembled from recorded sound pieces; "
@@ -391,7 +405,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
   // Preserve original contiguous source audio as one run, including within new
   // words.
   std::vector<PlannedUnit> merged;
-  for (auto &u : best.units) {
+  for (auto &u : selected) {
     if (u.approximated)
       warnings.push_back("Approximate phone in: " + u.target_text);
     if (!merged.empty() && u.pause_before_ms == 0 &&
