@@ -225,8 +225,8 @@ PlanResult VoiceBank::PlanText(std::string_view text,
           if(!std::isfinite(p.acoustic_penalty) || (options.strict && p.duration_penalty>=180.)) continue;
           auto add=[&](bool leading) {
             PlannedUnit u{UnitKind::Phoneme,tokens[first_word],p.source_word,p.labels,p.clip_id,
-              (length>=2 ? first_center : !leading) ? p.first_center : p.start_sample,
-              (length>=2 ? last_center : leading) ? p.last_center : p.end_sample,
+              (length>=2 ? first_center : !leading) ? (options.stable_vowel_cuts?p.first_stable_center:p.first_center) : p.start_sample,
+              (length>=2 ? last_center : leading) ? (options.stable_vowel_cuts?p.last_stable_center:p.last_center) : p.end_sample,
               static_cast<std::int64_t>(first_word),p.confidence};
             u.starts_at_phone_center=length>=2 ? first_center : !leading;
             u.ends_at_phone_center=length>=2 ? last_center : leading;

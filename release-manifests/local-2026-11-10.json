@@ -1,0 +1,21 @@
+{
+  "snapshot": "2026-11-10",
+  "project": "phonomenal-stable-cuts",
+  "status": "prerelease local-work snapshot",
+  "artifacts": [
+    {
+      "path": "build-release/phonomenal_splicer_cli",
+      "size": 417192,
+      "sha256": "1d4f0d9ebd526e44c44ee32bffebb92bc2a9a10fe83ed7980b19ca5246d5719b"
+    }
+  ],
+  "checks": [
+    {
+      "job": "phonomenal-stable-cuts",
+      "passed": true,
+      "command": ""
+    }
+  ],
+  "notes": [],
+  "runtime": "Linux x86_64 dynamic system libraries for ELF binaries; .exe cross-compiled Windows x64; APK preview/debug; OXT platform independent. Source/API compatibility and hardware behavior are not implied by compilation."
+}

@@ -65,6 +65,7 @@ struct Phoneme {
   PhoneAcoustics editing_acoustic;
   std::uint32_t manual_review{};
   std::uint32_t phone_support{},phone_dispute{},word_support{},word_dispute{},boundary_radius{};
+  std::int64_t stable_center{};
 };
 
 struct Record {
@@ -99,6 +100,7 @@ struct PhoneOccurrence {
   std::string left_context, right_context;
   double acoustic_penalty = 0., pitch = 0.;
   std::int64_t first_center{}, last_center{};
+  std::int64_t first_stable_center{}, last_stable_center{};
   std::array<double,2> center_duration{}, center_quality{};
   bool continuous = false;
 };
@@ -1142,6 +1144,37 @@ struct VoiceBank::Impl {
     return chosen;
   }
 
+  std::int64_t stable_phone_center(const Phoneme &phone) const {
+    const auto original=phone_center(phone),duration=phone.end_sample-phone.start_sample;
+    const auto &a=EditingAcoustics(phone);
+    if(features.empty() || !feature_hop || duration<sample_rate*.080 || phone.manual_review==2 ||
+       std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+phone.normalized_label+" ")==std::string::npos ||
+       !a.available || a.pitch<=0 || a.voiced<.8 || a.spread>2.5 || a.clipping>=.01 || a.marks.size()<5) return original;
+    auto flux=[&](std::int64_t sample) {
+      // FEAT uses 40 ms windows. Keep both descriptor windows inside the vowel.
+      const auto offset=sample_rate/100;
+      if(sample-phone.start_sample<sample_rate*.030 || phone.end_sample-sample<sample_rate*.030)
+        return std::numeric_limits<double>::infinity();
+      const auto left=(sample-offset)/feature_hop,right=(sample+offset)/feature_hop;
+      if(left<0 || right>=static_cast<std::int64_t>(features.size())) return std::numeric_limits<double>::infinity();
+      const auto &l=features[left],&r=features[right];
+      if(l.pitch<=0 || r.pitch<=0 || l.voicing<.8 || r.voicing<.8 || l.rms<.003 || r.rms<.003)
+        return std::numeric_limits<double>::infinity();
+      double sum=0.;for(std::size_t i=0;i<8;++i) sum+=std::abs(l.spectrum[i]-r.spectrum[i]);
+      return sum/8.;
+    };
+    const auto baseline=flux(original);
+    if(!std::isfinite(baseline) || baseline<=0.) return original;
+    const auto movement=std::min<std::int64_t>(sample_rate/50,duration*15/100),margin=duration/3;
+    auto chosen=original;double best=baseline;
+    for(auto mark:a.marks) {
+      if(mark<=phone.start_sample+margin || mark>=phone.end_sample-margin || std::abs(mark-original)>movement) continue;
+      const auto score=flux(mark);
+      if(score<best || (score==best && std::abs(mark-original)<std::abs(chosen-original))) {best=score;chosen=mark;}
+    }
+    return best<=baseline*.75?chosen:original;
+  }
+
   void describe_occurrence(PhoneOccurrence &occurrence, const Record &r) const {
     double pitch_sum=0.,weight=0.;
     std::int64_t previous_end=-1;
@@ -1159,11 +1192,13 @@ struct VoiceBank::Impl {
       previous_end=p.end_sample;++count;
       if(p.start_sample==occurrence.start_sample) {
         occurrence.first_center=phone_center(p);
+        occurrence.first_stable_center=p.stable_center;
         occurrence.center_duration[0]=phone_duration_penalty(p);
         occurrence.center_quality[0]=acoustic_penalty(p);
       }
       if(p.end_sample==occurrence.end_sample) {
         occurrence.last_center=phone_center(p);
+        occurrence.last_stable_center=p.stable_center;
         occurrence.center_duration[1]=phone_duration_penalty(p);
         occurrence.center_quality[1]=acoustic_penalty(p);
       }
@@ -1178,6 +1213,7 @@ struct VoiceBank::Impl {
   }
 
   void build_indexes() {
+    for(auto &record:records) for(auto &phone:record.phonemes) phone.stable_center=stable_phone_center(phone);
     for (const auto &record : records) {
       for(std::size_t i=0;i<record.phonemes.size();++i) {
         const auto &first=record.phonemes[i];
@@ -1189,6 +1225,7 @@ struct VoiceBank::Impl {
           PhoneOccurrence occurrence;
           occurrence.clip_id=record.clip_id;occurrence.start_sample=first.start_sample;occurrence.end_sample=last.end_sample;
           occurrence.first_center=phone_center(first);occurrence.last_center=phone_center(last);
+          occurrence.first_stable_center=first.stable_center;occurrence.last_stable_center=last.stable_center;
           std::vector<std::optional<double>> confidences;
           double pitch_sum=0.,pitch_weight=0.;
           for(std::size_t n=i;n<i+length;++n) {
