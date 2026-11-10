@@ -1,0 +1,23 @@
+{
+  "snapshot": "2026-11-10",
+  "project": "phonomenal-pronunciation-fix",
+  "status": "prerelease local-work snapshot",
+  "artifacts": [
+    {
+      "path": "build-release/phonomenal_splicer_cli",
+      "size": 416984,
+      "sha256": "2caea8b13a6442678e506a499a15f6225ffd683659ab92e00511c4f7e4339c7a"
+    }
+  ],
+  "checks": [
+    {
+      "job": "phonomenal-pronunciation-fix",
+      "passed": true,
+      "command": ""
+    }
+  ],
+  "notes": [
+    "GitHub OAuth credentials lack workflow scope. The intended CI workflow is preserved at release-manifests/pending-workflows/ci.yml.pending; the active .github/workflows/ci.yml remains unchanged."
+  ],
+  "runtime": "Linux x86_64 dynamic system libraries for ELF binaries; .exe cross-compiled Windows x64; APK preview/debug; OXT platform independent. Source/API compatibility and hardware behavior are not implied by compilation."
+}
