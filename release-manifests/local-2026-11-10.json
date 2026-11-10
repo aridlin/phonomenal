@@ -1,0 +1,81 @@
+{
+  "snapshot": "2026-11-10",
+  "project": "phonomenal",
+  "status": "prerelease local-work snapshot",
+  "artifacts": [
+    {
+      "path": "build-release/phonomenal_splicer_cli",
+      "size": 421664,
+      "sha256": "1e1e4f3b36e90dcc33d2b811be2c5ec00995da103521c1826238a01d45be6126"
+    },
+    {
+      "path": "build-release/phonomenal_splicer_frontend",
+      "size": 2402520,
+      "sha256": "1f7db3d061a6dc86244eeb73900c2d27d0fb13a2d8adfd5124c4e006cb6f9062"
+    }
+  ],
+  "checks": [
+    {
+      "job": "phonomenal",
+      "passed": true,
+      "command": "cmake -S cpp -B build-release -DCMAKE_BUILD_TYPE=Release && cmake --build build-release -j2 && ctest --test-dir build-release --output-on-failure"
+    },
+    {
+      "job": "phonomenal-final",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-seam-level",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-vowel-evidence",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-prosody",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-search-cache",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-search-paths",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-stable-cuts",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-pronunciation-fix",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-pronunciation-phones",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-mfcc-joins",
+      "passed": true,
+      "command": ""
+    },
+    {
+      "job": "phonomenal-word-evidence",
+      "passed": true,
+      "command": ""
+    }
+  ],
+  "notes": [],
+  "runtime": "Linux x86_64 dynamic system libraries for ELF binaries; .exe cross-compiled Windows x64; APK preview/debug; OXT platform independent. Source/API compatibility and hardware behavior are not implied by compilation."
+}
