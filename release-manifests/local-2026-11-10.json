@@ -1,0 +1,21 @@
+{
+  "snapshot": "2026-11-10",
+  "project": "phonomenal-mfcc-joins",
+  "status": "prerelease local-work snapshot",
+  "artifacts": [
+    {
+      "path": "build-release/phonomenal_splicer_cli",
+      "size": 435112,
+      "sha256": "b64d0c04748fd93649a4e7bf932159a027284352b12f26cda4fd28fbc47ff6d9"
+    }
+  ],
+  "checks": [
+    {
+      "job": "phonomenal-mfcc-joins",
+      "passed": true,
+      "command": ""
+    }
+  ],
+  "notes": [],
+  "runtime": "Linux x86_64 dynamic system libraries for ELF binaries; .exe cross-compiled Windows x64; APK preview/debug; OXT platform independent. Source/API compatibility and hardware behavior are not implied by compilation."
+}

@@ -29,6 +29,8 @@ if(PHONOMENAL_BUILD_TESTS)
     enable_testing()
     add_executable(phonomenal_pronunciation_test tests/pronunciation_test.cpp)
     add_test(NAME pronunciation COMMAND phonomenal_pronunciation_test)
+    add_executable(phonomenal_spectral_join_test tests/spectral_join_test.cpp)
+    add_test(NAME spectral_join COMMAND phonomenal_spectral_join_test)
 endif()
 
 add_executable(phonomenal_splicer_cli

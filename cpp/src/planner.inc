@@ -304,6 +304,31 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     boundary_features.emplace(sample,f);
     return f;
   };
+  std::unordered_map<std::string, std::unordered_map<std::int64_t, JoinEnvelope>> boundary_envelopes;
+  auto envelope = [&](std::int64_t sample, const std::string &clip) -> const JoinEnvelope & {
+    auto &clip_envelopes = boundary_envelopes[clip];
+    if (const auto found = clip_envelopes.find(sample); found != clip_envelopes.end())
+      return found->second;
+    JoinEnvelope value;
+    const auto first = sample - wave.sample_rate / 50;
+    const auto count = wave.sample_rate / 25;
+    // Never inspect a neighbouring recording or extend outside the labelled
+    // vowel. Short or uncertain contexts keep the existing join metric.
+    if (first >= 0 && first + count <= static_cast<std::int64_t>(wave.samples.size())) {
+      const auto record = std::find_if(impl_->records.begin(), impl_->records.end(),
+          [&](const auto &r) { return r.clip_id == clip; });
+      if (record != impl_->records.end()) for (const auto &phone : record->phonemes) {
+        if (phone.start_sample <= first && phone.end_sample >= first + count &&
+            std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ")
+                .find(" " + phone.normalized_label + " ") != std::string::npos) {
+          value = SourceJoinEnvelope(std::span<const std::int16_t>(wave.samples).subspan(
+              static_cast<std::size_t>(first), static_cast<std::size_t>(count)), wave.sample_rate);
+          break;
+        }
+      }
+    }
+    return clip_envelopes.emplace(sample, value).first->second;
+  };
   auto join_cost = [&](const PlannedUnit &a, const PlannedUnit &b) {
     if (a.clip_id == b.clip_id && a.end_sample == b.start_sample)
       return 0.;
@@ -323,7 +348,21 @@ PlanResult VoiceBank::PlanText(std::string_view text,
       cost += std::min<double>(
                   30., std::abs(20 * std::log10(right.rms / left.rms))) *
               .5;
-    for (std::size_t j = 0; j < 8; ++j)
+    bool fine_spectrum = false;
+    if (options.spectral_joins && a.ends_at_phone_center && b.starts_at_phone_center &&
+        !a.phones.empty() && !b.phones.empty() && a.phones.back() == b.phones.front() &&
+        std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ")
+            .find(" " + NormalizePhoneLabel(a.phones.back()) + " ") != std::string::npos &&
+        left.pitch > 0 && right.pitch > 0 && left.voicing > .65 && right.voicing > .65) {
+      const auto &a_envelope = envelope(a.end_sample, a.clip_id);
+      const auto &b_envelope = envelope(b.start_sample, b.clip_id);
+      if (a_envelope.valid && b_envelope.valid) {
+        cost += std::min(60., 12. * JoinEnvelopeDistance(a_envelope, b_envelope));
+        fine_spectrum = true;
+      }
+    }
+    // Preserve the exact addition order of the default planner.
+    if (!fine_spectrum) for (std::size_t j = 0; j < 8; ++j)
       cost += std::abs(left.spectrum[j] - right.spectrum[j]) * .5;
     if ((left.voicing > .65) != (right.voicing > .65))
       cost += 2.;

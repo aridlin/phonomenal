@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cctype>
 #include <cmath>
+#include <complex>
 #include <cstdint>
 #include <fstream>
 #include <functional>
@@ -997,6 +998,7 @@ WaveBytesFromSamples(const std::vector<std::int16_t> &samples,
 }
 
 #include "pitch_shift.inc"
+#include "spectral_join.inc"
 #include "pronunciation.inc"
 #include "vcpack_reader.inc"
 
