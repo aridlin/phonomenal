@@ -265,7 +265,12 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     }
   }
   const auto &wave = impl_->ensure_master_wave();
+  // The beam compares the same boundary against many predecessor states.
+  // Its acoustic window depends only on this source position, not the path.
+  std::unordered_map<std::int64_t,FeatureFrame> boundary_features;
   auto feature = [&](std::int64_t sample) {
+    if(const auto found=boundary_features.find(sample);found!=boundary_features.end())
+      return found->second;
     FeatureFrame f;
     if (!impl_->features.empty()) {
       const auto centre=std::min<std::size_t>(impl_->features.size()-1,
@@ -286,6 +291,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
           f.pitch=pitches[pitches.size()/2];f.voicing=1.;
         }
       }
+      boundary_features.emplace(sample,f);
       return f;
     }
     auto p = impl_->profile_for_range(
@@ -295,6 +301,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
     f.pitch = static_cast<float>(p.pitch_hz.value_or(0));
     f.rms = static_cast<float>(p.rms);
     f.voicing = f.pitch > 0 ? 1.f : 0.f;
+    boundary_features.emplace(sample,f);
     return f;
   };
   auto join_cost = [&](const PlannedUnit &a, const PlannedUnit &b) {

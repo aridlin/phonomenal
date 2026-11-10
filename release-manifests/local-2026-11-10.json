@@ -1,0 +1,21 @@
+{
+  "snapshot": "2026-11-10",
+  "project": "phonomenal-search-cache",
+  "status": "prerelease local-work snapshot",
+  "artifacts": [
+    {
+      "path": "build-release/phonomenal_splicer_cli",
+      "size": 397872,
+      "sha256": "2e3820102e905ec8bc8e830f7c06d526ebee8252427e67d15a592d2b412d469c"
+    }
+  ],
+  "checks": [
+    {
+      "job": "phonomenal-search-cache",
+      "passed": true,
+      "command": ""
+    }
+  ],
+  "notes": [],
+  "runtime": "Linux x86_64 dynamic system libraries for ELF binaries; .exe cross-compiled Windows x64; APK preview/debug; OXT platform independent. Source/API compatibility and hardware behavior are not implied by compilation."
+}
