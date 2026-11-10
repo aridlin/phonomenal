@@ -113,6 +113,8 @@ static int run_cli(int argc, char **argv) {
         options.normalize_duration = true;
       else if (arg == "--match-pitch")
         options.match_pitch = true;
+      else if (arg == "--match-level")
+        options.match_level = true;
       else if (arg == "--center-phone-joins") {
         options.center_phone_joins = true;
         options.center_max_phone_run = 2;
@@ -156,7 +158,7 @@ static int run_cli(int argc, char **argv) {
         std::cout
             << "phonomenal_splicer_cli --bank voice.vcpack (--text TEXT | "
                "--stdin | --phones PHONES) [--output speech.wav] "
-               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--center-phone-joins] [--center-run-phones 2..12] [--boundary-phone-joins] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
+               "[--stdout-wav] [--plan] [--strict] [--audit report.json] [--match-pitch] [--match-level] [--center-phone-joins] [--center-run-phones 2..12] [--boundary-phone-joins] [--preserve-phone-timing] [--legacy-overlap] [--pitch-band 100:180]\nphonomenal_splicer_cli "
                "--bank voice.vcpack --inspect\n";
         return 0;
       } else

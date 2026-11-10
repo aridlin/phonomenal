@@ -1020,7 +1020,6 @@ struct VoiceBank::Impl {
   mutable std::unordered_map<std::string, AcousticProfile>
       acoustic_profile_cache;
   mutable std::optional<WaveData> master_wave;
-
   void build_pronunciation_index() {
     std::unordered_map<std::string,
                        std::unordered_map<std::string, PronunciationStats>>
@@ -1651,10 +1650,71 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
        options.pitch_floor_hz < 50 || options.pitch_ceiling_hz > 600 || options.pitch_floor_hz > options.pitch_ceiling_hz))
     throw std::runtime_error("Pitch band must satisfy 50 <= lower <= upper <= 600 Hz");
   BoundaryReport checked;
-  struct Placement { const PlannedUnit *unit; std::int64_t offset; std::vector<std::pair<std::int64_t,std::int64_t>> knots; };
+  struct Placement { const PlannedUnit *unit; std::int64_t offset; std::vector<std::pair<std::int64_t,std::int64_t>> knots; double gain=1.; };
   std::vector<Placement> placements;
   std::vector<std::int16_t> output;
   const PlannedUnit *previous = nullptr;
+  std::vector<double> level_gains(plan.units.size(),1.);
+  if(options.match_level && !plan.units.empty() && (options.center_phone_joins || options.preserve_phone_timing)) {
+    struct Run {std::size_t first,last;};
+    std::vector<Run> runs;
+    for(std::size_t first=0;first<plan.units.size();) {
+      auto last=first;
+      while(last+1<plan.units.size() && !plan.units[last+1].pause_before_ms &&
+            plan.units[last].clip_id==plan.units[last+1].clip_id && plan.units[last].end_sample==plan.units[last+1].start_sample) ++last;
+      runs.push_back({first,last});first=last+1;
+    }
+    std::vector<double> correction(runs.size()),weight(runs.size()),log_level(runs.size());
+    auto record_for=[&](const std::string &id)->const Record* {
+      const auto r=std::find_if(impl_->records.begin(),impl_->records.end(),[&](const auto &r){return r.clip_id==id;});
+      return r==impl_->records.end()?nullptr:&*r;
+    };
+    auto vowel_at=[&](const PlannedUnit &u,std::int64_t sample)->const Phoneme* {
+      const auto r=record_for(u.clip_id);if(!r) return nullptr;
+      for(const auto &p:r->phonemes) if(p.start_sample<sample && p.end_sample>sample &&
+          std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+p.normalized_label+" ")!=std::string::npos) {
+        const auto &a=EditingAcoustics(p);
+        if(!a.available || a.pitch<=0 || a.voiced<.8 || a.spread>2.5 || a.clipping>=.01 || p.manual_review==2 ||
+           (p.manual_review!=1 && ((p.phone_dispute>0 && p.phone_support==0) || (p.word_dispute>=2 && p.word_support==0)))) return nullptr;
+        return &p;
+      }
+      return nullptr;
+    };
+    auto rms=[&](std::int64_t start,std::int64_t end) {
+      if(start<0 || end<=start || end>static_cast<std::int64_t>(wave.samples.size())) return 0.;
+      double sum=0.;for(auto i=start;i<end;++i) {const double sample=wave.samples[i]/32768.;sum+=sample*sample;}
+      return std::sqrt(sum/(end-start));
+    };
+    const auto margin=wave.sample_rate/200,window=wave.sample_rate/25;
+    for(std::size_t i=0;i+1<runs.size();++i) {
+      const auto &left=plan.units[runs[i].last],&right=plan.units[runs[i+1].first];
+      if(!left.ends_at_phone_center || !right.starts_at_phone_center || right.pause_before_ms ||
+          std::max(left.word_group,left.end_word_group)!=right.word_group) continue;
+      const auto a=vowel_at(left,left.end_sample),b=vowel_at(right,right.start_sample);
+      if(!a || !b || a->normalized_label!=b->normalized_label) continue;
+      if(left.end_sample-std::max(a->start_sample,plan.units[runs[i].first].start_sample)<window+margin ||
+          std::min(b->end_sample,plan.units[runs[i+1].last].end_sample)-right.start_sample<window+margin) continue;
+      const auto l=rms(left.end_sample-window-margin,left.end_sample-margin),r=rms(right.start_sample+margin,right.start_sample+margin+window);
+      if(l<.003 || r<.003) continue;
+      const double delta=std::log(r/l);
+      if(std::abs(delta)*20./std::log(10.)<3.) continue;
+      correction[i]+=.5*delta;correction[i+1]-=.5*delta;weight[i]+=1;weight[i+1]+=1;
+      log_level[i]+=std::log(l);log_level[i+1]+=std::log(r);
+    }
+    for(std::size_t i=0;i<runs.size();++i) {
+      const auto run=runs[i];
+      if(!weight[i]) {checked.level_skipped+=run.last-run.first+1;continue;}
+      const auto start=plan.units[run.first].start_sample,end=plan.units[run.last].end_sample;
+      if(start<0 || end<=start || end>static_cast<std::int64_t>(wave.samples.size())) throw std::runtime_error("Invalid planned range in level matching");
+      const double requested=std::exp(std::clamp(correction[i]/weight[i],-6.*std::log(10.)/20.,6.*std::log(10.)/20.));
+      double peak=0.;const auto context=wave.sample_rate/500;
+      for(auto j=std::max<std::int64_t>(0,start-context);j<std::min<std::int64_t>(wave.samples.size(),end+context);++j) peak=std::max(peak,std::abs(wave.samples[j]/32768.));
+      const double gain=requested>1. && peak>0?std::max(1.,std::min(requested,.97/peak)):requested;
+      const double source=std::exp(log_level[i]/weight[i]);
+      for(auto j=run.first;j<=run.last;++j) level_gains[j]=gain;
+      checked.level_adjustments.push_back({plan.units[run.first].clip_id,start,end,source,source*requested,requested,gain,gain+1e-9<requested});
+    }
+  } else if(options.match_level) checked.level_skipped=plan.units.size();
   std::unordered_map<std::int64_t,double> word_durations;
   for(const auto &u:plan.units) {
     const auto last=std::max(u.word_group,u.end_word_group);
@@ -1718,6 +1778,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     }
     std::vector<std::int16_t> segment(wave.samples.begin() + start,
                                       wave.samples.begin() + end);
+    const double gain=level_gains[unit_index];
     const double matched_factor=run_factor[unit_index++];
     std::unordered_map<std::int64_t,bool> pitch_edited;
     if (options.pitch_floor_hz > 0 || matched_factor!=1.) {
@@ -1757,6 +1818,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
       }
       std::sort(knots.begin(),knots.end());
     }
+    if(gain!=1.) for(auto &sample:segment) sample=ClampI16(sample*gain);
     const bool contiguous=previous && previous->clip_id==unit.clip_id && previous->end_sample==unit.start_sample;
     std::int64_t pause=previous ? wave.sample_rate*unit.pause_before_ms/1000 : 0;
     if(previous && !pause && !contiguous && previous->word_group>=0 && unit.word_group>=0 &&
@@ -1778,7 +1840,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         segment[i]=ClampI16(segment[i]*gain);
       }
       output.insert(output.end(),static_cast<std::size_t>(pause),0);
-      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots});
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots,gain});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1786,7 +1848,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     if (output.empty() || overlap <= 0 ||
         (previous && previous->clip_id == unit.clip_id &&
          previous->end_sample == unit.start_sample)) {
-      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots});
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots,gain});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1808,8 +1870,8 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         for(std::int64_t i=0;i<2*half;++i) {
           const double t=static_cast<double>(i)/(2*half-1);
           const double blend=t*t*(3.-2.*t);
-          const double a=i<half ? output[prefix+i] : wave.samples[previous->end_sample+i-half];
-          const double b=i<half ? wave.samples[unit.start_sample-half+i] : segment[i-half];
+          const double a=i<half ? output[prefix+i] : wave.samples[previous->end_sample+i-half]*placements.back().gain;
+          const double b=i<half ? wave.samples[unit.start_sample-half+i]*gain : segment[i-half];
           const auto sample=ClampI16(a*(1.-blend)+b*blend);
           if(i<half) output[prefix+i]=sample;
           else output.push_back(sample);
@@ -1827,7 +1889,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         }
         output.insert(output.end(),segment.begin(),segment.end());
       }
-      placements.push_back({&unit,offset,knots});
+      placements.push_back({&unit,offset,knots,gain});
       ++checked.duration_preserving_joins;
       previous=&unit;
       continue;
@@ -1840,7 +1902,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
         std::min<std::int64_t>(static_cast<std::int64_t>(output.size()),
             std::min<std::int64_t>(previous_length/4,static_cast<std::int64_t>(segment.size() / 4))));
     if (actual_overlap <= 0) {
-      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots});
+      placements.push_back({&unit, static_cast<std::int64_t>(output.size()),knots,gain});
       output.insert(output.end(), segment.begin(), segment.end());
       previous = &unit;
       continue;
@@ -1849,7 +1911,7 @@ VoiceBank::SynthesizeWav(const PlanResult &plan,
     const auto prefix_size =
         output.size() - static_cast<std::size_t>(actual_overlap);
     checked.overlap_samples_removed+=actual_overlap;
-    placements.push_back({&unit, static_cast<std::int64_t>(prefix_size),knots});
+    placements.push_back({&unit, static_cast<std::int64_t>(prefix_size),knots,gain});
     std::vector<std::int16_t> merged;
     merged.reserve(prefix_size + static_cast<std::size_t>(actual_overlap) +
                    segment.size());
@@ -1948,7 +2010,19 @@ std::string BoundaryReportJson(const BoundaryReport &report) {
     const auto &p=report.pitch_adjustments[i];if(i)out<<',';
     out << "{\"clip_id\":"<<quote(p.clip_id)<<",\"source_hz\":"<<p.source_hz<<",\"target_hz\":"<<p.target_hz<<",\"factor\":"<<p.factor<<",\"start_sample\":"<<p.start_sample<<",\"end_sample\":"<<p.end_sample<<",\"mode\":"<<quote(p.mode)<<'}';
   }
-  out << "],\"pitch_skipped\":" << report.pitch_skipped << ",\"word_pauses\":" << report.word_pauses
+  out << "]";
+  if(!report.level_adjustments.empty() || report.level_skipped) {
+    out << ",\"level_skipped\":" << report.level_skipped << ",\"level_adjustments\":[";
+    for(std::size_t i=0;i<report.level_adjustments.size();++i) {
+      const auto &a=report.level_adjustments[i];if(i) out << ',';
+      out << "{\"clip_id\":" << quote(a.clip_id) << ",\"start_sample\":" << a.start_sample << ",\"end_sample\":" << a.end_sample
+          << ",\"join_rms\":" << a.source_rms << ",\"target_join_rms\":" << a.reference_rms
+          << ",\"requested_gain\":" << a.requested_gain << ",\"applied_gain\":" << a.applied_gain
+          << ",\"peak_limited\":" << (a.peak_limited?"true":"false") << '}';
+    }
+    out << ']';
+  }
+  out << ",\"pitch_skipped\":" << report.pitch_skipped << ",\"word_pauses\":" << report.word_pauses
       << ",\"word_pause_samples\":" << report.word_pause_samples << ",\"duration_adjustments\":" << report.duration_adjustments
       << ",\"duration_preserving_joins\":" << report.duration_preserving_joins << ",\"contextual_joins\":" << report.contextual_joins
       << ",\"overlap_samples_removed\":" << report.overlap_samples_removed

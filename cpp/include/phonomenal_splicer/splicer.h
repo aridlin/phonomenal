@@ -58,9 +58,17 @@ struct PitchAdjustment {
   std::int64_t start_sample{}, end_sample{};
   std::string mode = "band";
 };
+struct LevelAdjustment {
+  std::string clip_id;
+  std::int64_t start_sample{},end_sample{};
+  double source_rms{},reference_rms{},requested_gain{1.},applied_gain{1.};
+  bool peak_limited=false;
+};
 struct BoundaryReport {
   std::vector<BoundaryCheck> boundaries;
   std::vector<PitchAdjustment> pitch_adjustments;
+  std::vector<LevelAdjustment> level_adjustments;
+  std::size_t level_skipped{};
   std::size_t flagged{};
   std::size_t pitch_skipped{};
   std::size_t word_pauses{};
@@ -86,6 +94,7 @@ struct SynthesizeOptions {
   bool preserve_phone_timing = false;
   bool center_phone_joins = true;
   std::size_t center_max_phone_run = 12;
+  bool match_level = false;
 };
 
 class VoiceBank {
