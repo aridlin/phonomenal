@@ -113,6 +113,10 @@ static int run_cli(int argc, char **argv) {
         options.normalize_duration = true;
       else if (arg == "--match-pitch")
         options.match_pitch = true;
+      else if (arg == "--prefer-supported-vowels")
+        options.prefer_supported_vowels = true;
+      else if (arg == "--prefer-supported-vowel-cuts")
+        options.prefer_supported_vowel_cuts = true;
       else if (arg == "--center-phone-joins") {
         options.center_phone_joins = true;
         options.center_max_phone_run = 2;

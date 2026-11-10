@@ -189,6 +189,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             {i + len, std::move(u),
              .15 * static_cast<double>(len) + p.duration_penalty +
                  stress_penalty + timing_penalty + p.acoustic_penalty + band_cost(p.pitch) + discarded_words +
+                 (options.prefer_supported_vowels?p.vowel_dispute_penalty:0.) +
                  100. * static_cast<double>(last_word-word_at[i]) +
                  (i>0 && !p.left_context.empty() && p.left_context!=target[i-1] ? 12. : 0.) +
                  (i+len<target.size() && !p.right_context.empty() && p.right_context!=target[i+len] ? 12. : 0.) +
@@ -234,11 +235,12 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             u.end_word_group=static_cast<std::int64_t>(last_word);
             u.target_text=JoinTokens(std::vector<std::string>(tokens.begin()+first_word,tokens.begin()+last_word+1));
             u.pause_before_ms=!u.starts_at_phone_center && i==starts[first_word] ? pauses[first_word] : 0;
-            double discarded=0.,duration=0.,quality=0.,stress=0.,expected_ms=0.;
+            double discarded=0.,duration=0.,quality=0.,stress=0.,expected_ms=0.,vowel_dispute=0.;
             for(std::size_t n=0;n<length;++n) {
               const double fraction=length==1?.5:((n==0?first_center:(n+1==length?last_center:false))?.5:1.);
               discarded+=fraction*(recorded_word[word_at[i+n]]?35.:0.);
               if(length<=2) {duration+=fraction*p.center_duration[n];quality+=fraction*p.center_quality[n];}
+              if(length<=2) vowel_dispute+=fraction*p.center_vowel_dispute[n];
               const auto &wanted=stressed_target[i+n];
               if((wanted.back()=='1' || wanted.back()=='2') && p.stressed_labels[n].back()=='0') stress+=fraction*90.;
               const bool vowel=std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+target[i+n]+" ")!=std::string::npos;
@@ -247,6 +249,7 @@ PlanResult VoiceBank::PlanText(std::string_view text,
             if(length>2) {
               duration=p.duration_penalty-(first_center?p.center_duration[0]*.5:0.)-(last_center?p.center_duration[1]*.5:0.);
               quality=p.acoustic_penalty-(first_center?p.center_quality[0]*.5:0.)-(last_center?p.center_quality[1]*.5:0.);
+              vowel_dispute=p.vowel_dispute_penalty-(first_center?p.center_vowel_dispute[0]*.5:0.)-(last_center?p.center_vowel_dispute[1]*.5:0.);
             }
             const double ms=1000.*(u.end_sample-u.start_sample)/impl_->sample_rate;
             // These are half-phone spans. Long emphatic vowels must not gain
@@ -256,8 +259,13 @@ PlanResult VoiceBank::PlanText(std::string_view text,
               (!u.ends_at_phone_center && last+1==ends[last_word] && !p.ends_word?180.:0.);
             const auto start=i*2+(u.starts_at_phone_center?1:0);
             const auto end=length>=2?last*2+(last_center?1:2):i*2+(leading?1:2);
+            // Identity at an exposed half vowel matters separately from
+            // complete phones retained inside a native transition.
+            const double cut_dispute=length==1?p.center_vowel_dispute[0]*.5:
+              (u.starts_at_phone_center?p.center_vowel_dispute[0]*.5:0.)+
+              (u.ends_at_phone_center?p.center_vowel_dispute[1]*.5:0.);
             if(u.end_sample>u.start_sample)
-              edges[start].push_back({end,std::move(u),25.+duration+quality+stress+timing+discarded+boundaries+band_cost(p.pitch)+100.*(last_word-first_word)});
+              edges[start].push_back({end,std::move(u),25.+duration+quality+stress+timing+discarded+boundaries+band_cost(p.pitch)+100.*(last_word-first_word)+(options.prefer_supported_vowels?vowel_dispute:0.)+(options.prefer_supported_vowel_cuts?cut_dispute:0.)});
           };
           add(true);if(length==1)add(false);
         }

@@ -100,6 +100,8 @@ struct PhoneOccurrence {
   double acoustic_penalty = 0., pitch = 0.;
   std::int64_t first_center{}, last_center{};
   std::array<double,2> center_duration{}, center_quality{};
+  double vowel_dispute_penalty=0.;
+  std::array<double,2> center_vowel_dispute{};
   bool continuous = false;
 };
 
@@ -1128,6 +1130,12 @@ struct VoiceBank::Impl {
            std::min(120.,a.clipping*1000.) + std::max(0.,std::abs(a.duration_z)-2.)*18.;
   }
 
+  static double vowel_identity_penalty(const Phoneme &phone) {
+    if(phone.manual_review==1 || phone.phone_support>0 || phone.phone_dispute==0) return 0.;
+    const bool vowel=std::string(" AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW ").find(" "+phone.normalized_label+" ")!=std::string::npos;
+    return vowel?48.:0.;
+  }
+
   static std::int64_t phone_center(const Phoneme &phone) {
     const auto midpoint=phone.start_sample+(phone.end_sample-phone.start_sample)/2;
     const auto &a=EditingAcoustics(phone);
@@ -1161,13 +1169,16 @@ struct VoiceBank::Impl {
         occurrence.first_center=phone_center(p);
         occurrence.center_duration[0]=phone_duration_penalty(p);
         occurrence.center_quality[0]=acoustic_penalty(p);
+        occurrence.center_vowel_dispute[0]=vowel_identity_penalty(p);
       }
       if(p.end_sample==occurrence.end_sample) {
         occurrence.last_center=phone_center(p);
         occurrence.center_duration[1]=phone_duration_penalty(p);
         occurrence.center_quality[1]=acoustic_penalty(p);
+        occurrence.center_vowel_dispute[1]=vowel_identity_penalty(p);
       }
       occurrence.acoustic_penalty+=acoustic_penalty(p);
+      occurrence.vowel_dispute_penalty+=vowel_identity_penalty(p);
       if(p.acoustic.available && p.acoustic.pitch>0 && p.acoustic.voiced>=.7) {
         const double w=p.end_sample-p.start_sample;
         pitch_sum+=std::log(p.acoustic.pitch)*w;weight+=w;
@@ -1196,6 +1207,8 @@ struct VoiceBank::Impl {
             occurrence.labels.push_back(phone.normalized_label);occurrence.stressed_labels.push_back(phone.label);
             occurrence.center_duration[n-i]=phone_duration_penalty(phone);
             occurrence.center_quality[n-i]=acoustic_penalty(phone);
+            occurrence.center_vowel_dispute[n-i]=vowel_identity_penalty(phone);
+            occurrence.vowel_dispute_penalty+=occurrence.center_vowel_dispute[n-i];
             occurrence.duration_penalty+=occurrence.center_duration[n-i];
             occurrence.acoustic_penalty+=occurrence.center_quality[n-i];
             if(phone.acoustic.available && phone.acoustic.pitch>0 && phone.acoustic.voiced>=.7) {

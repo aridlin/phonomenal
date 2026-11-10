@@ -1,0 +1,21 @@
+{
+  "snapshot": "2026-11-10",
+  "project": "phonomenal-vowel-evidence",
+  "status": "prerelease local-work snapshot",
+  "artifacts": [
+    {
+      "path": "build-release/phonomenal_splicer_cli",
+      "size": 393016,
+      "sha256": "72fca30bfa3fa7cebaefbb4ace41805697d9e93e516411bcb1673dd4399a83f4"
+    }
+  ],
+  "checks": [
+    {
+      "job": "phonomenal-vowel-evidence",
+      "passed": true,
+      "command": ""
+    }
+  ],
+  "notes": [],
+  "runtime": "Linux x86_64 dynamic system libraries for ELF binaries; .exe cross-compiled Windows x64; APK preview/debug; OXT platform independent. Source/API compatibility and hardware behavior are not implied by compilation."
+}
